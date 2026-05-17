@@ -1,6 +1,6 @@
 import { Stack } from "expo-router";
-import LoginScreen from "./features/Auth/screens/LoginScreen";
-import RegisterScreen from "./features/Auth/screens/RegisterScreen";
+import LoginScreen from "../features/Auth/screens/LoginScreen";
+import RegisterScreen from "../features/Auth/screens/RegisterScreen";
 
 const MainApp = () => {
   return (
