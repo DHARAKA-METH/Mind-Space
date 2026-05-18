@@ -2,6 +2,15 @@ export const icons = {
   notification: require("../../../../assets/icons/Navigation_Icons_notifications.png"),
   profile: require("../../../../assets/icons/Navigation_Icons_profile.png"),
 
+
+  // footer icons
+
+  home: require("../../../../assets/icons/Navigation_Icons_home.png"),
+  mood: require("../../../../assets/icons/Mood_Icons_happy.png"),
+  add: require("../../../../assets/icons/add_new_mood.png"),
+  assistant: require("../../../../assets/icons/chat_icon.png"),
+  Wellness: require("../../../../assets/icons/AI_Assistant_Icons_ai_spark.png"),
+
   
   // Actions
   meditate: require("../../../../assets/icons/Wellness_Icons_meditation.png"),
