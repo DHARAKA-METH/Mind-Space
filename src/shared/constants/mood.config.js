@@ -17,3 +17,42 @@ export const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"
 ];
+
+
+  export const moods = [
+    {
+      id: "Awful",
+      label: "Awful",
+      bg: "#FFD6D6",
+      icon: icons.mood_awful_filled,
+      outline: icons.mood_awful_outline,
+    },
+    {
+      id: "Bad",
+      label: "Bad",
+      bg: "#FFE3C2",
+      icon: icons.mood_bad_filled,
+      outline: icons.mood_bad_outline,
+    },
+    {
+      id: "Meh",
+      label: "Meh",
+      bg: "#E9DDFF",
+      icon: icons.mood_neutral_filled,
+      outline: icons.mood_neutral_outline,
+    },
+    {
+      id: "Good",
+      label: "Good",
+      bg: "#D9F1FF",
+      icon: icons.mood_good_filled,
+      outline: icons.mood_good_outline,
+    },
+    {
+      id: "Great",
+      label: "Great",
+      bg: "#E7F7A7",
+      icon: icons.mood_great_filled,
+      outline: icons.mood_great_outline,
+    },
+  ];
