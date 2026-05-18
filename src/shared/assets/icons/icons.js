@@ -41,5 +41,14 @@ export const icons = {
   mood_good_outline: require("../../../../assets/icons/mood/mood_good_outline.png"),
   mood_great_outline: require("../../../../assets/icons/mood/mood_great_outline.png"),
 
+
+  // new mood icons (OUTLINE)
+  // ---------------------------
+  newico_mood_awful_filled: require("../../../../assets/icons/mood/newico/mood_awful_filled.png"),
+  newico_mood_bad_filled: require("../../../../assets/icons/mood/newico/mood_bad_filled.png"),
+  newico_mood_neutral_filled: require("../../../../assets/icons/mood/newico/mood_neutral_filled.png"),
+  newico_mood_good_filled: require("../../../../assets/icons/mood/newico/mood_good_filled.png"),
+  newico_mood_great_filled: require("../../../../assets/icons/mood/newico/mood_great_filled.png"),
+
   
 };

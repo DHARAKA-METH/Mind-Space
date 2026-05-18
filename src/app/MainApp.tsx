@@ -2,6 +2,8 @@ import { Stack } from "expo-router";
 import LoginScreen from "../features/Auth/screens/LoginScreen";
 import RegisterScreen from "../features/Auth/screens/RegisterScreen";
 import DashboardScreen from "../features/MoodTracking/screens/DashboardScreen";
+import MoodCalendar from "../features/MoodTracking/screens/MoodCalenderScreen";
+
 
 const MainApp = () => {
   return (
@@ -15,7 +17,8 @@ const MainApp = () => {
       />
       {/* <LoginScreen /> */}
       {/* <RegisterScreen /> */}
-      <DashboardScreen />
+      {/* <DashboardScreen /> */}
+      <MoodCalendar />
       
     </>
   );
