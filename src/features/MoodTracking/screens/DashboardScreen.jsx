@@ -144,7 +144,7 @@ export default function DashboardScreen() {
           {/* MOOD CARD */}
           <View className="bg-primary/40 rounded-3xl p-5 mb-6">
             <View className="flex-row justify-between items-center mb-3">
-              <Text className="text-lg font-bold text-dark">
+              <Text className="text-2xl font-caveat  text-dark">
                 My Mood Today
               </Text>
 
@@ -175,7 +175,7 @@ export default function DashboardScreen() {
 
           {/* ACTIONS HEADER */}
           <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-xl font-bold text-dark">
+            <Text className="text-2xl font-caveat  text-dark">
               Actions
             </Text>
 
@@ -211,7 +211,7 @@ export default function DashboardScreen() {
           {/* SUGGESTIONS */}
           <View className="mb-10">
             <View className="flex-row justify-between items-center mb-4">
-              <Text className="text-xl font-bold text-dark">
+              <Text className="text-2xl font-caveat  text-dark">
                 Activity Suggestions
               </Text>
 

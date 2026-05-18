@@ -18,6 +18,11 @@ module.exports = {
         dark: "#222222",
         background: "#F9FAF5",
       },
+      fontFamily: {
+        poppins: ["Poppins_400Regular"],
+        poppinsBold: ["Poppins_600SemiBold"],
+        caveat: ["CaveatBrush_400Regular"],
+      },
     },
   },
   plugins: [],
