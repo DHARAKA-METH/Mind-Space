@@ -3,6 +3,7 @@ import { Stack } from "expo-router";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { icons } from "../../../shared/assets/icons/icons";
 import { useState } from "react";
+import Footer from "@/src/shared/components/Footer";
 
 const CustomHeader = () => {
   return (

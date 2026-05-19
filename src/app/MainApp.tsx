@@ -7,7 +7,10 @@ import MoodCheckInScreen from "../features/MoodTracking/screens/MoodCheckInScree
 import BookSessionScreen from "../features/Appointments/screens/BookSessionScreen";
 
 
+
+
 const MainApp = () => {
+  
   return (
     <>
       <Stack.Screen
@@ -17,12 +20,13 @@ const MainApp = () => {
           headerShadowVisible: false,
         }}
       />
-      {/* <LoginScreen /> */}
+      <LoginScreen />
+      
       {/* <RegisterScreen /> */}
       {/* <DashboardScreen /> */}
       {/* <MoodCalendar /> */}
       {/* <MoodCheckInScreen /> */}
-      <BookSessionScreen/>
+      {/* <BookSessionScreen/> */}
       
       
     </>

@@ -13,6 +13,10 @@ import { User, Lock, ChevronRight, Circle } from "lucide-react-native";
 const LoginScreen = () => {
   const [role, setRole] = useState("student");
 
+  const handleLogin = () => {
+    router.push("/Route/(mood)/moodDashboard");
+  };
+
   return (
     <>
       <Stack.Screen
@@ -104,7 +108,7 @@ const LoginScreen = () => {
           </View>
 
           {/* Sign In Button */}
-          <TouchableOpacity className="flex-row bg-dark w-full h-16 rounded-3xl justify-center items-center mb-5">
+          <TouchableOpacity onPress={()=>handleLogin()} className="flex-row bg-dark w-full h-16 rounded-3xl justify-center items-center mb-5">
             <Text className="text-primary text-lg font-bold mr-2">Sign In</Text>
 
             <ChevronRight color="#C8E86A" size={20} />

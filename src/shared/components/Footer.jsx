@@ -2,28 +2,34 @@ import React from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
 
 import { icons } from "@/src/shared/assets/icons/icons";
+import { router } from "expo-router";
 
 const Footer = ({ activeTab, setActiveTab }) => {
   const tabs = [
     {
       name: "Home",
       icon: icons.home,
+      route: "/Route/(mood)/moodDashboard",
     },
     {
       name: "Mood",
       icon: icons.mood_good_outline,
+      route: "/Route/(mood)/moodCalender",
     },
     {
       name: "New",
       icon: icons.add,
+      route: "/Route/(mood)/moodCheckIn",
     },
     {
       name: "Assistant",
       icon: icons.assistant,
+      route: "/Route/(mood)/moodAssistant",
     },
     {
       name: "Wellness",
       icon: icons.Wellness,
+      route: "/Route/(appointments)/BookSession",
     },
   ];
 
@@ -35,7 +41,10 @@ const Footer = ({ activeTab, setActiveTab }) => {
         return (
           <TouchableOpacity
             key={tab.name}
-            onPress={() => setActiveTab(tab.name)}
+            onPress={() => {
+              setActiveTab(tab.name);
+              router.push(tab.route);
+            }}
             className="items-center"
           >
             {/* ICON CONTAINER */}
