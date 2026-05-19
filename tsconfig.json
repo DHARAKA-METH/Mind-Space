@@ -14,5 +14,5 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "nativewind-env.d.ts"
-  ]
+,     "src/features/Appointments/hooks/dateHelpers.ts", "src/features/Appointments/hooks/useAppointmentBooking.js"  ]
 }

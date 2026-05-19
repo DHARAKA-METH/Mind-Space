@@ -4,6 +4,7 @@ import RegisterScreen from "../features/Auth/screens/RegisterScreen";
 import DashboardScreen from "../features/MoodTracking/screens/DashboardScreen";
 import MoodCalendar from "../features/MoodTracking/screens/MoodCalenderScreen";
 import MoodCheckInScreen from "../features/MoodTracking/screens/MoodCheckInScreen";
+import BookSessionScreen from "../features/Appointments/screens/BookSessionScreen";
 
 
 const MainApp = () => {
@@ -20,7 +21,8 @@ const MainApp = () => {
       {/* <RegisterScreen /> */}
       {/* <DashboardScreen /> */}
       {/* <MoodCalendar /> */}
-      <MoodCheckInScreen />
+      {/* <MoodCheckInScreen /> */}
+      <BookSessionScreen/>
       
       
     </>
