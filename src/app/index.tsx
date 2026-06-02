@@ -9,7 +9,7 @@ export default function Index() {
   return (
     <>
       <MainApp />
-      <Footer activeTab={activeTab} setActiveTab={setActiveTab} />
+      {/* <Footer activeTab={activeTab} setActiveTab={setActiveTab} /> */}
     </>
   );
 }

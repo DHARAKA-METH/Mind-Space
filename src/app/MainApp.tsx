@@ -1,11 +1,11 @@
 import { Stack } from "expo-router";
-import LoginScreen from "../features/Auth/screens/LoginScreen";
 import RegisterScreen from "../features/Auth/screens/RegisterScreen";
 import DashboardScreen from "../features/MoodTracking/screens/DashboardScreen";
 import MoodCalendar from "../features/MoodTracking/screens/MoodCalenderScreen";
 import MoodCheckInScreen from "../features/MoodTracking/screens/MoodCheckInScreen";
 import BookSessionScreen from "../features/Appointments/screens/BookSessionScreen";
-import Screen from "../features/Chat/screens/Screen";
+import Screen from "../features/Chat/screens/ChatScreen";
+import Login from "./(auth)/login";
 
 
 
@@ -21,7 +21,7 @@ const MainApp = () => {
           headerShadowVisible: false,
         }}
       />
-      <LoginScreen />
+      <Login />
 
       {/* <RegisterScreen /> */}
       {/* <DashboardScreen /> */}

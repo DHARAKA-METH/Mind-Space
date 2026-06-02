@@ -9,27 +9,27 @@ const Footer = ({ activeTab, setActiveTab }) => {
     {
       name: "Home",
       icon: icons.home,
-      route: "/Route/(mood)/moodDashboard",
+      route: "",
     },
     {
       name: "Mood",
       icon: icons.mood_good_outline,
-      route: "/Route/(mood)/moodCalender",
+      route: "",
     },
     {
       name: "New",
       icon: icons.add,
-      route: "/Route/(mood)/moodCheckIn",
+      route: "",
     },
     {
       name: "Assistant",
       icon: icons.assistant,
-      route: "/Route/(mood)/moodAssistant",
+      route: "",
     },
     {
       name: "Wellness",
       icon: icons.Wellness,
-      route: "/Route/(appointments)/BookSession",
+      route: "",
     },
   ];
 

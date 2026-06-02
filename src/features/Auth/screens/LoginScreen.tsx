@@ -14,7 +14,7 @@ const LoginScreen = () => {
   const [role, setRole] = useState("student");
 
   const handleLogin = () => {
-    router.push("/Route/(mood)/moodDashboard");
+    router.push("/(tabs)/(mood)/moodDashboard");
   };
 
   return (
