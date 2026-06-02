@@ -77,6 +77,8 @@ const ChatLayout = () => {
     setActiveCounselor(null); // Reset counselor chat when switching tabs
   }, []);
 
+  const isBookingTab = tab === 2;
+
   return (
     <>
       <Stack.Screen
@@ -85,40 +87,54 @@ const ChatLayout = () => {
           headerTitleStyle: { fontWeight: "600", fontSize: 18 },
           headerStyle: { backgroundColor: "#F9FAF5" },
           headerShadowVisible: false,
+          // Prevent the screen navigation layout context from shifting unexpectedly
+          headerShown: true, 
         }}
       />
 
-      <SafeAreaView className="flex-1 bg-slate-50 ">
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          className="flex-1 p-2" 
-        >
-          {/* Custom duplicate View header removed from here to eliminate dual layouts */}
-
-          {/* ── Tab Bar (hidden inside active counselor chat) ── */}
-          {!activeCounselor && (
-            <TabBar activeTab={tab} onTabPress={handleTabPress} />
-          )}
-
-          {/* ── Screen Content ── */}
-          <View className="flex-1 p-2">
-            {activeCounselor ? (
-              <CounselorChatRoom
-                counselor={activeCounselor}
-                onBack={() => handleSetActiveCounselor(null)}
-              />
-            ) : tab === 0 ? (
-              <AIChatScreen />
-            ) : tab === 1 ? (
-              <AnonymousCounselorScreen
-                setActiveCounselor={handleSetActiveCounselor}
-              />
-            ) : (
-              <BookSession />
+      {/* If the booking component includes its own internal safe zone handling, 
+        we fall back to a plain View wrapper instead of an extra nested SafeAreaView 
+      */}
+      <View className="flex-1 bg-slate-50">
+        <SafeAreaView className={isBookingTab ? "" : "flex-1"}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            className="h-full w-full"
+            // Disable the parent keyboard adjust logic if BookSession uses its own
+            enabled={!isBookingTab} 
+          >
+            {/* ── Tab Bar (hidden inside active counselor chat) ── */}
+            {!activeCounselor && (
+              <TabBar activeTab={tab} onTabPress={handleTabPress} />
             )}
-          </View>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
+
+            {/* ── Screen Content ── */}
+            <View className="flex-1">
+              {activeCounselor ? (
+                <CounselorChatRoom
+                  counselor={activeCounselor}
+                  onBack={() => handleSetActiveCounselor(null)}
+                />
+              ) : tab === 0 ? (
+                <View className="flex-1 p-2">
+                  <AIChatScreen />
+                </View>
+              ) : tab === 1 ? (
+                <View className="flex-1 p-2">
+                  <AnonymousCounselorScreen
+                    setActiveCounselor={handleSetActiveCounselor}
+                  />
+                </View>
+              ) : (
+                /* BookSession container layout output is isolated */
+                <View className="flex-1">
+                  <BookSession />
+                </View>
+              )}
+            </View>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </View>
     </>
   );
 };

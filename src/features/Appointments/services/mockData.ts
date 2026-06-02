@@ -11,6 +11,7 @@ export const COUNSELORS: Counselor[] = [
   { id: "C001", name: "Ms. R. Silva", specialties: ["Mindfulness", "Grief"], avatar: "👩‍⚕️", color: "#7C3AED", bgColor: "#EDE9FE" },
   { id: "C002", name: "Dr. S. Perera", specialties: ["Anxiety", "Stress", "CBT"], avatar: "👨‍⚕️", color: "#0369A1", bgColor: "#E0F2FE" },
   { id: "C003", name: "Dr. A. Fernando", specialties: ["Depression", "Trauma"], avatar: "🧑‍⚕️", color: "#065F46", bgColor: "#D1FAE5" },
+  { id: "C004", name: "Dr. A. Fernando", specialties: ["Depression", "Trauma"], avatar: "🧑‍⚕️", color: "#065F46", bgColor: "#D1FAE5" },
 ];
 
 export const INITIAL_APPOINTMENTS: Appointment[] = [
