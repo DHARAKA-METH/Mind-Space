@@ -5,6 +5,7 @@ import MoodCalendar from "../features/MoodTracking/screens/MoodCalenderScreen";
 import MoodCheckInScreen from "../features/MoodTracking/screens/MoodCheckInScreen";
 import BookSessionScreen from "../features/Appointments/screens/BookSessionScreen";
 import Screen from "../features/Chat/screens/ChatScreen";
+import RecommendationScreen from "../features/Recommendations/screens/RecommendationScreen";
 import Login from "./(auth)/login";
 
 
@@ -29,6 +30,7 @@ const MainApp = () => {
       {/* <MoodCheckInScreen /> */}
       {/* <BookSessionScreen/> */}
       {/* <Screen  /> */}
+      {/* <RecommendationScreen /> */}
       
       
     </>

@@ -10,18 +10,12 @@ const CustomHeader = () => {
     <View className="flex-row justify-between items-center w-full px-4">
       {/* Left */}
       <View>
-        <Text className="text-gray-400 text-xl">
-          {getGreeting()},
-        </Text>
+        <Text className="text-gray-400 text-xl">{getGreeting()},</Text>
 
         <View className="flex-row items-center">
-          <Text className="text-3xl font-bold text-black">
-            Alex Chen
-          </Text>
+          <Text className="text-3xl font-bold text-black">Alex Chen</Text>
 
-          <Text className="text-2xl ml-1">
-            {getGreetingIcon()}
-          </Text>
+          <Text className="text-2xl ml-1">{getGreetingIcon()}</Text>
         </View>
       </View>
 
@@ -60,9 +54,7 @@ const ActionCard = ({ title, color, icon, textColor }) => {
         <Image source={icon} className="w-8 h-8" />
       </View>
 
-      <Text className={`${textColor} font-bold`}>
-        {title}
-      </Text>
+      <Text className={`${textColor} font-bold`}>{title}</Text>
     </TouchableOpacity>
   );
 };
@@ -103,6 +95,8 @@ export default function DashboardScreen() {
             backgroundColor: "#F9FAF5",
           },
           headerShadowVisible: false,
+          headerLeft: () => null,
+          headerBackVisible: false,
         }}
       />
 
@@ -131,9 +125,7 @@ export default function DashboardScreen() {
               >
                 <Text
                   className={`text-sm font-semibold ${
-                    activeCategory === cat
-                      ? "text-dark"
-                      : "text-gray-400"
+                    activeCategory === cat ? "text-dark" : "text-gray-400"
                   }`}
                 >
                   {cat}
@@ -149,9 +141,7 @@ export default function DashboardScreen() {
                 My Mood Today
               </Text>
 
-              <Text className="text-gray-400 text-lg">
-                •••
-              </Text>
+              <Text className="text-gray-400 text-lg">•••</Text>
             </View>
 
             <View className="flex-row items-center justify-between bg-white/40 rounded-2xl p-4">
@@ -166,23 +156,16 @@ export default function DashboardScreen() {
               </View>
 
               <View className="bg-white/40 p-3 rounded-2xl mr-3">
-                <Image
-                  source={icons.mood_good_outline}
-                  className="w-10 h-10"
-                />
+                <Image source={icons.mood_good_outline} className="w-10 h-10" />
               </View>
             </View>
           </View>
 
           {/* ACTIONS HEADER */}
           <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-2xl font-caveat  text-dark">
-              Actions
-            </Text>
+            <Text className="text-2xl font-caveat  text-dark">Actions</Text>
 
-            <Text className="text-gray-400">
-              See all →
-            </Text>
+            <Text className="text-gray-400">See all →</Text>
           </View>
 
           {/* ACTION CARDS */}
@@ -216,9 +199,7 @@ export default function DashboardScreen() {
                 Activity Suggestions
               </Text>
 
-              <Text className="text-gray-400 text-lg">
-                →
-              </Text>
+              <Text className="text-gray-400 text-lg">→</Text>
             </View>
 
             {suggestions.map((item) => (

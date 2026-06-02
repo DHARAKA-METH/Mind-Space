@@ -9,6 +9,7 @@ import MoodScreen from "../(tabs)/(mood)/moodCalender";
 import MoodCheckIn from "../(tabs)/(mood)/moodCheckIn";
 import ChatScreen from "../(tabs)/(chat)/chat";
 import BookSession from "../(tabs)/(appointments)/BookSession";
+import RecommendationScreen from "../(tabs)/(Recommendation)/Recommendations";
 
 
 
@@ -29,7 +30,7 @@ export default function TabLayout() {
       case "Assistant":
         return <ChatScreen />;
       case "Wellness":
-        return <BookSession />;
+        return <RecommendationScreen />;
       default:
         return <HomeScreen />;
     }
