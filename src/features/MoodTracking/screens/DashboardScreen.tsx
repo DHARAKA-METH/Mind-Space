@@ -1,5 +1,6 @@
 import { getGreeting, getGreetingIcon } from "@/src/core/utils/time";
 import { Stack } from "expo-router";
+import { getAuth } from "firebase/auth";
 import React, { useEffect, useState } from "react";
 import {
   Image,
@@ -10,17 +11,11 @@ import {
   View,
 } from "react-native";
 import { icons } from "../../../shared/assets/icons/icons";
-import { getAuth } from "firebase/auth";
 import { getUserRecommendations } from "../../Recommendations/services/recommendationsPool";
-import { fetchMoodFromDb } from "../services/fetchFromDb";
 import { calculateAverageDayStressLevel } from "../hooks/calculateAverageDayStressLevel";
-
-type ActionCardProps = {
-  title: string;
-  color: string;
-  icon: ImageSourcePropType;
-  textColor: string;
-};
+import { fetchMoodFromDb } from "../services/fetchFromDb";
+import { getMoodSummaryConfig, getBackgroundConfig } from "../hooks/others";
+import { ActionCard } from "../components/ActionCard";
 
 interface SuggestionItem {
   id: string;
@@ -30,83 +25,6 @@ interface SuggestionItem {
   icon: ImageSourcePropType;
   isBackendResource: boolean;
 }
-
-// ─── DYNAMIC MOOD SUMMARY LAYOUT MAPPER ──────────────────────────────────────
-const getMoodSummaryConfig = (avg: number) => {
-  // Round to the nearest integer to map array index steps cleanly (1 to 5)
-  const rating = Math.min(Math.max(Math.round(avg), 1), 5);
-
-  const configs: Record<
-    number,
-    {
-      title: string;
-      description: string;
-      icon: any;
-      cardBg: string;
-      cardBorder: string;
-      innerBg: string;
-      iconWrapperBg: string;
-      tint: string;
-    }
-  > = {
-    1: {
-      title: "Feeling overwhelmed",
-      description:
-        "Take a deep breath. Let's try a quick grounding exercise together.",
-      icon: icons.mood_awful_outline,
-      cardBg: "bg-rose-50/70",
-      cardBorder: "border-rose-100",
-      innerBg: "bg-white/90",
-      iconWrapperBg: "bg-rose-100/60",
-      tint: "tint-rose-600",
-    },
-    2: {
-      title: "A bit low or tense",
-      description:
-        "Be gentle with yourself. Small actions can help clear your mind.",
-      icon: icons.mood_bad_outline,
-      cardBg: "bg-amber-50/70",
-      cardBorder: "border-amber-100",
-      innerBg: "bg-white/90",
-      iconWrapperBg: "bg-amber-100/60",
-      tint: "tint-amber-600",
-    },
-    3: {
-      title: "Feeling balanced",
-      description:
-        "You're holding a steady baseline today. Keep moving mindfully.",
-      icon: icons.mood_neutral_outline,
-      cardBg: "bg-slate-50",
-      cardBorder: "border-slate-200",
-      innerBg: "bg-white/80",
-      iconWrapperBg: "bg-slate-100",
-      tint: "tint-slate-500",
-    },
-    4: {
-      title: "Feeling good",
-      description: "Keep your positive energy going strong throughout the day.",
-      icon: icons.mood_good_outline,
-      cardBg: "bg-emerald-50/60",
-      cardBorder: "border-emerald-100",
-      innerBg: "bg-white/80",
-      iconWrapperBg: "bg-emerald-100/50",
-      tint: "tint-emerald-600",
-    },
-    5: {
-      title: "Feeling excellent!",
-      description:
-        "Thriving and full of peace! Wonderful moment to journal your joy.",
-      icon: icons.mood_great_outline,
-      cardBg: "bg-indigo-50/60",
-      cardBorder: "border-indigo-100",
-      innerBg: "bg-white/80",
-      iconWrapperBg: "bg-indigo-100/50",
-      tint: "tint-indigo-600",
-    },
-  };
-
-  return configs[rating];
-};
 
 // ─── CUSTOM HEADER COMPONENT ──────────────────────────────────────────────────
 const CustomHeader = (): React.JSX.Element => {
@@ -146,25 +64,6 @@ const CustomHeader = (): React.JSX.Element => {
   );
 };
 
-// ─── QUICK ACTION CARD COMPONENT ──────────────────────────────────────────────
-const ActionCard = ({
-  title,
-  color,
-  icon,
-  textColor,
-}: ActionCardProps): React.JSX.Element => {
-  return (
-    <TouchableOpacity
-      className={`${color} w-[30%] aspect-square rounded-2xl items-center justify-center p-3`}
-    >
-      <View className="bg-white/40 p-2 rounded-xl mb-2">
-        <Image source={icon} className="w-6 h-6" />
-      </View>
-      <Text className={`${textColor} text-sm font-semibold`}>{title}</Text>
-    </TouchableOpacity>
-  );
-};
-
 // ─── MAIN DASHBOARD SCREEN ───────────────────────────────────────────────────
 export default function DashboardScreen(): React.JSX.Element {
   const [activeCategory, setActiveCategory] = useState<string>("Activity");
@@ -172,6 +71,9 @@ export default function DashboardScreen(): React.JSX.Element {
 
   // Initialize to 5 (Excellent / Low Stress fallback baseline)
   const [moodAverage, setMoodAverage] = useState<number>(5);
+
+  // ─── Derive rounded rating (1–5) used by both bg and mood configs ────────
+  const moodRating = Math.min(Math.max(Math.round(moodAverage), 1), 5);
 
   const staticSuggestions: SuggestionItem[] = [];
 
@@ -194,12 +96,8 @@ export default function DashboardScreen(): React.JSX.Element {
       if (userMoods) {
         const avg = await calculateAverageDayStressLevel(userMoods);
         if (typeof avg === "number" && !isNaN(avg)) {
-          // Clamps backend results strictly between 1 and 10 parameters
           const clampedStress = Math.min(Math.max(avg, 1), 10);
-
-          // Scale Conversion Math: Inverts 1-10 (Stress) into 5-1 (Mood UI)
           const convertedMoodRating = 5 - (clampedStress - 1) * (4 / 9);
-
           setMoodAverage(convertedMoodRating);
         }
       }
@@ -208,8 +106,9 @@ export default function DashboardScreen(): React.JSX.Element {
     }
   }
 
-  // Generate layouts based on calculated metrics
-  const moodUI = getMoodSummaryConfig(moodAverage);
+  // ─── Derive layout configs from shared moodRating ────────────────────────
+  const moodUI = getMoodSummaryConfig(moodRating);
+  const bgConfig = getBackgroundConfig(moodRating);
 
   const parsedBackendSuggestions: SuggestionItem[] = recommendations.map(
     (item: any, idx: number) => ({
@@ -232,18 +131,18 @@ export default function DashboardScreen(): React.JSX.Element {
       <Stack.Screen
         options={{
           headerTitle: () => <CustomHeader />,
-          headerStyle: {
-            backgroundColor: "#F9FAF5",
-          },
+          // ── Header bg follows the stress-aware background ──────────────
+          headerStyle: { backgroundColor: bgConfig.screenBg },
           headerShadowVisible: false,
           headerLeft: () => null,
           headerBackVisible: false,
         }}
       />
 
-      <View className="flex-1 bg-[#F9FAF5]">
+      {/* ── Full-screen background driven by stress level ─────────────── */}
+      <View style={{ flex: 1, backgroundColor: bgConfig.screenBg }}>
         <ScrollView
-          className="flex-1"
+          style={{ flex: 1 }}
           contentContainerStyle={{
             paddingHorizontal: 24,
             paddingTop: 24,
