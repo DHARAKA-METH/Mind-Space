@@ -8,32 +8,123 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from "react-native";
+
 import { Stack } from "expo-router";
 import Slider from "@react-native-community/slider";
 import { Ionicons } from "@expo/vector-icons";
+
 import { icons } from "@/src/shared/assets/icons/icons";
 import { moods } from "@/src/shared/constants/mood.config";
 
+
+// FIREBASE
+import { db } from "@/src/config/firebase";
+import { addDoc, collection } from "firebase/firestore";
+
+// SERVICES (you will create these files)
+import { sanitizeMoodData } from "../services/sanitizeMood";
+import { detectRisk } from "../services/riskDetection";
+import { getMoodHistory,calculateHistoryAverage } from "../services/moodHistory";
+import { analyzeMoodWithAI } from "../services/aiService";
+import { calculateStress } from "../services/stressCalculator";
+import { getAuth } from "firebase/auth";
+
 export default function MoodCheckInScreen() {
-  const [selectedMood, setSelectedMood] = useState("Meh");
-  const [stressLevel, setStressLevel] = useState(4);
+  const [selectedMood, setSelectedMood] = useState("meh");
+  const [stressLevel, setStressLevel] = useState(2);
   const [note, setNote] = useState("");
+  const [loading, setLoading] = useState(false);
+  const auth = getAuth();
 
-  // Logic to handle the console output
-  const handleSave = () => {
-    const checkInData = {
-      mood: selectedMood,
-      stress: stressLevel,
-      journalNote: note,
-      timestamp: new Date().toISOString(),
-    };
+const userID = auth.currentUser;
+const userId = userID ? userID.uid : null;
 
-    
 
-    console.log("📝 Mood Check-in Saved:", checkInData);
-    // Add your navigation or API call here
-    setNote(""); 
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+
+      // 1. Sanitize input
+      const clean = sanitizeMoodData({
+        mood: selectedMood,
+        selfStress: stressLevel,
+        note: note,
+      });
+
+      // 2. Risk detection
+      if (detectRisk(clean.note)) {
+        Alert.alert(
+          "Support Notice",
+          "You seem overwhelmed. Please take a break or talk to someone."
+        );
+        return;
+      }
+
+      // 3. Get history
+      const history = await getMoodHistory(userId);
+      const historyAvg = calculateHistoryAverage(history);
+
+      // 4. Build AI payload
+      const payload = {
+        mood: clean.mood,
+        userStress: clean.selfStress,
+        note: clean.note,
+        historyAverage: historyAvg,
+      };
+
+      // 5. CALL AI (ONE CALL ONLY)
+      const aiResult = await analyzeMoodWithAI(payload);
+
+      // 6. Calculate final stress
+      const finalStress = calculateStress(
+        clean.selfStress,
+        aiResult.aiStressLevel,
+        historyAvg
+      );
+
+      // 7. Save mood entry
+      await addDoc(collection(db, "moodEntries"), {
+        userId,
+        mood: clean.mood,
+        selfStress: clean.selfStress,
+        aiStress: aiResult.aiStressLevel,
+        finalStress,
+        note: clean.note,
+        createdAt: new Date(),
+      });
+
+      // 8. Save recommendations
+      for (const rec of aiResult.recommendations || []) {
+        await addDoc(collection(db, "recommendations"), {
+          userId,
+          category: rec.category,
+          title: rec.title,
+          description: rec.description,
+          link: rec.link,
+          source: "AI",
+          createdAt: new Date(),
+          isDismissed: false,
+        });
+      }
+
+      Alert.alert(
+        "Saved",
+        `Stress Level: ${finalStress.toFixed(1)}`
+      );
+
+      // reset
+      setNote("");
+      setStressLevel(4);
+      setSelectedMood("meh");
+
+    } catch (error) {
+      console.log(error);
+      Alert.alert("Error", "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -44,27 +135,17 @@ export default function MoodCheckInScreen() {
       <Stack.Screen
         options={{
           headerTitle: "Mood Check-in",
-          headerTitleStyle: { fontWeight: "600", fontSize: 18 },
-          headerStyle: { backgroundColor: "#F9FAF5" },
           headerShadowVisible: false,
         }}
       />
 
-      <ScrollView
-        contentContainerStyle={{ paddingBottom: 120 }}
-        showsVerticalScrollIndicator={false}
-        className="px-6"
-      >
-        <View className="items-center mt-4 mb-8">
-          <Text className="text-gray-400 text-lg font-medium">
-            How are you feeling right now?
-          </Text>
-        </View>
+      <ScrollView className="px-6">
 
-        {/* MOOD SELECTION */}
-        <View className="flex-row justify-between mb-10">
+        {/* MOOD */}
+        <View className="flex-row justify-between mt-4 mb-10">
           {moods.map((mood) => {
-            const isActive = selectedMood === mood.id;
+            const active = selectedMood === mood.id;
+
             return (
               <TouchableOpacity
                 key={mood.id}
@@ -74,21 +155,18 @@ export default function MoodCheckInScreen() {
                 <View
                   style={{
                     backgroundColor: mood.bg,
-                    borderWidth: isActive ? 3 : 0,
+                    borderWidth: active ? 3 : 0,
                     borderColor: "#9D5BFF",
                   }}
                   className="w-14 h-14 rounded-[20px] items-center justify-center mb-2"
                 >
                   <Image
-                    source={isActive ? mood.icon : mood.outline}
+                    source={active ? mood.icon : mood.outline}
                     className="w-8 h-8"
-                    resizeMode="contain"
-                    style={{ opacity: isActive ? 1 : 0.6 }}
                   />
                 </View>
-                <Text
-                  className={`text-[12px] font-semibold ${isActive ? "text-dark" : "text-gray-400"}`}
-                >
+
+                <Text className="text-xs font-semibold">
                   {mood.label}
                 </Text>
               </TouchableOpacity>
@@ -96,74 +174,46 @@ export default function MoodCheckInScreen() {
           })}
         </View>
 
-        {/* STRESS LEVEL CARD */}
-        <View className="bg-white rounded-[32px] p-6 mb-6 border border-gray-50 shadow-sm">
-          <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-xl font-bold text-dark">Stress level</Text>
-            <Text className="text-2xl font-black text-dark">
-              {stressLevel} / 10
-            </Text>
-          </View>
+        {/* STRESS */}
+        <View className="bg-white p-6 rounded-3xl mb-6">
+          <Text className="text-xl font-bold">
+            Stress Level: {stressLevel}/10
+          </Text>
 
-          {/* SLIDER - Made more bold with thumb and track colors */}
           <Slider
-            style={{ width: "100%", height: 50 }} // Increased height for easier touch
             minimumValue={0}
             maximumValue={10}
             step={1}
             value={stressLevel}
             onValueChange={setStressLevel}
-            minimumTrackTintColor="#C8E86A" // Bright green for the "filled" part
-            maximumTrackTintColor="#E5E7EB" // Soft gray for the "unfilled" part
-            thumbTintColor="#1A1A1E" // Bold dark thumb
+            minimumTrackTintColor="#C8E86A"
+            maximumTrackTintColor="#E5E7EB"
+            thumbTintColor="#000"
           />
-
-          <View className="flex-row justify-between px-1">
-            <Text className="text-gray-400 font-bold text-[12px]">
-              😌 Relaxed
-            </Text>
-            <Text className="text-gray-400 font-bold text-[12px]">
-              🤯 Stressed
-            </Text>
-          </View>
         </View>
 
-        {/* JOURNAL SECTION */}
-        <View className="bg-white rounded-[32px] p-6 shadow-sm border border-gray-50">
-          <View className="flex-row items-center mb-4">
-            <View className="bg-[#FFF4E8] p-2 rounded-lg mr-3">
-              <Image
-                source={icons.journal}
-                className="w-5 h-5"
-                style={{ tintColor: "#FFB067" }}
-              />
-            </View>
-            <Text className="text-xl font-bold text-dark">Note</Text>
-          </View>
-
+        {/* NOTE */}
+        <View className="bg-white p-6 rounded-3xl">
           <TextInput
-            className="bg-[#F9FAF9] rounded-2xl p-5 h-32 text-dark text-base"
-            placeholder="Write what's on your mind today..."
-            placeholderTextColor="#ADB5BD"
-            multiline
-            textAlignVertical="top"
             value={note}
             onChangeText={setNote}
+            placeholder="Write your thoughts..."
+            multiline
+            className="h-32"
           />
         </View>
       </ScrollView>
 
-      {/* FIXED FOOTER BUTTON */}
-      <View className="absolute bottom-0 left-0 right-0 p-6 bg-[#F9FAF5]/90">
+      {/* BUTTON */}
+      <View className="p-6">
         <TouchableOpacity
-          onPress={handleSave} // Trigger console log
-          className="bg-[#1A1A1E] h-16 rounded-[24px] flex-row items-center justify-center shadow-xl"
-          activeOpacity={0.9}
+          onPress={handleSave}
+          disabled={loading}
+          className="bg-black h-14 rounded-2xl items-center justify-center"
         >
-          <Text className="text-[#E7F7A7] text-lg font-bold mr-2">
-            Save check-in
+          <Text className="text-white font-bold">
+            {loading ? "Saving..." : "Save Check-in"}
           </Text>
-          <Ionicons name="checkmark-circle" size={20} color="#E7F7A7" />
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
