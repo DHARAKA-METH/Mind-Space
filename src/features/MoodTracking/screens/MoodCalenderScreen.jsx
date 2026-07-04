@@ -74,7 +74,15 @@ export default function MoodCalendarScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-[#F8F9FC]">
-      <Stack.Screen options={{ headerTitle: "Mood Calendar" }} />
+     <Stack.Screen
+  options={{
+    headerTitle: "Mood Calendar",
+    headerShadowVisible: false,
+    headerStyle: {
+      backgroundColor: "#ffffff",
+    },
+  }}
+/>
 
       <ScrollView className="px-4 pt-4" showsVerticalScrollIndicator={false}>
         <View className="flex-row items-center justify-between mb-6 bg-white p-3 rounded-2xl shadow-sm">

@@ -1,98 +1,114 @@
-import { getGreeting, getGreetingIcon } from "@/src/core/utils/time";
-import { Stack } from "expo-router";
 import { getAuth } from "firebase/auth";
 import React, { useEffect, useState } from "react";
 import {
   Image,
-  ImageSourcePropType,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import { icons } from "../../../shared/assets/icons/icons";
-import { getUserRecommendations } from "../../Recommendations/services/recommendationsPool";
 import { calculateAverageDayStressLevel } from "../hooks/calculateAverageDayStressLevel";
 import { fetchMoodFromDb } from "../services/fetchFromDb";
-import { getMoodSummaryConfig, getBackgroundConfig } from "../hooks/others";
-import { ActionCard } from "../components/ActionCard";
+import { Stack } from "expo-router";
+import { icons } from "@/src/shared/assets/icons/icons";
 
-interface SuggestionItem {
-  id: string;
-  title: string;
-  subtitle: string;
-  points: string;
-  icon: ImageSourcePropType;
-  isBackendResource: boolean;
-}
+const ceylon = {
+  ink: "#3D2E1F",
+  muted: "#8A7A63",
+  mutedLight: "#B8A78C",
+  teaGreen: "#4A7856",
+};
 
-// ─── CUSTOM HEADER COMPONENT ──────────────────────────────────────────────────
-const CustomHeader = (): React.JSX.Element => {
+const DashboardHeader = React.memo(function DashboardHeader() {
   return (
-    <View className="flex-row justify-between items-center w-full px-4">
-      <View>
-        <Text className="text-gray-400 text-sm font-medium uppercase tracking-wider">
-          {getGreeting()}
-        </Text>
-        <View className="flex-row items-center mt-0.5">
-          <Text className="text-2xl font-bold text-gray-900">Alex Chen</Text>
-          <Text className="text-xl ml-1.5">{getGreetingIcon()}</Text>
-        </View>
+    <View className="flex-row justify-between items-center  px-4 pt-4 pb-2">
+      <View className="w-10 h-10 rounded-full items-center justify-center bg-white">
+        <View
+          style={{
+            width: 12,
+            height: 12,
+            backgroundColor: "#000",
+            transform: [{ rotate: "45deg" }],
+            borderRadius: 2,
+          }}
+        />
       </View>
 
       <View className="flex-row items-center gap-3">
-        <TouchableOpacity className="bg-gray-100 p-2.5 rounded-full">
+        <TouchableOpacity className="w-10 h-10 rounded-full items-center justify-center bg-white">
           <Image
             source={icons.notification}
-            className="w-5 h-5 tint-gray-700"
+            className="w-5 h-5"
+            style={{ tintColor: "#000" }}
             resizeMode="contain"
           />
         </TouchableOpacity>
-
         <View className="relative">
-          <TouchableOpacity className="p-0.5 rounded-full border border-gray-200">
+          <TouchableOpacity className="w-10 h-10 rounded-full items-center justify-center border border-[#f0e4d3] bg-white">
             <Image
               source={icons.profile}
               className="w-8 h-8 rounded-full"
+              style={{ tintColor: "#000" }}
               resizeMode="cover"
             />
           </TouchableOpacity>
-          <View className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white" />
+          <View
+            className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white"
+            style={{ backgroundColor: ceylon.teaGreen }}
+          />
         </View>
       </View>
     </View>
   );
+});
+
+const DotGrid = (): React.JSX.Element => {
+  const rows = 4;
+  const cols = 7;
+  return (
+    <View
+      style={{ position: "absolute", left: -10, bottom: -10, opacity: 0.5 }}
+      pointerEvents="none"
+    >
+      {Array.from({ length: rows }).map((_, r) => (
+        <View key={`dot-row-${r}`} style={{ flexDirection: "row" }}>
+          {Array.from({ length: cols }).map((_, c) => (
+            <View
+              key={`dot-${r}-${c}`}
+              style={{
+                width:10,
+                height:10,
+                borderRadius: 10,
+                margin: 5,
+                backgroundColor: ceylon.teaGreen,
+                opacity: (r + c) % 3 === 0 ? 0.6 : 0.25,
+              }}
+            />
+          ))}
+        </View>
+      ))}
+    </View>
+  );
 };
 
-// ─── MAIN DASHBOARD SCREEN ───────────────────────────────────────────────────
-export default function DashboardScreen(): React.JSX.Element {
-  const [activeCategory, setActiveCategory] = useState<string>("Activity");
-  const [recommendations, setRecommendations] = useState<any[]>([]);
-
-  // Initialize to 5 (Excellent / Low Stress fallback baseline)
+const DashboardScreen = () => {
   const [moodAverage, setMoodAverage] = useState<number>(5);
+  const [weeklyProgress, setWeeklyProgress] = useState<number>(0);
 
-  // ─── Derive rounded rating (1–5) used by both bg and mood configs ────────
-  const moodRating = Math.min(Math.max(Math.round(moodAverage), 1), 5);
-
-  const staticSuggestions: SuggestionItem[] = [];
+  const auth = getAuth();
+  const userID = auth.currentUser;
+  const userId = userID ? userID.uid : null;
 
   useEffect(() => {
-    loadRecommendations();
+    loadMoodData();
   }, []);
 
-  async function loadRecommendations(): Promise<void> {
+  async function loadMoodData(): Promise<void> {
     try {
-      const user = getAuth().currentUser;
-      if (!user) return;
-
-      const data = await getUserRecommendations(user.uid);
-      if (data && Array.isArray(data)) {
-        const activeData = data.filter((item: any) => !item.isDismissed);
-        setRecommendations(activeData);
-      }
-
-      const userMoods = await fetchMoodFromDb(user.uid);
+      if (!userId) return;
+      const userMoods = await fetchMoodFromDb(userId);
       if (userMoods) {
         const avg = await calculateAverageDayStressLevel(userMoods);
         if (typeof avg === "number" && !isNaN(avg)) {
@@ -100,199 +116,75 @@ export default function DashboardScreen(): React.JSX.Element {
           const convertedMoodRating = 5 - (clampedStress - 1) * (4 / 9);
           setMoodAverage(convertedMoodRating);
         }
+        const loggedDays = Array.isArray(userMoods) ? userMoods.length : 0;
+        setWeeklyProgress(Math.min(Math.round((loggedDays / 7) * 100), 100));
       }
     } catch (error) {
-      console.error("Failed to load recommendations:", error);
+      console.error("Failed to load mood data:", error);
     }
   }
-
-  // ─── Derive layout configs from shared moodRating ────────────────────────
-  const moodUI = getMoodSummaryConfig(moodRating);
-  const bgConfig = getBackgroundConfig(moodRating);
-
-  const parsedBackendSuggestions: SuggestionItem[] = recommendations.map(
-    (item: any, idx: number) => ({
-      id: item.recommendationId || `backend-${idx}`,
-      title: item.title || "Activity Suggestion",
-      subtitle: item.description || "Personalized wellness recommendation",
-      points: "Recommended",
-      icon: item.category === "meditation" ? icons.meditate : icons.heart,
-      isBackendResource: true,
-    }),
-  );
-
-  const combinedSuggestions: SuggestionItem[] = [
-    ...parsedBackendSuggestions,
-    ...staticSuggestions,
-  ].slice(0, 3);
 
   return (
     <>
       <Stack.Screen
         options={{
-          headerTitle: () => <CustomHeader />,
-          // ── Header bg follows the stress-aware background ──────────────
-          headerStyle: { backgroundColor: bgConfig.screenBg },
+          headerTitle: "",
           headerShadowVisible: false,
-          headerLeft: () => null,
-          headerBackVisible: false,
+          headerStyle: {
+            backgroundColor: "#f4e7e2",
+          },
         }}
       />
-
-      {/* ── Full-screen background driven by stress level ─────────────── */}
-      <View style={{ flex: 1, backgroundColor: bgConfig.screenBg }}>
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{
-            paddingHorizontal: 24,
-            paddingTop: 24,
-            paddingBottom: 40,
-          }}
-          showsVerticalScrollIndicator={false}
-          bounces={false}
-        >
-          {/* CATEGORY ROW */}
-          <View className="flex-row gap-2 mb-6">
-            {["Activity", "Mood", "Food", "Sleep"].map((cat) => (
-              <TouchableOpacity
-                key={`cat-tab-${cat}`}
-                onPress={() => setActiveCategory(cat)}
-                className={`px-4 py-2 rounded-full border ${
-                  activeCategory === cat
-                    ? "bg-gray-900 border-gray-900"
-                    : "bg-white border-gray-200"
-                }`}
-              >
-                <Text
-                  className={`text-xs font-semibold tracking-wide ${
-                    activeCategory === cat ? "text-white" : "text-gray-500"
-                  }`}
-                >
-                  {cat}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {/* DYNAMIC MOOD CARD */}
-          <View
-            className={`${moodUI.cardBg} border ${moodUI.cardBorder} rounded-2xl p-5 mb-6`}
-          >
-            <View className="flex-row justify-between items-center mb-3">
-              <Text className="text-lg font-bold text-gray-800">
-                Today&rsquo;s Summary
-              </Text>
-              <Text className="text-gray-400 font-medium">···</Text>
-            </View>
-
-            <View
-              className={`flex-row items-center justify-between ${moodUI.innerBg} rounded-xl p-4 border border-slate-100/20`}
-            >
-              <View className="flex-1 pr-3">
-                <Text className="text-gray-900 font-semibold text-base mb-0.5">
-                  {moodUI.title}
-                </Text>
-                <Text className="text-gray-500 text-xs leading-relaxed">
-                  {moodUI.description}
-                </Text>
-              </View>
-
-              <View className={`${moodUI.iconWrapperBg} p-2.5 rounded-xl`}>
-                <Image
-                  source={moodUI.icon}
-                  className={`w-8 h-8 ${moodUI.tint}`}
-                />
-              </View>
-            </View>
-          </View>
-
-          {/* ACTIONS HEADER */}
-          <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-lg font-bold text-gray-800">
-              Quick Actions
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1 bg-white"
+      >
+        <View className="bg-[#f4e7e2] mt-[-15px]">
+          <DashboardHeader />
+        </View>
+        <ScrollView className="bg-white" showsVerticalScrollIndicator={false}>
+          <View className="bg-[#f4e7e2] rounded-b-[10%] mb-10 px-6 pb-6 pt-6">
+            <Text className="text-gray-400 text-sm tracking-wide mt-5 mb-2 uppercase">
+              Daily reflection
             </Text>
-            <TouchableOpacity>
-              <Text className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                See all
-              </Text>
-            </TouchableOpacity>
+            <Text className="text-4xl text-gray-900 mb-3">
+              Hello, Max 👋
+            </Text>
+
+            <Text className="text-5xl font-light text-gray-900 mb-9" style={{ letterSpacing: 6 }}>
+              How do you feel about your{" "}
+              <Text className="font-bold text-gray-900">current emotions?</Text>
+            </Text>
           </View>
 
-          {/* ACTION CARDS */}
-          <View className="flex-row justify-between mb-6">
-            <ActionCard
-              title="Meditate"
-              color="bg-purple-50/80 border border-purple-100"
-              icon={icons.meditate}
-              textColor="text-purple-700"
-            />
-            <ActionCard
-              title="Journal"
-              color="bg-orange-50/80 border border-orange-100"
-              icon={icons.journal}
-              textColor="text-orange-700"
-            />
-            <ActionCard
-              title="Talk"
-              color="bg-blue-50/80 border border-blue-100"
-              icon={icons.talk}
-              textColor="text-blue-700"
-            />
-          </View>
-
-          {/* SUGGESTIONS FEED LIST */}
-          <View className="mb-6">
-            <View className="flex-row justify-between items-center mb-4">
-              <Text className="text-lg font-bold text-gray-800">
-                Recommended For You
+          <View className="rounded-[24px] p-5 mx-6 mt-6 overflow-hidden bg-white">
+            <View className="flex-row justify-between items-center mb-6">
+              <Text className="text-base font-bold" style={{ color: ceylon.ink }}>
+                Your progress
               </Text>
             </View>
-
-            {combinedSuggestions.length === 0 ? (
-              <View className="bg-white border border-gray-100 p-8 rounded-2xl items-center justify-center">
-                <Text className="text-gray-400 text-sm">
-                  All caught up for today.
-                </Text>
-              </View>
-            ) : (
-              combinedSuggestions.map((item) => (
-                <TouchableOpacity
-                  key={`suggestion-card-${item.id}`}
-                  className="bg-white border border-gray-100 p-4 rounded-2xl flex-row items-start justify-between mb-3 shadow-sm shadow-gray-100/40"
-                >
-                  <View className="flex-row items-start flex-1">
-                    <View className="bg-gray-50 p-2.5 rounded-xl border border-gray-100 mr-3 mt-0.5">
-                      <Image
-                        source={item.icon}
-                        className="w-5 h-5 tint-gray-700"
-                        resizeMode="contain"
-                      />
-                    </View>
-
-                    <View className="flex-1 pr-2">
-                      <Text
-                        className="text-gray-900 font-semibold text-sm"
-                        numberOfLines={1}
-                      >
-                        {item.title}
-                      </Text>
-                      <Text className="text-gray-400 text-xs mt-1 leading-relaxed">
-                        {item.subtitle}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View className="bg-gray-50 px-2.5 py-1 rounded-md border border-gray-100 ml-2 mt-0.5">
-                    <Text className="text-gray-500 font-medium text-[11px] tracking-wide">
-                      {item.points}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              ))
-            )}
+            <View className="flex-row items-end justify-between">
+              <Text
+                className="text-5xl font-extrabold"
+                style={{ color: ceylon.ink }}
+              >
+                {weeklyProgress}%
+              </Text>
+              <Text
+                className="text-xs text-right leading-relaxed mb-1"
+                style={{ color: ceylon.muted, maxWidth: 120 }}
+              >
+                Of the weekly plan completed
+              </Text>
+            </View>
+            <View className="mt-20" style={{ height: 56 }}>
+              <DotGrid/>
+            </View>
           </View>
         </ScrollView>
-      </View>
+      </KeyboardAvoidingView>
     </>
   );
-}
+};
+
+export default DashboardScreen;
