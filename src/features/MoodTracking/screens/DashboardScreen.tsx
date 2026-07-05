@@ -314,7 +314,7 @@ const DashboardScreen = () => {
 
                 <PulsingMoodButton moodId={selectedMood} active={true}>
                   <TouchableOpacity
-                    onPress={() => router.push("/(tabs)/(mood)/moodCheckIn")}
+                    onPress={() => router.push(`/(tabs)/(mood)/moodCheckIn?selectedMood=${selectedMood}`)}
                     activeOpacity={0.7}
                     className="items-center justify-center"
                     style={{
