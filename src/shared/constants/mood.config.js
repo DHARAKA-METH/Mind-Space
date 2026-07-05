@@ -19,40 +19,45 @@ export const MONTH_NAMES = [
 ];
 
 
-  export const moods = [
-    {
-      id: "Awful",
-      label: "Awful",
-      bg: "#FFD6D6",
-      icon: icons.mood_awful_filled,
-      outline: icons.mood_awful_outline,
-    },
-    {
-      id: "Bad",
-      label: "Bad",
-      bg: "#FFE3C2",
-      icon: icons.mood_bad_filled,
-      outline: icons.mood_bad_outline,
-    },
-    {
-      id: "Meh",
-      label: "Meh",
-      bg: "#E9DDFF",
-      icon: icons.mood_neutral_filled,
-      outline: icons.mood_neutral_outline,
-    },
-    {
-      id: "Good",
-      label: "Good",
-      bg: "#D9F1FF",
-      icon: icons.mood_good_filled,
-      outline: icons.mood_good_outline,
-    },
-    {
-      id: "Great",
-      label: "Great",
-      bg: "#E7F7A7",
-      icon: icons.mood_great_filled,
-      outline: icons.mood_great_outline,
-    },
-  ];
+export const moods = [
+  {
+    id: "Awful",
+    label: "Awful",
+    bg: "#F7DDD6",       // warm muted rose — signals discomfort without alarm
+    color: "#B5555C",    // accent: dusty red
+    icon: icons.mood_awful_filled,
+    outline: icons.mood_awful_outline,
+  },
+  {
+    id: "Bad",
+    label: "Bad",
+    bg: "#F4E3CE",       // warm sand-terracotta — matches app's terracotta family
+    color: "#C97B4A",    // accent: terracotta (reuses existing ceylon.terracotta)
+    icon: icons.mood_bad_filled,
+    outline: icons.mood_bad_outline,
+  },
+  {
+    id: "Meh",
+    label: "Meh",
+    bg: "#EDE6D9",       // neutral warm sand — sits at the exact midpoint
+    color: "#B8A78C",    // accent: muted taupe (reuses ceylon.mutedLight)
+    icon: icons.mood_neutral_filled,
+    outline: icons.mood_neutral_outline,
+  },
+  {
+    id: "Good",
+    label: "Good",
+    bg: "#DCEBDD",       // soft sage-green — calm, positive
+    color: "#7C9885",    // accent: sage
+    icon: icons.mood_good_filled,
+    outline: icons.mood_good_outline,
+  },
+  {
+    id: "Great",
+    label: "Great",
+    bg: "#CFE3D2",       // deeper sage-green — most saturated positive tone
+    color: "#4A7856",    // accent: tea green (reuses ceylon.teaGreen)
+    icon: icons.mood_great_filled,
+    outline: icons.mood_great_outline,
+  },
+];

@@ -132,6 +132,7 @@ const DashboardScreen = () => {
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [noteOpen, setNoteOpen] = useState(false);
+  const [userName, setUserName] = useState<string>("");
 
   const auth = getAuth();
   const userID = auth.currentUser;
@@ -149,9 +150,13 @@ const DashboardScreen = () => {
       if (!userId) return;
       const userSnap = await getDoc(doc(db, "users", userId));
       if (userSnap.exists()) {
-        const status = userSnap.data().currentMoodStatus;
+        const data = userSnap.data();
+        const status = data.currentMoodStatus;
         if (status && STATUS_TO_MOOD_ID[status]) {
           setSelectedMood(STATUS_TO_MOOD_ID[status]);
+        }
+        if (data.name) {
+          setUserName(data.name);
         }
       }
     } catch (error) {
@@ -186,7 +191,7 @@ const DashboardScreen = () => {
           headerBackVisible: false,
           headerShadowVisible: false,
           headerStyle: {
-            backgroundColor: "#f4e7e2",
+            backgroundColor: currentMoodObj?.bg || "#f4e7e2",
           },
         }}
       />
@@ -198,29 +203,42 @@ const DashboardScreen = () => {
           className="bg-[#ece6e3]"
           showsVerticalScrollIndicator={false}
         >
-          <View className="bg-[#f4e7e2] rounded-b-[10%] mb-4 px-6 pb-6 pt-6 mt-[-10px]">
+          <View
+            className="rounded-b-[10%] mb-4 px-6 pb-6 pt-6 mt-[-10px]"
+            style={{ backgroundColor: currentMoodObj?.bg || "#f4e7e2" }}
+          >
             <Text className="text-gray-400 text-sm tracking-wide mt-5 mb-2 uppercase">
               Daily reflection
             </Text>
-            <Text className="text-4xl text-gray-900 mb-3">Hello, Max 👋</Text>
+            <Text className="text-4xl text-gray-900 mb-3">
+              Hello, {userName || "there"} 👋
+            </Text>
 
             <Text
-              className="text-5xl font-light text-gray-900 mb-9"
-              style={{ letterSpacing: 6 }}
+              className="text-5xl text-gray-900 mb-9"
+              style={{
+                letterSpacing: 6,
+                fontWeight: "200",
+                fontStyle: "italic",
+              }}
             >
               How do you feel about your{" "}
-              <Text className="font-bold text-gray-900">current emotions?</Text>
+              <Text className="font-bold text-gray-500">current emotions?</Text>
             </Text>
           </View>
 
-          <View className=" mt-[-30px]">
+          <View className=" mt-[-10px]">
             {/* Mood picker */}
-            <View className="flex-row justify-between items-center mb-3">
+            <View className="flex-row justify-between items-center mt-2 uppercase">
               <Text
-                className="text-lg font-bold ml-8"
-                style={{ color: ceylon.ink }}
+                className="text-gray-400 text-lg tracking-wide ml-8"
+                style={{
+                  letterSpacing: 6,
+                  fontWeight: "400",
+                  fontStyle: "italic",
+                }}
               >
-                How are you feeling?
+                Mood Check-In
               </Text>
             </View>
             <View className="flex-row justify-between mb-4 p-4">
