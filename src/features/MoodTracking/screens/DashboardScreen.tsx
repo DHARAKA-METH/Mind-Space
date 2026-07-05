@@ -16,6 +16,7 @@ import { calculateAverageDayStressLevel } from "../hooks/calculateAverageDayStre
 import { fetchMoodFromDb } from "../services/fetchFromDb";
 import { db } from "@/src/config/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { PulsingMoodButton } from "./PulsingCheckInBorder";
 
 const ceylon = {
   ink: "#3D2E1F",
@@ -278,7 +279,7 @@ const DashboardScreen = () => {
                   backgroundColor: "#fff",
                   width: "100%",
                   height: "100%",
-                  borderRadius:35,
+                  borderRadius: 35,
                   shadowColor: "#000",
                   shadowOpacity: 0.06,
                   shadowRadius: 16,
@@ -287,35 +288,37 @@ const DashboardScreen = () => {
                 }}
               >
                 <Text
-                  className="text-xs font-bold tracking-widest uppercase mb-4"
+                  className="text-xs font-bold tracking-widest uppercase mb-7"
                   style={{ color: ceylon.terracotta }}
                 >
                   Check In
                 </Text>
 
-                <TouchableOpacity
-                  onPress={() => router.push("/(tabs)/(mood)/moodCheckIn")}
-                  activeOpacity={0.7}
-                  className="items-center justify-center mb-5"
-                  style={{
-                    width: 92,
-                    height: 92,
-                    borderRadius: 46,
-                    backgroundColor: "#fff",
-                    shadowColor: "#000",
-                    shadowOpacity: 0.12,
-                    shadowRadius: 14,
-                    shadowOffset: { width: 0, height: 5 },
-                    borderWidth: 1.5,
-                    borderColor: ceylon.terracotta,
-                  }}
-                >
-                  <Image
-                    source={currentMoodObj?.icon}
-                    className="w-14 h-14"
-                    resizeMode="contain"
-                  />
-                </TouchableOpacity>
+                <PulsingMoodButton moodId={selectedMood} active={true}>
+                  <TouchableOpacity
+                    onPress={() => router.push("/(tabs)/(mood)/moodCheckIn")}
+                    activeOpacity={0.7}
+                    className="items-center justify-center"
+                    style={{
+                      width: 92,
+                      height: 92,
+                      borderRadius: 46,
+                      backgroundColor: "#fff",
+                      shadowColor: "#000",
+                      shadowOpacity: 0.12,
+                      shadowRadius: 14,
+                      shadowOffset: { width: 0, height: 5 },
+                      borderWidth: 1.5,
+                      borderColor: ceylon.terracotta,
+                    }}
+                  >
+                    <Image
+                      source={currentMoodObj?.icon}
+                      className="w-14 h-14"
+                      resizeMode="contain"
+                    />
+                  </TouchableOpacity>
+                </PulsingMoodButton>
 
                 <Text
                   className="text-xl font-bold mb-2"
