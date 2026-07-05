@@ -199,8 +199,6 @@ export default function MoodCheckInScreen() {
             className="h-32"
           />
         </View>
-      </ScrollView>
-
       {/* BUTTON */}
       <View className="p-6">
         <TouchableOpacity
@@ -213,6 +211,8 @@ export default function MoodCheckInScreen() {
           </Text>
         </TouchableOpacity>
       </View>
+      </ScrollView>
+
     </KeyboardAvoidingView>
   );
 }
