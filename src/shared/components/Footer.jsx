@@ -36,7 +36,7 @@ const Footer = ({ activeTab, setActiveTab }) => {
 
   return (
     <View  pointerEvents="box-none" className=" absolute bottom-12 left-0 right-0 items-center">
-      <View className="bg-white rounded-full flex-row items-center justify-center px-6 py-6 gap-2 shadow-lg shadow-black/30">
+      <View className="bg-white rounded-full border border-[#ebb557] flex-row items-center justify-center px-6 py-6 gap-2 shadow-lg shadow-black/20">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.name;
           return (

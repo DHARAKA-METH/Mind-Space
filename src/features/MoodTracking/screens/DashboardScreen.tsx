@@ -14,6 +14,8 @@ import {
 } from "react-native";
 import { calculateAverageDayStressLevel } from "../hooks/calculateAverageDayStressLevel";
 import { fetchMoodFromDb } from "../services/fetchFromDb";
+import { db } from "@/src/config/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 const ceylon = {
   ink: "#3D2E1F",
@@ -107,9 +109,33 @@ const DashboardScreen = () => {
   const userID = auth.currentUser;
   const userId = userID ? userID.uid : null;
 
+  const STATUS_TO_MOOD_ID: Record<string, string> = {
+    awful: "Awful",
+    bad: "Bad",
+    neutral: "Meh",
+    good: "Good",
+    great: "Great",
+  };
+
   useEffect(() => {
     loadMoodData();
+    loadCurrentMood();
   }, []);
+
+  async function loadCurrentMood() {
+    try {
+      if (!userId) return;
+      const userSnap = await getDoc(doc(db, "users", userId));
+      if (userSnap.exists()) {
+        const status = userSnap.data().currentMoodStatus;
+        if (status && STATUS_TO_MOOD_ID[status]) {
+          setSelectedMood(STATUS_TO_MOOD_ID[status]);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to load current mood status:", error);
+    }
+  }
 
   async function loadMoodData(): Promise<void> {
     try {
@@ -138,9 +164,7 @@ const DashboardScreen = () => {
           headerBackVisible: false,
           headerShadowVisible: false,
           headerStyle: {
-            backgroundColor: selectedMood
-              ? (moods.find((m) => m.id === selectedMood)?.bg ?? "#f4e7e2")
-              : "#f4e7e2",
+            backgroundColor:"#f4e7e2",
           },
         }}
       />
@@ -148,7 +172,7 @@ const DashboardScreen = () => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1 bg-white"
       >
-        <ScrollView className="bg-white" showsVerticalScrollIndicator={false}>
+        <ScrollView className="bg-[#ece6e3]" showsVerticalScrollIndicator={false}>
           <View className="bg-[#f4e7e2] rounded-b-[10%] mb-10 px-6 pb-6 pt-6">
             <Text className="text-gray-400 text-sm tracking-wide mt-5 mb-2 uppercase">
               Daily reflection
@@ -164,7 +188,7 @@ const DashboardScreen = () => {
             </Text>
           </View>
 
-          <View className="px-6 bg-white">
+          <View className="p-4 mt-[-30px] bg-[#f4e7e2] ">
             <View className="flex-row justify-between items-center mb-5">
               <Text className="text-lg font-bold" style={{ color: ceylon.ink }}>
                 How are you feeling?
@@ -187,9 +211,9 @@ const DashboardScreen = () => {
                     className="items-center"
                   >
                     <View
-                      className="items-center justify-center rounded-2xl p-3"
+                      className="items-center justify-center rounded-full p-3 overflow-hidden"
                       style={{
-                        backgroundColor: isSelected ? mood.bg : "transparent",
+                        backgroundColor: isSelected ? "#ffffff" : "transparent",
                       }}
                     >
                       <Image
@@ -213,13 +237,13 @@ const DashboardScreen = () => {
             </View>
           </View>
 
-          <View className="rounded-[24px] p-5 mx-6 mt-2 overflow-hidden bg-white">
+          <View className="w-full h-full rounded-[40px] p-5 mt-2 overflow-hidden  bg-white">
             <View className="flex-row justify-between items-center mb-6">
               <Text
                 className="text-base font-bold"
                 style={{ color: ceylon.ink }}
               >
-                Your progress
+                Your Contribution to the Week
               </Text>
             </View>
             <View className="flex-row items-end justify-between">
