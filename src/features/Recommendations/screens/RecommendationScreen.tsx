@@ -4,17 +4,17 @@ import {
   Text,
   TextInput,
   ScrollView,
+  FlatList,
   TouchableOpacity,
-  SafeAreaView,
   Alert,
   Linking,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
   Search,
-  Play,
   Bookmark,
-  Music,
-  Video,
+  Play,
+  Music2,
   Wind,
   X,
   Sparkles,
@@ -24,33 +24,22 @@ import { Stack } from "expo-router";
 import { getAuth } from "firebase/auth";
 import { getUserRecommendations } from "../services/recommendationsPool";
 
-// Move tracking configs outside the function block to ensure strict identity reference stability
-const FILTER_TAGS = [
-  {
-    id: "music",
-    label: "Music",
-    emoji: "🎵",
-    styles: "bg-yellow-100 text-yellow-700 border-yellow-400",
-  },
-  {
-    id: "meditation",
-    label: "Meditation",
-    emoji: "🧘‍♂️",
-    styles: "bg-blue-100 text-blue-700 border-blue-400",
-  },
-  {
-    id: "activity",
-    label: "Activities & Tips",
-    emoji: "⚡",
-    styles: "bg-teal-100 text-teal-700 border-teal-400",
-  },
+const CATEGORY_TAGS = [
+  { id: "music", label: "Music", icon: "music", color: "#D98E73", bg: "#F6E4DA" },
+  { id: "activity", label: "Tips & Tricks", icon: "wind", color: "#C97B63", bg: "#F3E1DB" },
 ];
+
+function TagIcon({ id, size = 24, color = "#2F2A25" }: { id: string; size?: number; color?: string }) {
+  if (id === "music") return <Music2 size={size} color={color} />;
+  return <Wind size={size} color={color} />;
+}
 
 export default function WellnessScreen() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTag, setSelectedTag] = useState("music");
+  const [selectedTag, setSelectedTag] = useState("activity");
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [dismissedHeroId, setDismissedHeroId] = useState<string | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
     loadRecommendations();
@@ -64,10 +53,10 @@ export default function WellnessScreen() {
       const data = await getUserRecommendations(user.uid);
       if (data && Array.isArray(data)) {
         const activeData = data.filter((item: any) => !item.isDismissed);
-        setRecommendations(activeData);
+        setRecommendations(activeData.slice(0, 5));
       }
     } catch (error) {
-      console.error("Failed to balance and load recommendations:", error);
+      console.error("Failed to load recommendations:", error);
     }
   }
 
@@ -78,213 +67,315 @@ export default function WellnessScreen() {
       if (canOpen) {
         await Linking.openURL(url);
       } else {
-        Alert.alert(
-          "Redirecting",
-          `Opening active media resource link:\n${url}`
-        );
+        Alert.alert("Redirecting", `Opening link:\n${url}`);
       }
     } catch {
-      Alert.alert(
-        "Navigation Error",
-        "Could not execute system media routing navigation."
-      );
+      Alert.alert("Navigation Error", "Could not open the link.");
     }
   };
 
   const handleDismissItem = (id: string) => {
     setRecommendations((prev) =>
       prev.map((item) =>
-        item.recommendationId === id ? { ...item, isDismissed: true } : item
+        item.id === id ? { ...item, isDismissed: true } : item
       )
     );
   };
 
-  const activeHeroItems = recommendations.filter(
-    (item) => !item.isDismissed && item.recommendationId !== dismissedHeroId
+  const activeItems = recommendations.filter(
+    (item) => !item.isDismissed && item.id !== dismissedHeroId
   );
-  
-  const mainItem = activeHeroItems.length > 0 ? activeHeroItems[0] : null;
 
-  const listFeedPool = mainItem 
-    ? activeHeroItems.slice(1) 
-    : recommendations.filter((item) => !item.isDismissed);
+  const dailyItem = activeItems.find(
+    (item) => item.link && (item.link.includes("youtube.com") || item.link.includes("youtu.be"))
+  ) || (activeItems.length > 0 ? activeItems[0] : null);
 
-  const visibleRecommendations = listFeedPool.filter((item) => {
-    const matchesTab = item.category === selectedTag;
-    const matchesSearch =
-      item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesTab && matchesSearch;
-  });
+  const pool = activeItems.filter(
+    (item) => !dailyItem || item.id !== dailyItem.id
+  );
+
+  const bySearch = (item: any) =>
+    !searchQuery ||
+    item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.description?.toLowerCase().includes(searchQuery.toLowerCase());
+
+  const musicItems = pool.filter((i) => i.category === "music" && bySearch(i));
+  const tipItems = pool.filter((i) => i.category !== "music" && bySearch(i));
 
   return (
     <>
-      <Stack.Screen
+            <Stack.Screen
         options={{
-          headerTitle: "Meditation & Mindfulness 🌿",
-          headerTitleStyle: { fontWeight: "600", fontSize: 18 },
-          headerStyle: { backgroundColor: "#F9FAF5" },
           headerShadowVisible: false,
-          headerLeft: () => null,
-          headerBackVisible: false,
+          headerStyle: {
+            backgroundColor: "#FAF7F2",
+          },
+          headerTitle: () => (
+            <View className="flex-1 w-full">
+              <View className="flex-row items-start justify-between">
+                <View className="pr-8 flex-1">
+                  <Text className="text-[26px] font-bold text-[#2F2A25]">Wellness Hub</Text>
+                  <Text className="text-[13px] text-[#948C7F] mt-2 leading-5">
+                    Discover resources to relax, learn, and improve your wellbeing.
+                  </Text>
+                </View>
+                <View className="flex-row items-center gap-2">
+                  <TouchableOpacity
+                    onPress={() => setSearchOpen((v) => !v)}
+                    className="w-10 h-10 rounded-full bg-white items-center justify-center"
+                    style={{ shadowColor: "#000", shadowOpacity: 0.06, shadowRadius: 6, shadowOffset: { width: 0, height: 2 } }}
+                  >
+                    <Search size={18} color="#2F2A25" />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    className="w-10 h-10 rounded-full bg-white items-center justify-center"
+                    style={{ shadowColor: "#000", shadowOpacity: 0.06, shadowRadius: 6, shadowOffset: { width: 0, height: 2 } }}
+                  >
+                    <Bookmark size={18} color="#2F2A25" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+              {searchOpen && (
+                <View className="flex-row items-center bg-white rounded-full px-4 py-3 mt-3" style={{ shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 8, shadowOffset: { width: 0, height: 2 } }}>
+                  <Search size={18} color="#948C7F" />
+                  <TextInput
+                    placeholder="Search suggestions"
+                    placeholderTextColor="#B8B0A2"
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    className="flex-1 text-[15px] text-[#2F2A25] p-0 ml-2"
+                    autoFocus
+                  />
+                  {searchQuery.length > 0 && (
+                    <TouchableOpacity onPress={() => setSearchQuery("")}>
+                      <X size={16} color="#B8B0A2" />
+                    </TouchableOpacity>
+                  )}
+                </View>
+              )}
+            </View>
+          ),
         }}
       />
-      <SafeAreaView className="flex-1 bg-white">
-        <ScrollView showsVerticalScrollIndicator={false} className="px-6 pt-4">
-          
-          {/* Global Filter Search bar layout */}
-          <View className="flex-row items-center bg-gray-100 rounded-full px-4 py-3 mb-6">
-            <Search size={20} color="#9ca3af" className="mr-2" />
-            <TextInput
-              placeholder="Search suggestions"
-              placeholderTextColor="#9ca3af"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              className="flex-1 text-base text-gray-800 p-0"
-            />
-          </View>
+      <SafeAreaView className="flex-1 bg-[#FAF7F2]">
+        <ScrollView showsVerticalScrollIndicator={false} className="px-6 mt-[-20px]" contentContainerStyle={{ paddingBottom: 48 }}>
 
-          {/* Filter Tabs matching DB Stress Rule Engine Categories */}
-          <View className="flex-row justify-start space-x-3 mb-6 gap-2 flex-wrap">
-            {FILTER_TAGS.map((tag) => {
-              const isSelected = selectedTag === tag.id;
-              return (
-                <TouchableOpacity
-                  key={`filter-tab-${tag.id}`} // Enforced explicit namespace key wrapper
-                  onPress={() => setSelectedTag(tag.id)}
-                  className={`flex-row items-center px-4 py-2 rounded-full mb-1 ${
-                    isSelected
-                      ? `${tag.styles} border scale-105`
-                      : "bg-gray-100 text-gray-600"
-                  }`}
-                >
-                  <Text className="text-sm mr-1">{tag.emoji}</Text>
-                  <Text className="font-semibold text-sm">{tag.label}</Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-
-          {/* PRIMARY HERO SELECTION CARD (LATEST ENTRY) */}
-          {mainItem && (
+          {/* Hero - YouTube video */}
+          {dailyItem && (
             <TouchableOpacity
-              className="bg-purple-50 rounded-3xl p-5 mb-8 relative overflow-hidden"
-              activeOpacity={0.9}
-              onPress={() => handleMediaRedirect(mainItem.link)}
+              activeOpacity={0.92}
+              onPress={() => handleMediaRedirect(dailyItem.link)}
+              className="rounded-[24px] p-6 mb-8 overflow-hidden bg-[#7C9885]"
+              style={{ shadowColor: "#7C9885", shadowOpacity: 0.35, shadowRadius: 16, shadowOffset: { width: 0, height: 8 } }}
             >
-              <View className="flex-row justify-between items-center mb-3">
-                <Text className="text-purple-700 font-semibold text-xs bg-purple-100 px-2 py-1 rounded-md">
-                  ⏱ {mainItem.stressRange ? `Stress Level: ${mainItem.stressRange}` : "Featured"}
-                </Text>
+              <View style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, borderRadius: 60, backgroundColor: "rgba(255,255,255,0.10)" }} />
+              <View style={{ position: "absolute", bottom: -40, right: 40, width: 80, height: 80, borderRadius: 40, backgroundColor: "rgba(255,255,255,0.08)" }} />
+
+              <View className="flex-row items-center justify-between mb-4">
+                <View className="flex-row items-center bg-white/20 px-3 py-1 rounded-full">
+                  <Sparkles size={12} color="#fff" />
+                  <Text className="text-[10px] text-white font-bold ml-1 tracking-wide">DAILY RECOMMENDATION</Text>
+                </View>
                 <TouchableOpacity
-                  onPress={() => setDismissedHeroId(mainItem.recommendationId)}
-                  className="bg-purple-200/40 p-1 rounded-full"
+                  onPress={() => setDismissedHeroId(dailyItem.id)}
+                  className="bg-white/20 p-1.5 rounded-full"
                 >
-                  <X size={14} color="#4338ca" />
+                  <X size={13} color="#fff" />
                 </TouchableOpacity>
               </View>
 
-              <View className="bg-purple-200/60 rounded-2xl h-36 w-full items-center justify-center relative mb-4">
-                <Text className="text-5xl">
-                  {mainItem.category === "music" ? "🎵" : mainItem.category === "meditation" ? "🧘‍♀️" : "🌿"}
-                </Text>
-                <View className="absolute right-4 bottom-4 bg-white p-3 rounded-full shadow-sm">
-                  <Play size={20} color="#000" fill="#000" />
-                </View>
+              <View className="bg-black/20 rounded-xl mb-4 aspect-video items-center justify-center">
+                <Play size={40} color="#fff" fill="#fff" />
               </View>
 
-              <View className="flex-row items-center mb-1 flex-wrap">
-                <Text className="text-xl font-bold text-indigo-950 mr-2">
-                  {mainItem.title}
-                </Text>
-                <View className="bg-purple-600 px-1.5 py-0.5 rounded flex-row items-center">
-                  <Sparkles size={10} color="#fff" className="mr-0.5" />
-                  <Text className="text-[9px] text-white font-bold">LATEST BEST MATCH</Text>
-                </View>
-              </View>
-              <Text className="text-indigo-900/60 text-sm">
-                {mainItem.description}
+              <Text className="text-white text-[20px] font-bold mb-2 leading-6">
+                {dailyItem.title}
               </Text>
+              <Text className="text-white/85 text-[13px] leading-5 mb-5" numberOfLines={3}>
+                {dailyItem.description}
+              </Text>
+
+              <View className="flex-row items-center bg-white px-4 py-2 rounded-full self-end">
+                <Play size={13} color="#7C9885" fill="#7C9885" />
+                <Text className="text-[#2F2A25] text-[12px] font-bold ml-2">Watch now</Text>
+              </View>
             </TouchableOpacity>
           )}
 
-          {/* SUB-RECOMMENDATIONS LOWER CONTAINER */}
-          <View className="flex-row justify-between items-center mb-4">
-            <View className="flex-row items-center">
-              <Bookmark size={20} color="#4b5563" fill="#4b5563" />
-              <Text className="text-lg font-bold text-gray-900 ml-2">
-                Suggestions ({selectedTag.charAt(0).toUpperCase() + selectedTag.slice(1)})
-              </Text>
-            </View>
-          </View>
-
-          {/* Dynamic Mapping List Output Stream */}
-          <View className="space-y-4 pb-12">
-            {visibleRecommendations.map((item, index) => {
-              const uiBg = item.iconBg || (item.category === "music" ? "bg-amber-50" : item.category === "meditation" ? "bg-blue-50" : "bg-emerald-50");
-              const uiColor = item.iconColor || (item.category === "music" ? "#d97706" : item.category === "meditation" ? "#2563eb" : "#059669");
-              
-              // Fallback block prevents crash if any items have duplicate database IDs
-              const fallbackKey = item.recommendationId || `rec-fallback-idx-${index}`;
-
-              return (
-                <View
-                  key={fallbackKey}
-                  className="flex-row items-center justify-between border-b border-gray-100 pb-4 mb-4"
-                >
+          {/* Category chips */}
+          <View className="mb-7">
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 12 }}>
+              {CATEGORY_TAGS.map((tag) => {
+                const isSelected = selectedTag === tag.id;
+                return (
                   <TouchableOpacity
-                    onPress={() => handleMediaRedirect(item.link)}
-                    className="flex-row items-center flex-1 mr-2"
-                    activeOpacity={0.7}
+                    key={tag.id}
+                    onPress={() => setSelectedTag(tag.id)}
+                    className="flex-row items-center px-4 py-2.5 rounded-full mr-2.5"
+                    style={{
+                      backgroundColor: isSelected ? tag.color : "#FFFFFF",
+                      shadowColor: "#000",
+                      shadowOpacity: isSelected ? 0.15 : 0.04,
+                      shadowRadius: 6,
+                      shadowOffset: { width: 0, height: 2 },
+                    }}
                   >
-                    <View className={`w-14 h-14 rounded-2xl ${uiBg} items-center justify-center mr-4`}>
-                      {item.category === "music" && <Music size={24} color={uiColor} />}
-                      {item.category === "meditation" && <Video size={24} color={uiColor} />}
-                      {item.category !== "music" && item.category !== "meditation" && <Wind size={24} color={uiColor} />}
-                    </View>
-
-                    <View className="flex-1 justify-center">
-                      <View className="flex-row items-center mb-0.5 flex-wrap">
-                        <Text className="text-base font-bold text-slate-900 mr-2">
-                          {item.title}
-                        </Text>
-                        <View className="bg-purple-100 rounded px-1.5 py-0.5 flex-row items-center">
-                          <Sparkles size={8} color="#7c3aed" className="mr-0.5" />
-                          <Text className="text-[9px] text-purple-700 font-bold uppercase">AI</Text>
-                        </View>
-                      </View>
-                      <Text className="text-xs text-gray-400 font-semibold" numberOfLines={2}>
-                        {item.description}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-
-                  <View className="flex-row items-center space-x-2 gap-1">
-                    <TouchableOpacity onPress={() => handleMediaRedirect(item.link)}>
-                      <ChevronRight size={16} color="#cbd5e1" />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() => handleDismissItem(item.recommendationId)}
-                      className="p-1 bg-gray-50 rounded-full"
+                    <TagIcon id={tag.id} size={14} color={isSelected ? "#fff" : tag.color} />
+                    <Text
+                      className="text-[13px] font-semibold ml-2"
+                      style={{ color: isSelected ? "#fff" : "#2F2A25" }}
                     >
-                      <X size={12} color="#f87171" />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              );
-            })}
-
-            {/* Empty UI Fallback Context */}
-            {visibleRecommendations.length === 0 && (
-              <View className="py-12 items-center justify-center bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-                <Text className="text-gray-400 text-sm font-medium">
-                  No active recommendations under {selectedTag}.
-                </Text>
-              </View>
-            )}
+                      {tag.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
           </View>
+
+          {/* Music */}
+          {selectedTag === "music" && (
+            <>
+              <View className="mb-4">
+                <Text className="text-[17px] font-bold text-[#2F2A25]">Music</Text>
+                <Text className="text-[12px] text-[#948C7F] mt-0.5">Sounds to settle your mind</Text>
+              </View>
+              {musicItems.length > 0 ? (
+                <FlatList
+                  data={musicItems}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  keyExtractor={(item) => item.id}
+                  contentContainerStyle={{ paddingBottom: 4, paddingRight: 8 }}
+                  renderItem={({ item }) => (
+                    <MediaCard
+                      item={item}
+                      accent="#D98E73"
+                      accentBg="#F6E4DA"
+                      icon="music"
+                      onPress={handleMediaRedirect}
+                      onDismiss={handleDismissItem}
+                    />
+                  )}
+                  className="mb-8"
+                />
+              ) : (
+                <EmptyRow label="No music suggestions yet" />
+              )}
+            </>
+          )}
+
+          {/* Tips & Tricks */}
+          {selectedTag === "activity" && (
+            <>
+              <View className="mb-4">
+                <Text className="text-[17px] font-bold text-[#2F2A25]">Tips & Tricks</Text>
+                <Text className="text-[12px] text-[#948C7F] mt-0.5">Small habits, steady progress</Text>
+              </View>
+              {tipItems.length > 0 ? (
+                tipItems.map((item) => (
+                  <TipCard
+                    key={item.id}
+                    item={item}
+                    onPress={() => handleMediaRedirect(item.link)}
+                  />
+                ))
+              ) : (
+                <EmptyRow label="No tips under this filter right now" />
+              )}
+            </>
+          )}
         </ScrollView>
       </SafeAreaView>
     </>
+  );
+}
+
+function EmptyRow({ label }: { label: string }) {
+  return (
+    <View className="py-8 items-center justify-center bg-white rounded-2xl border border-dashed border-[#E5DFD3] mb-8">
+      <Text className="text-[#B8B0A2] text-[12px] font-medium">{label}</Text>
+    </View>
+  );
+}
+
+function MediaCard({
+  item,
+  accent,
+  accentBg,
+  icon,
+  onPress,
+  onDismiss,
+}: {
+  item: any;
+  accent: string;
+  accentBg: string;
+  icon: string;
+  onPress: (url: string) => void;
+  onDismiss: (id: string) => void;
+}) {
+  return (
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={() => onPress(item.link)}
+      className="bg-white rounded-[20px] mr-4 overflow-hidden"
+      style={{ width: 168, shadowColor: "#000", shadowOpacity: 0.06, shadowRadius: 10, shadowOffset: { width: 0, height: 4 } }}
+    >
+      <View style={{ backgroundColor: accentBg }} className="h-28 items-center justify-center relative">
+        <TagIcon id={icon} size={30} color={accent} />
+        <View className="absolute right-2.5 bottom-2.5 bg-white p-2 rounded-full" style={{ shadowColor: "#000", shadowOpacity: 0.1, shadowRadius: 4 }}>
+          <Play size={12} color={accent} fill={accent} />
+        </View>
+        <TouchableOpacity
+          onPress={() => onDismiss(item.id)}
+          className="absolute left-2 top-2 bg-black/10 p-1 rounded-full"
+        >
+          <X size={11} color="#fff" />
+        </TouchableOpacity>
+      </View>
+      <View className="p-3.5">
+        <Text className="text-[13px] font-bold text-[#2F2A25] mb-1" numberOfLines={1}>
+          {item.title}
+        </Text>
+        <Text className="text-[11px] text-[#948C7F]" numberOfLines={2}>
+          {item.description}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+function TipCard({
+  item,
+  onPress,
+}: {
+  item: any;
+  onPress: () => void;
+}) {
+  return (
+    <View
+      className="flex-row bg-white rounded-[20px] p-4 mb-4 items-start"
+      style={{ shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 10, shadowOffset: { width: 0, height: 3 } }}
+    >
+      <View className="w-12 h-12 rounded-2xl bg-[#F3E1DB] items-center justify-center mr-3.5 mt-0.5">
+        <Wind size={20} color="#C97B63" />
+      </View>
+      <View className="flex-1">
+        <View className="flex-row items-center justify-between mb-1">
+          <Text className="text-[14px] font-bold text-[#2F2A25] flex-1 mr-2" numberOfLines={1}>
+            {item.title}
+          </Text>
+        </View>
+        <Text className="text-[12px] text-[#948C7F] leading-4 mb-2.5" numberOfLines={3}>
+          {item.description}
+        </Text>
+        {item.link ? (
+          <TouchableOpacity onPress={onPress} className="flex-row items-center self-start">
+            <Text className="text-[12px] font-bold text-[#C97B63] mr-1">Open</Text>
+            <ChevronRight size={13} color="#C97B63" />
+          </TouchableOpacity>
+        ) : null}
+      </View>
+    </View>
   );
 }

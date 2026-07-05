@@ -3,9 +3,9 @@ import {
   View,
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
   TouchableOpacity,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 // ─── IMPORT SCREENS ───────────────────────────────────────────────────────────
 import AIChatScreen from "./AIChatScreen";

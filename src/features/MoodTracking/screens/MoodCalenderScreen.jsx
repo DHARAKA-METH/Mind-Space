@@ -2,11 +2,11 @@ import React, { useState, useMemo, useCallback } from "react";
 import {
   View,
   ScrollView,
-  SafeAreaView,
   ActivityIndicator,
   Text,
   TouchableOpacity,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useMoodEntries } from "../hooks/useMoodEntries";
