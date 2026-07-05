@@ -135,6 +135,7 @@ const DashboardScreen = () => {
       <Stack.Screen
         options={{
           headerTitle: () => <DashboardHeader />,
+          headerBackVisible: false,
           headerShadowVisible: false,
           headerStyle: {
             backgroundColor: selectedMood
@@ -177,7 +178,7 @@ const DashboardScreen = () => {
                     key={mood.id}
                     onPress={() => {
                       setSelectedMood(mood.id);
-                      router.push({
+                      router.replace({
                         pathname: "/(tabs)/(mood)/moodCheckIn",
                         params: { mood: mood.id },
                       });
