@@ -4,13 +4,13 @@ import { Stack, useRouter } from "expo-router";
 import { getAuth } from "firebase/auth";
 import React, { useEffect, useState } from "react";
 import {
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { calculateAverageDayStressLevel } from "../hooks/calculateAverageDayStressLevel";
 import { fetchMoodFromDb } from "../services/fetchFromDb";
@@ -26,6 +26,31 @@ const ceylon = {
   sand: "#F0E4D3",
   cream: "#FBF3EA",
 };
+
+const STATUS_TO_MOOD_ID: Record<string, string> = {
+  awful: "Awful",
+  bad: "Bad",
+  neutral: "Meh",
+  good: "Good",
+  great: "Great",
+};
+
+const MOOD_MESSAGES: Record<string, string> = {
+  Awful: "A few mindful minutes may help you feel more balanced.",
+  Bad: "Small self-care moments can make a big difference.",
+  Meh: "Taking a moment for yourself could help lift your spirits.",
+  Good: "Let's build on this positive energy with a relaxing activity.",
+  Great: "Keep this positive momentum going with a wellness activity.",
+};
+
+const CONTEXT_TAGS = [
+  "School",
+  "Relationships",
+  "Health",
+  "Family",
+  "Finances",
+  "Work",
+];
 
 const DashboardHeader = React.memo(function DashboardHeader() {
   return (
@@ -104,18 +129,14 @@ const DashboardScreen = () => {
   const [moodAverage, setMoodAverage] = useState<number>(5);
   const [weeklyProgress, setWeeklyProgress] = useState<number>(0);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [noteOpen, setNoteOpen] = useState(false);
 
   const auth = getAuth();
   const userID = auth.currentUser;
   const userId = userID ? userID.uid : null;
 
-  const STATUS_TO_MOOD_ID: Record<string, string> = {
-    awful: "Awful",
-    bad: "Bad",
-    neutral: "Meh",
-    good: "Good",
-    great: "Great",
-  };
+  const currentMoodObj = moods.find((m) => m.id === selectedMood);
 
   useEffect(() => {
     loadMoodData();
@@ -164,7 +185,7 @@ const DashboardScreen = () => {
           headerBackVisible: false,
           headerShadowVisible: false,
           headerStyle: {
-            backgroundColor:"#f4e7e2",
+            backgroundColor: "#f4e7e2",
           },
         }}
       />
@@ -172,8 +193,11 @@ const DashboardScreen = () => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1 bg-white"
       >
-        <ScrollView className="bg-[#ece6e3]" showsVerticalScrollIndicator={false}>
-          <View className="bg-[#f4e7e2] rounded-b-[10%] mb-10 px-6 pb-6 pt-6">
+        <ScrollView
+          className="bg-[#ece6e3]"
+          showsVerticalScrollIndicator={false}
+        >
+          <View className="bg-[#f4e7e2] rounded-b-[10%] mb-4 px-6 pb-6 pt-6 mt-[-10px]">
             <Text className="text-gray-400 text-sm tracking-wide mt-5 mb-2 uppercase">
               Daily reflection
             </Text>
@@ -188,13 +212,17 @@ const DashboardScreen = () => {
             </Text>
           </View>
 
-          <View className="p-4 mt-[-30px] bg-[#f4e7e2] ">
-            <View className="flex-row justify-between items-center mb-5">
-              <Text className="text-lg font-bold" style={{ color: ceylon.ink }}>
+          <View className=" mt-[-30px]">
+            {/* Mood picker */}
+            <View className="flex-row justify-between items-center mb-3">
+              <Text
+                className="text-lg font-bold ml-8"
+                style={{ color: ceylon.ink }}
+              >
                 How are you feeling?
               </Text>
             </View>
-            <View className="flex-row justify-between mb-8">
+            <View className="flex-row justify-between mb-4 p-4">
               {moods.map((mood) => {
                 const isSelected = selectedMood === mood.id;
                 return (
@@ -202,18 +230,24 @@ const DashboardScreen = () => {
                     key={mood.id}
                     onPress={() => {
                       setSelectedMood(mood.id);
-                      router.replace({
-                        pathname: "/(tabs)/(mood)/moodCheckIn",
-                        params: { mood: mood.id },
-                      });
+                      setSelectedTag(null);
+                      setNoteOpen(false);
                     }}
                     activeOpacity={0.7}
                     className="items-center"
                   >
                     <View
-                      className="items-center justify-center rounded-full p-3 overflow-hidden"
+                      className="items-center justify-center p-3"
                       style={{
-                        backgroundColor: isSelected ? "#ffffff" : "transparent",
+                        backgroundColor: "#fff",
+                        borderRadius: 100,
+                        shadowColor: "#000",
+                        shadowOpacity: isSelected ? 0.14 : 0.04,
+                        shadowRadius: isSelected ? 10 : 4,
+                        shadowOffset: { width: 0, height: isSelected ? 4 : 1 },
+                        elevation: isSelected ? 4 : 1,
+                        borderWidth: isSelected ? 1.5 : 0,
+                        borderColor: ceylon.terracotta,
                       }}
                     >
                       <Image
@@ -235,34 +269,68 @@ const DashboardScreen = () => {
                 );
               })}
             </View>
-          </View>
 
-          <View className="w-full h-full rounded-[40px] p-5 mt-2 overflow-hidden  bg-white">
-            <View className="flex-row justify-between items-center mb-6">
-              <Text
-                className="text-base font-bold"
-                style={{ color: ceylon.ink }}
+            {/* Check-in card */}
+            {selectedMood && (
+              <View
+                className="items-center mb-6 px-5 py-7"
+                style={{
+                  backgroundColor: "#fff",
+                  width: "100%",
+                  height: "100%",
+                  borderRadius:35,
+                  shadowColor: "#000",
+                  shadowOpacity: 0.06,
+                  shadowRadius: 16,
+                  shadowOffset: { width: 0, height: 6 },
+                  elevation: 2,
+                }}
               >
-                Your Contribution to the Week
-              </Text>
-            </View>
-            <View className="flex-row items-end justify-between">
-              <Text
-                className="text-5xl font-extrabold"
-                style={{ color: ceylon.ink }}
-              >
-                {weeklyProgress}%
-              </Text>
-              <Text
-                className="text-xs text-right leading-relaxed mb-1"
-                style={{ color: ceylon.muted, maxWidth: 120 }}
-              >
-                Of the weekly plan completed
-              </Text>
-            </View>
-            <View className="mt-20" style={{ height: 56 }}>
-              <DotGrid />
-            </View>
+                <Text
+                  className="text-xs font-bold tracking-widest uppercase mb-4"
+                  style={{ color: ceylon.terracotta }}
+                >
+                  Check In
+                </Text>
+
+                <TouchableOpacity
+                  onPress={() => router.push("/(tabs)/(mood)/moodCheckIn")}
+                  activeOpacity={0.7}
+                  className="items-center justify-center mb-5"
+                  style={{
+                    width: 92,
+                    height: 92,
+                    borderRadius: 46,
+                    backgroundColor: "#fff",
+                    shadowColor: "#000",
+                    shadowOpacity: 0.12,
+                    shadowRadius: 14,
+                    shadowOffset: { width: 0, height: 5 },
+                    borderWidth: 1.5,
+                    borderColor: ceylon.terracotta,
+                  }}
+                >
+                  <Image
+                    source={currentMoodObj?.icon}
+                    className="w-14 h-14"
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+
+                <Text
+                  className="text-xl font-bold mb-2"
+                  style={{ color: ceylon.ink }}
+                >
+                  You&apos;re feeling {selectedMood} today
+                </Text>
+                <Text
+                  className="text-sm text-center leading-5 mb-6"
+                  style={{ color: ceylon.muted, maxWidth: 280 }}
+                >
+                  {MOOD_MESSAGES[selectedMood]}
+                </Text>
+              </View>
+            )}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
