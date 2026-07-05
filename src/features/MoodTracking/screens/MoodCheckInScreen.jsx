@@ -18,7 +18,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { icons } from "@/src/shared/assets/icons/icons";
 import { moods } from "@/src/shared/constants/mood.config";
 
-
 // FIREBASE
 import { db } from "@/src/config/firebase";
 import { addDoc, collection } from "firebase/firestore";
@@ -26,7 +25,10 @@ import { addDoc, collection } from "firebase/firestore";
 // SERVICES (you will create these files)
 import { sanitizeMoodData } from "../services/sanitizeMood";
 import { detectRisk } from "../services/riskDetection";
-import { getMoodHistory,calculateHistoryAverage } from "../services/moodHistory";
+import {
+  getMoodHistory,
+  calculateHistoryAverage,
+} from "../services/moodHistory";
 import { analyzeMoodWithAI } from "../services/aiService";
 import { calculateStress } from "../services/stressCalculator";
 import { getAuth } from "firebase/auth";
@@ -38,9 +40,8 @@ export default function MoodCheckInScreen() {
   const [loading, setLoading] = useState(false);
   const auth = getAuth();
 
-const userID = auth.currentUser;
-const userId = userID ? userID.uid : null;
-
+  const userID = auth.currentUser;
+  const userId = userID ? userID.uid : null;
 
   const handleSave = async () => {
     try {
@@ -57,7 +58,7 @@ const userId = userID ? userID.uid : null;
       if (detectRisk(clean.note)) {
         Alert.alert(
           "Support Notice",
-          "You seem overwhelmed. Please take a break or talk to someone."
+          "You seem overwhelmed. Please take a break or talk to someone.",
         );
         return;
       }
@@ -81,7 +82,7 @@ const userId = userID ? userID.uid : null;
       const finalStress = calculateStress(
         clean.selfStress,
         aiResult.aiStressLevel,
-        historyAvg
+        historyAvg,
       );
 
       // 7. Save mood entry
@@ -109,16 +110,12 @@ const userId = userID ? userID.uid : null;
         });
       }
 
-      Alert.alert(
-        "Saved",
-        `Stress Level: ${finalStress.toFixed(1)}`
-      );
+      Alert.alert("Saved", `Stress Level: ${finalStress.toFixed(1)}`);
 
       // reset
       setNote("");
       setStressLevel(4);
       setSelectedMood("meh");
-
     } catch (error) {
       console.log(error);
       Alert.alert("Error", "Something went wrong");
@@ -136,11 +133,13 @@ const userId = userID ? userID.uid : null;
         options={{
           headerTitle: "Mood Check-in",
           headerShadowVisible: false,
+          headerStyle: {
+            backgroundColor: "#ffffff",
+          },
         }}
       />
 
       <ScrollView className="px-6">
-
         {/* MOOD */}
         <View className="flex-row justify-between mt-4 mb-10">
           {moods.map((mood) => {
@@ -166,9 +165,7 @@ const userId = userID ? userID.uid : null;
                   />
                 </View>
 
-                <Text className="text-xs font-semibold">
-                  {mood.label}
-                </Text>
+                <Text className="text-xs font-semibold">{mood.label}</Text>
               </TouchableOpacity>
             );
           })}

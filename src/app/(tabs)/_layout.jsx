@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { View } from "react-native";
+import { usePathname } from "expo-router";
 
 import Footer from "../../shared/components/Footer";
 
@@ -16,8 +17,23 @@ import RecommendationScreen from "../(tabs)/(Recommendation)/Recommendations";
 
 import AppointmentsScreen from "../(tabs)/(appointments)/BookSession";
 
+const PATH_TAB_MAP = {
+  "/moodDashboard": "Home",
+  "/moodCalender": "Mood",
+  "/moodCheckIn": "New",
+  "/chat": "Assistant",
+  "/Recommendations": "Wellness",
+  "/BookSession": "Wellness",
+};
+
 export default function TabLayout() {
+  const pathname = usePathname();
   const [activeTab, setActiveTab] = useState("Home");
+
+  useEffect(() => {
+    const tab = PATH_TAB_MAP[pathname];
+    if (tab) setActiveTab(tab);
+  }, [pathname]);
 
   const renderScreen = () => {
     switch (activeTab) {

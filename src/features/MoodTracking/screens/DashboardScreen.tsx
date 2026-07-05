@@ -1,29 +1,33 @@
+import { icons } from "@/src/shared/assets/icons/icons";
+import { moods } from "@/src/shared/constants/mood.config";
+import { Stack, useRouter } from "expo-router";
 import { getAuth } from "firebase/auth";
 import React, { useEffect, useState } from "react";
 import {
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { calculateAverageDayStressLevel } from "../hooks/calculateAverageDayStressLevel";
 import { fetchMoodFromDb } from "../services/fetchFromDb";
-import { Stack } from "expo-router";
-import { icons } from "@/src/shared/assets/icons/icons";
 
 const ceylon = {
   ink: "#3D2E1F",
   muted: "#8A7A63",
   mutedLight: "#B8A78C",
   teaGreen: "#4A7856",
+  terracotta: "#C97B4A",
+  sand: "#F0E4D3",
+  cream: "#FBF3EA",
 };
 
 const DashboardHeader = React.memo(function DashboardHeader() {
   return (
-    <View className="flex-row justify-between items-center  px-4 pt-4 pb-2">
+    <View className="flex-row justify-between items-center px-4 pt-4 pb-2">
       <View className="w-10 h-10 rounded-full items-center justify-center bg-white">
         <View
           style={{
@@ -78,8 +82,8 @@ const DotGrid = (): React.JSX.Element => {
             <View
               key={`dot-${r}-${c}`}
               style={{
-                width:10,
-                height:10,
+                width: 10,
+                height: 10,
                 borderRadius: 10,
                 margin: 5,
                 backgroundColor: ceylon.teaGreen,
@@ -94,8 +98,10 @@ const DotGrid = (): React.JSX.Element => {
 };
 
 const DashboardScreen = () => {
+  const router = useRouter();
   const [moodAverage, setMoodAverage] = useState<number>(5);
   const [weeklyProgress, setWeeklyProgress] = useState<number>(0);
+  const [selectedMood, setSelectedMood] = useState<string | null>(null);
 
   const auth = getAuth();
   const userID = auth.currentUser;
@@ -128,10 +134,12 @@ const DashboardScreen = () => {
     <>
       <Stack.Screen
         options={{
-          headerTitle: "",
+          headerTitle: () => <DashboardHeader />,
           headerShadowVisible: false,
           headerStyle: {
-            backgroundColor: "#f4e7e2",
+            backgroundColor: selectedMood
+              ? (moods.find((m) => m.id === selectedMood)?.bg ?? "#f4e7e2")
+              : "#f4e7e2",
           },
         }}
       />
@@ -139,27 +147,77 @@ const DashboardScreen = () => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1 bg-white"
       >
-        <View className="bg-[#f4e7e2] mt-[-15px]">
-          <DashboardHeader />
-        </View>
         <ScrollView className="bg-white" showsVerticalScrollIndicator={false}>
           <View className="bg-[#f4e7e2] rounded-b-[10%] mb-10 px-6 pb-6 pt-6">
             <Text className="text-gray-400 text-sm tracking-wide mt-5 mb-2 uppercase">
               Daily reflection
             </Text>
-            <Text className="text-4xl text-gray-900 mb-3">
-              Hello, Max 👋
-            </Text>
+            <Text className="text-4xl text-gray-900 mb-3">Hello, Max 👋</Text>
 
-            <Text className="text-5xl font-light text-gray-900 mb-9" style={{ letterSpacing: 6 }}>
+            <Text
+              className="text-5xl font-light text-gray-900 mb-9"
+              style={{ letterSpacing: 6 }}
+            >
               How do you feel about your{" "}
               <Text className="font-bold text-gray-900">current emotions?</Text>
             </Text>
           </View>
 
-          <View className="rounded-[24px] p-5 mx-6 mt-6 overflow-hidden bg-white">
+          <View className="px-6 bg-white">
+            <View className="flex-row justify-between items-center mb-5">
+              <Text className="text-lg font-bold" style={{ color: ceylon.ink }}>
+                How are you feeling?
+              </Text>
+            </View>
+            <View className="flex-row justify-between mb-8">
+              {moods.map((mood) => {
+                const isSelected = selectedMood === mood.id;
+                return (
+                  <TouchableOpacity
+                    key={mood.id}
+                    onPress={() => {
+                      setSelectedMood(mood.id);
+                      router.push({
+                        pathname: "/(tabs)/(mood)/moodCheckIn",
+                        params: { mood: mood.id },
+                      });
+                    }}
+                    activeOpacity={0.7}
+                    className="items-center"
+                  >
+                    <View
+                      className="items-center justify-center rounded-2xl p-3"
+                      style={{
+                        backgroundColor: isSelected ? mood.bg : "transparent",
+                      }}
+                    >
+                      <Image
+                        source={isSelected ? mood.icon : mood.outline}
+                        className="w-10 h-10"
+                        resizeMode="contain"
+                      />
+                    </View>
+                    <Text
+                      className="text-xs mt-1.5"
+                      style={{
+                        color: isSelected ? ceylon.ink : ceylon.muted,
+                        fontWeight: isSelected ? "600" : "400",
+                      }}
+                    >
+                      {mood.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
+          <View className="rounded-[24px] p-5 mx-6 mt-2 overflow-hidden bg-white">
             <View className="flex-row justify-between items-center mb-6">
-              <Text className="text-base font-bold" style={{ color: ceylon.ink }}>
+              <Text
+                className="text-base font-bold"
+                style={{ color: ceylon.ink }}
+              >
                 Your progress
               </Text>
             </View>
@@ -178,7 +236,7 @@ const DashboardScreen = () => {
               </Text>
             </View>
             <View className="mt-20" style={{ height: 56 }}>
-              <DotGrid/>
+              <DotGrid />
             </View>
           </View>
         </ScrollView>
