@@ -1,48 +1,27 @@
 import React from "react";
 import { View, TouchableOpacity } from "react-native";
-import { SvgUri } from "react-native-svg";
+import { Ionicons } from "@expo/vector-icons";
 
-const ICON_BASE =
-  "https://raw.githubusercontent.com/feathericons/feather/master/icons";
+const TAB_ICONS = {
+  Home: { active: "home", inactive: "home-outline" },
+  Mood: { active: "happy", inactive: "happy-outline" },
+  Assistant: { active: "chatbubble", inactive: "chatbubble-outline" },
+  Wellness: { active: "pulse", inactive: "pulse-outline" },
+};
 
 const Footer = ({ activeTab, setActiveTab }) => {
-  const tabs = [
-    {
-      name: "Home",
-      iconUrl: `${ICON_BASE}/home.svg`,
-      route: "",
-    },
-    {
-      name: "Mood",
-      iconUrl: `${ICON_BASE}/smile.svg`,
-      route: "",
-    },
-    // {
-    //   name: "New",
-    //   iconUrl: `${ICON_BASE}/plus.svg`,
-    //   route: "",
-    // },
-    {
-      name: "Assistant",
-      iconUrl: `${ICON_BASE}/message-circle.svg`,
-      route: "",
-    },
-    {
-      name: "Wellness",
-      iconUrl: `${ICON_BASE}/activity.svg`,
-      route: "",
-    },
-  ];
+  const tabs = ["Home", "Mood", "Assistant", "Wellness"];
 
   return (
-    <View  pointerEvents="box-none" className=" absolute bottom-12 left-0 right-0 items-center">
+    <View pointerEvents="box-none" className="items-center">
       <View className="bg-white rounded-full border border-[#ebb557] flex-row items-center justify-center px-6 py-4 gap-2 shadow-lg shadow-black/20">
-        {tabs.map((tab) => {
-          const isActive = activeTab === tab.name;
+        {tabs.map((name) => {
+          const isActive = activeTab === name;
+          const icons = TAB_ICONS[name];
           return (
             <TouchableOpacity
-              key={tab.name}
-              onPress={() => setActiveTab(tab.name)}
+              key={name}
+              onPress={() => setActiveTab(name)}
               activeOpacity={0.8}
             >
               <View
@@ -53,13 +32,11 @@ const Footer = ({ activeTab, setActiveTab }) => {
                   backgroundColor: isActive ? "#1c1917" : "transparent",
                   alignItems: "center",
                   justifyContent: "center",
-                  overflow: "hidden",
                 }}
               >
-                <SvgUri
-                  uri={tab.iconUrl}
-                  width={22}
-                  height={22}
+                <Ionicons
+                  name={isActive ? icons.active : icons.inactive}
+                  size={22}
                   color={isActive ? "#FFF" : "#A8A29E"}
                 />
               </View>

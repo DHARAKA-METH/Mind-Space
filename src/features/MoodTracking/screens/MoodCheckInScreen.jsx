@@ -46,6 +46,7 @@ import { analyzeMoodWithAI } from "../services/aiService";
 import { calculateStress } from "../services/stressCalculator";
 import { getAuth } from "firebase/auth";
 import { FaceCaptureCard } from "../components/FaceCaptureCard";
+import { detectFaceEmotion } from "../services/detectFaceEmotion";
 
 const ceylon = {
   ink: "#3D2E1F",
@@ -224,7 +225,7 @@ export default function MoodCheckInScreen() {
         note: note,
       });
 
-      console.log("Saving check-in with face capture:", capturedFace);
+      
 
       if (detectRisk(clean.note)) {
         Alert.alert(
@@ -233,50 +234,55 @@ export default function MoodCheckInScreen() {
         );
         return; // `finally` below still runs, resetting loading
       }
+      console.log("Saving check-in with face capture:", capturedFace);
 
-      const history = await getMoodHistory(userId);
-      const historyAvg = calculateHistoryAverage(history);
+      const detectedFaceEmotion = capturedFace ? await detectFaceEmotion(capturedFace) : null;
 
-      const payload = {
-        mood: clean.mood,
-        userStress: clean.selfStress,
-        note: clean.note,
-        historyAverage: historyAvg,
-      };
+      console.log("Detected face emotion:", detectedFaceEmotion);
 
-      const aiResult = await analyzeMoodWithAI(payload);
+      // const history = await getMoodHistory(userId);
+      // const historyAvg = calculateHistoryAverage(history);
 
-      const finalStress = calculateStress(
-        clean.selfStress,
-        aiResult.aiStressLevel,
-        historyAvg
-      );
+      // const payload = {
+      //   mood: clean.mood,
+      //   userStress: clean.selfStress,
+      //   note: clean.note,
+      //   historyAverage: historyAvg,
+      // };
 
-      await addDoc(collection(db, "moodEntries"), {
-        userId,
-        mood: clean.mood,
-        selfStress: clean.selfStress,
-        aiStress: aiResult.aiStressLevel,
-        finalStress,
-        note: clean.note,
-        createdAt: new Date(),
-      });
+      // const aiResult = await analyzeMoodWithAI(payload);
 
-      for (const rec of aiResult.recommendations || []) {
-        await addDoc(collection(db, "recommendations"), {
-          userId,
-          category: rec.category,
-          title: rec.title,
-          description: rec.description,
-          link: rec.link,
-          source: "AI",
-          createdAt: new Date(),
-          isDismissed: false,
-        });
-      }
+      // const finalStress = calculateStress(
+      //   clean.selfStress,
+      //   aiResult.aiStressLevel,
+      //   historyAvg
+      // );
 
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-      Alert.alert("Saved", `Stress Level: ${finalStress.toFixed(1)}`);
+      // await addDoc(collection(db, "moodEntries"), {
+      //   userId,
+      //   mood: clean.mood,
+      //   selfStress: clean.selfStress,
+      //   aiStress: aiResult.aiStressLevel,
+      //   finalStress,
+      //   note: clean.note,
+      //   createdAt: new Date(),
+      // });
+
+      // for (const rec of aiResult.recommendations || []) {
+      //   await addDoc(collection(db, "recommendations"), {
+      //     userId,
+      //     category: rec.category,
+      //     title: rec.title,
+      //     description: rec.description,
+      //     link: rec.link,
+      //     source: "AI",
+      //     createdAt: new Date(),
+      //     isDismissed: false,
+      //   });
+      // }
+
+      // Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      // Alert.alert("Saved", `Stress Level: ${finalStress.toFixed(1)}`);
 
       setNote("");
       setStressLevel(4);
