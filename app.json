@@ -40,7 +40,11 @@
           }
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "expo-camera",
+        { "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera to capture your expression alongside your check-in." }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

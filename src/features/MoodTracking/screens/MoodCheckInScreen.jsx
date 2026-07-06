@@ -45,6 +45,7 @@ import {
 import { analyzeMoodWithAI } from "../services/aiService";
 import { calculateStress } from "../services/stressCalculator";
 import { getAuth } from "firebase/auth";
+import { FaceCaptureCard } from "../components/FaceCaptureCard";
 
 const ceylon = {
   ink: "#3D2E1F",
@@ -191,6 +192,7 @@ export default function MoodCheckInScreen() {
   const [stressLevel, setStressLevel] = useState(4);
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
+  const [capturedFace, setCapturedFace] = useState(null);
 
   const auth = getAuth();
   const userID = auth.currentUser;
@@ -221,6 +223,8 @@ export default function MoodCheckInScreen() {
         selfStress: stressLevel,
         note: note,
       });
+
+      console.log("Saving check-in with face capture:", capturedFace);
 
       if (detectRisk(clean.note)) {
         Alert.alert(
@@ -452,6 +456,12 @@ export default function MoodCheckInScreen() {
             }}
           />
         </View>
+
+        {/* FACE CAPTURE — optional, after user input */}
+        <FaceCaptureCard
+          onCapture={(photo) => setCapturedFace(photo)}
+          onRemove={() => setCapturedFace(null)}
+        />
 
         {/* BREATHING EXERCISE — fills the empty space with something useful */}
         <BreathingBubble />
