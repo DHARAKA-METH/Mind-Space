@@ -43,6 +43,7 @@ import {
   calculateHistoryAverage,
 } from "../services/moodHistory";
 import { analyzeMoodWithAI } from "../services/aiService";
+import { calculateStressLevel10 } from "../services/calculateStressLevel";
 import { calculateStress } from "../services/stressCalculator";
 import { getAuth } from "firebase/auth";
 import { FaceCaptureCard } from "../components/FaceCaptureCard";
@@ -216,84 +217,110 @@ export default function MoodCheckInScreen() {
   };
 
   const handleSave = async () => {
-    try {
-      setLoading(true);
+    setLoading(true);
 
-      const clean = sanitizeMoodData({
-        mood: selectedMood,
-        selfStress: stressLevel,
-        note: note,
+    const clean = sanitizeMoodData({
+      mood: selectedMood,
+      selfStress: stressLevel,
+      note: note,
+    });
+
+    if (detectRisk(clean.note)) {
+      setLoading(false);
+      Alert.alert(
+        "Support Notice",
+        "You seem overwhelmed. Please take a break or talk to someone."
+      );
+      return;
+    }
+
+    // 1. Face emotion detection — optional, never blocks save
+    let faceStressLevel = null;
+    if (capturedFace) {
+      try {
+        const detectedFaceEmotion = await detectFaceEmotion(capturedFace);
+        if (detectedFaceEmotion) {
+          faceStressLevel = calculateStressLevel10(detectedFaceEmotion);
+          console.log("Detected face stress level:", faceStressLevel);
+        }
+      } catch (faceErr) {
+        console.log("Face detection failed (non-blocking):", faceErr);
+      }
+    }
+
+    // 2. Mood history
+    let historyAvg = 0;
+    try {
+      const history = await getMoodHistory(userId);
+      historyAvg = calculateHistoryAverage(history);
+    } catch (historyErr) {
+      console.log("Failed to load mood history:", historyErr);
+    }
+
+    // 3. AI analysis
+    let aiResult;
+    try {
+      aiResult = await analyzeMoodWithAI({
+        mood: clean.mood,
+        userStress: clean.selfStress,
+        faceStress: faceStressLevel,
+        note: clean.note,
+        historyAverage: historyAvg,
+      });
+    } catch (aiErr) {
+      console.log(aiErr);
+      setLoading(false);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
+      Alert.alert("AI Analysis Failed", "Could not analyze your mood. Please check your connection and try again.");
+      return;
+    }
+
+    // 4. Save to Firestore
+    const finalStress = calculateStress(
+      clean.selfStress,
+      aiResult.aiStressLevel,
+      faceStressLevel,
+      historyAvg
+    );
+
+    try {
+      await addDoc(collection(db, "moodEntries"), {
+        userId,
+        mood: clean.mood,
+        selfStress: clean.selfStress,
+        aiStress: aiResult.aiStressLevel,
+        finalStress,
+        note: clean.note,
+        createdAt: new Date(),
       });
 
-      
-
-      if (detectRisk(clean.note)) {
-        Alert.alert(
-          "Support Notice",
-          "You seem overwhelmed. Please take a break or talk to someone."
-        );
-        return; // `finally` below still runs, resetting loading
+      for (const rec of aiResult.recommendations || []) {
+        await addDoc(collection(db, "recommendations"), {
+          userId,
+          category: rec.category,
+          title: rec.title,
+          description: rec.description,
+          link: rec.link,
+          source: "AI",
+          createdAt: new Date(),
+          isDismissed: false,
+        });
       }
-      console.log("Saving check-in with face capture:", capturedFace);
-
-      const detectedFaceEmotion = capturedFace ? await detectFaceEmotion(capturedFace) : null;
-
-      console.log("Detected face emotion:", detectedFaceEmotion);
-
-      // const history = await getMoodHistory(userId);
-      // const historyAvg = calculateHistoryAverage(history);
-
-      // const payload = {
-      //   mood: clean.mood,
-      //   userStress: clean.selfStress,
-      //   note: clean.note,
-      //   historyAverage: historyAvg,
-      // };
-
-      // const aiResult = await analyzeMoodWithAI(payload);
-
-      // const finalStress = calculateStress(
-      //   clean.selfStress,
-      //   aiResult.aiStressLevel,
-      //   historyAvg
-      // );
-
-      // await addDoc(collection(db, "moodEntries"), {
-      //   userId,
-      //   mood: clean.mood,
-      //   selfStress: clean.selfStress,
-      //   aiStress: aiResult.aiStressLevel,
-      //   finalStress,
-      //   note: clean.note,
-      //   createdAt: new Date(),
-      // });
-
-      // for (const rec of aiResult.recommendations || []) {
-      //   await addDoc(collection(db, "recommendations"), {
-      //     userId,
-      //     category: rec.category,
-      //     title: rec.title,
-      //     description: rec.description,
-      //     link: rec.link,
-      //     source: "AI",
-      //     createdAt: new Date(),
-      //     isDismissed: false,
-      //   });
-      // }
-
-      // Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-      // Alert.alert("Saved", `Stress Level: ${finalStress.toFixed(1)}`);
-
-      setNote("");
-      setStressLevel(4);
-      setSelectedMood("Meh");
-    } catch (error) {
-      console.log(error);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
-      Alert.alert("Error", "Something went wrong");
-    } finally {
+    } catch (saveErr) {
+      console.log(saveErr);
       setLoading(false);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
+      Alert.alert("Save Failed", "Could not save your check-in. Please try again.");
+      return;
     }
+
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    Alert.alert("Saved", `Stress Level: ${finalStress.toFixed(1)}`);
+
+    setNote("");
+    setStressLevel(4);
+    setSelectedMood("Meh");
+    setLoading(false);
   };
 
   return (

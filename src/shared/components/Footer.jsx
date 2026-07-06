@@ -32,6 +32,7 @@ const Footer = ({ activeTab, setActiveTab }) => {
                   backgroundColor: isActive ? "#1c1917" : "transparent",
                   alignItems: "center",
                   justifyContent: "center",
+                   overflow: "hidden",
                 }}
               >
                 <Ionicons
