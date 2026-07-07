@@ -51,15 +51,6 @@ const TabBar = ({ activeTab, onTabPress }) => (
         );
       })}
     </View>
-
-    {/* Privacy note */}
-    <View className="items-center pb-2">
-      <View className="px-3 py-0.5 bg-slate-50 rounded-lg border border-slate-200">
-        <Text className="text-[11px] text-slate-400">
-          🔒 Private & anonymous session
-        </Text>
-      </View>
-    </View>
   </View>
 );
 
@@ -83,11 +74,10 @@ const ChatLayout = () => {
     <>
       <Stack.Screen
         options={{
-          headerTitle: "Support Chat",
+          headerTitle: " Support Space ",
           headerTitleStyle: { fontWeight: "600", fontSize: 18 },
           headerStyle: { backgroundColor: "#F9FAF5" },
           headerShadowVisible: false,
-          // Prevent the screen navigation layout context from shifting unexpectedly
           headerShown: true, 
         }}
       />
@@ -95,7 +85,7 @@ const ChatLayout = () => {
       {/* If the booking component includes its own internal safe zone handling, 
         we fall back to a plain View wrapper instead of an extra nested SafeAreaView 
       */}
-      <View className="flex-1 bg-slate-50">
+      <View className="flex-1 bg-slate-50 mt-[-50px]">
         <SafeAreaView className={isBookingTab ? "" : "flex-1"}>
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
