@@ -27,6 +27,15 @@ import Animated, {
   Layout,
   ZoomIn,
 } from "react-native-reanimated";
+import { getAuth } from "firebase/auth";
+import {
+  getRooms,
+  createRoom,
+  updateRoom,
+  deleteRoom,
+  addMessage,
+  getMessages,
+} from "../services/firebaseChatService";
 
 // ─── THEME ────────────────────────────────────────────────────────────────
 const ceylon = {
@@ -44,38 +53,7 @@ const ceylon = {
 
 const SPACE = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 28 };
 
-// ─── DUMMY DATA ───────────────────────────────────────────────────────────
 const QUICK_PROMPTS = ["I feel stressed", "Exam anxiety", "Need motivation", "Can't sleep", "Feeling lonely"];
-
-const INITIAL_ROOMS = [
-  {
-    id: "room-1",
-    title: "Exam stress check-in",
-    preview: "Yes please! 🙏",
-    time: "9:43 AM",
-    unread: 0,
-    pinned: true,
-    messages: [
-      { id: "1", sender: "ai", text: "Hi! I'm here to support you 🌿\nHow are you feeling today?", time: "9:41 AM" },
-      { id: "2", sender: "user", text: "Anxious about my exams 😰", time: "9:42 AM" },
-      { id: "3", sender: "ai", text: "That's completely normal 🤗\nLet's try a breathing exercise together?", time: "9:42 AM" },
-      { id: "4", sender: "user", text: "Yes please! 🙏", time: "9:43 AM" },
-    ],
-  },
-  {
-    id: "room-2",
-    title: "Sleep troubles",
-    preview: "Try winding down 30 minutes earlier tonight 🌙",
-    time: "Yesterday",
-    unread: 2,
-    pinned: false,
-    messages: [
-      { id: "1", sender: "ai", text: "Hi again — how did last night go?", time: "8:02 PM" },
-      { id: "2", sender: "user", text: "Still can't fall asleep before 2am", time: "8:04 PM" },
-      { id: "3", sender: "ai", text: "Try winding down 30 minutes earlier tonight 🌙", time: "8:05 PM" },
-    ],
-  },
-];
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────
 const nowTime = () => new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -680,40 +658,38 @@ const ChatRoomsList = ({ rooms, onOpenRoom, onNewChat, onOpenActions }: any) => 
 };
 
 // ─── INDIVIDUAL CHAT SCREEN ────────────────────────────────────────────────
-const ChatRoomScreen = ({ room, onBack, onUpdateRoom, onOpenActions }: any) => {
-  const [messages, setMessages] = useState(room.messages);
+const ChatRoomScreen = ({ room, onBack, onOpenActions, userId }: any) => {
+  const [messages, setMessages] = useState<any[]>([]);
   const [typing, setTyping] = useState(false);
   const flatListRef = useRef<any>(null);
 
-  // Keep local messages in sync if the room prop changes externally (e.g. after rename)
   useEffect(() => {
-    setMessages(room.messages);
-  }, [room.id]);
+    if (!userId || !room.id) return;
+    getMessages(userId, room.id).then(setMessages).catch(console.error);
+  }, [room.id, userId]);
 
   const handleSend = useCallback(
-    (text: string) => {
-      const userMsg = { id: Date.now().toString(), sender: "user", text, time: nowTime() };
-      const updated = [...messages, userMsg];
-      setMessages(updated);
-      onUpdateRoom(room.id, { messages: updated, preview: text, time: nowTime() });
+    async (text: string) => {
+      if (!userId) return;
+      const userMsg = { sender: "user", text, time: nowTime() };
+      const saved = await addMessage(userId, room.id, userMsg);
+      setMessages((prev) => [...prev, saved]);
+      const AiResponse = "test response"
+      
 
       setTyping(true);
-      setTimeout(() => {
+      setTimeout(async () => {
         const aiMsg = {
-          id: Date.now().toString() + "a",
           sender: "ai",
-          text: "I understand how you feel. You're not alone 🌿\nWould you like to explore some coping strategies together?",
+          text: AiResponse,
           time: nowTime(),
         };
+        const savedAi = await addMessage(userId, room.id, aiMsg);
         setTyping(false);
-        setMessages((m: any[]) => {
-          const next = [...m, aiMsg];
-          onUpdateRoom(room.id, { messages: next, preview: aiMsg.text, time: nowTime() });
-          return next;
-        });
+        setMessages((prev) => [...prev, savedAi]);
       }, 1800);
     },
-    [messages, room.id]
+    [userId, room.id]
   );
 
   return (
@@ -766,12 +742,19 @@ const ChatRoomScreen = ({ room, onBack, onUpdateRoom, onOpenActions }: any) => {
 };
 
 // ─── ROOT FEATURE (list ↔ chat) ────────────────────────────────────────────
-// expo-router note: swap setActiveRoomId(room.id) for router.push(`/chat/${room.id}`)
-// and read it back with useLocalSearchParams() on a dedicated screen if you're
-// using file-based routing instead of this in-memory view switch.
 const AIChatFeature = () => {
-  const [rooms, setRooms] = useState(INITIAL_ROOMS);
+  const [rooms, setRooms] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
+
+  const auth = getAuth();
+  const userId = auth.currentUser?.uid;
+
+  useEffect(() => {
+    if (!userId) return;
+    setLoading(true);
+    getRooms(userId).then(setRooms).catch(console.error).finally(() => setLoading(false));
+  }, [userId]);
 
   // Action-sheet / modal state
   const [actionsRoom, setActionsRoom] = useState<any>(null);
@@ -780,31 +763,23 @@ const AIChatFeature = () => {
 
   const activeRoom = rooms.find((r) => r.id === activeRoomId);
 
-  const handleOpenRoom = (room: any) => {
+  const handleOpenRoom = async (room: any) => {
     Haptics.selectionAsync().catch(() => {});
+    if (userId) {
+      await updateRoom(userId, room.id, { unread: 0 }).catch(() => {});
+    }
     setRooms((prev) => prev.map((r) => (r.id === room.id ? { ...r, unread: 0 } : r)));
     setActiveRoomId(room.id);
   };
 
-  const handleNewChat = () => {
+  const handleNewChat = async () => {
+    if (!userId) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-    const newRoom = {
-      id: `room-${Date.now()}`,
-      title: "New conversation",
-      preview: "Say hello to get started",
-      time: nowTime(),
-      unread: 0,
-      pinned: false,
-      messages: [
-        { id: "welcome", sender: "ai", text: "Hi! I'm here to support you 🌿\nWhat's on your mind today?", time: nowTime() },
-      ],
-    };
-    setRooms((prev) => [newRoom, ...prev]);
-    setActiveRoomId(newRoom.id);
-  };
-
-  const handleUpdateRoom = (roomId: string, patch: any) => {
-    setRooms((prev) => prev.map((r) => (r.id === roomId ? { ...r, ...patch } : r)));
+    const roomId = await createRoom(userId).catch(() => null);
+    if (!roomId) return;
+    const updatedRooms = await getRooms(userId).catch(() => []);
+    setRooms(updatedRooms);
+    setActiveRoomId(roomId);
   };
 
   // ── Action sheet flow ──
@@ -815,7 +790,10 @@ const AIChatFeature = () => {
     setActionsRoom(null);
     setRenameRoom(room);
   };
-  const confirmRename = (roomId: string, newTitle: string) => {
+  const confirmRename = async (roomId: string, newTitle: string) => {
+    if (userId) {
+      await updateRoom(userId, roomId, { title: newTitle }).catch(() => {});
+    }
     setRooms((prev) => prev.map((r) => (r.id === roomId ? { ...r, title: newTitle } : r)));
     setRenameRoom(null);
   };
@@ -824,10 +802,12 @@ const AIChatFeature = () => {
     setActionsRoom(null);
     setDeleteRoom(room);
   };
-  const confirmDelete = (roomId: string) => {
+  const confirmDelete = async (roomId: string) => {
+    if (userId) {
+      await deleteRoom(userId, roomId).catch(() => {});
+    }
     setRooms((prev) => prev.filter((r) => r.id !== roomId));
     setDeleteRoom(null);
-    // If the deleted room was open, return to the list
     if (activeRoomId === roomId) setActiveRoomId(null);
   };
 
@@ -837,8 +817,8 @@ const AIChatFeature = () => {
         <ChatRoomScreen
           room={activeRoom}
           onBack={() => setActiveRoomId(null)}
-          onUpdateRoom={handleUpdateRoom}
           onOpenActions={openActions}
+          userId={userId}
         />
       ) : (
         <ChatRoomsList rooms={rooms} onOpenRoom={handleOpenRoom} onNewChat={handleNewChat} onOpenActions={openActions} />
