@@ -36,6 +36,7 @@ import {
   addMessage,
   getMessages,
 } from "../services/firebaseChatService";
+import {getAiResponseMessage} from "../services/aiCall"
 
 // ─── THEME ────────────────────────────────────────────────────────────────
 const ceylon = {
@@ -674,14 +675,17 @@ const ChatRoomScreen = ({ room, onBack, onOpenActions, userId }: any) => {
       const userMsg = { sender: "user", text, time: nowTime() };
       const saved = await addMessage(userId, room.id, userMsg);
       setMessages((prev) => [...prev, saved]);
-      const AiResponse = "test response"
+      const AiResponseMessage = await getAiResponseMessage(userId, room.id);
+      console.log("AI Response Message *********", AiResponseMessage);
+
+    
       
 
       setTyping(true);
       setTimeout(async () => {
         const aiMsg = {
           sender: "ai",
-          text: AiResponse,
+          text: AiResponseMessage,
           time: nowTime(),
         };
         const savedAi = await addMessage(userId, room.id, aiMsg);
