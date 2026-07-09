@@ -9,14 +9,11 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, Stack } from "expo-router";
-import {
-  User,
-  Lock,
-  ChevronRight,
-  Circle,
-} from "lucide-react-native";
+import { User, Lock, ChevronRight, Circle } from "lucide-react-native";
 
 import { loginUser } from "../services/auth.service";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/src/config/firebase";
 
 const LoginScreen = () => {
   const [role, setRole] = useState("student");
@@ -40,9 +37,17 @@ const LoginScreen = () => {
     try {
       setLoading(true);
 
-      await loginUser(email, password);
+      const user = await loginUser(email, password);
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      const userData = userDoc.data();
+      const userType = userData?.userType || "student";
+      console.log("-------------",userType);
 
-      router.replace("/(tabs)/(mood)/moodDashboard");
+      if (userType === "counselor") {
+        router.replace("/(tabs)/(counselor)/CounselorDashboard");
+      } else {
+        router.replace("/(tabs)/(mood)/moodDashboard");
+      }
     } catch (error: any) {
       let message = "Login failed";
 
@@ -79,22 +84,15 @@ const LoginScreen = () => {
 
       <SafeAreaView className="flex-1 bg-background">
         <View className="flex-1 px-8 items-center justify-center mb-[130px]">
-
           {/* Logo */}
           <View className="items-center mb-10">
             <View className="w-24 h-24 bg-primary rounded-[30px] items-center justify-center mb-4">
               <View className="w-14 h-14 bg-skyBlue rounded-2xl items-center justify-center">
-                <Circle
-                  size={35}
-                  color="white"
-                  fill="rgba(255,255,255,0.3)"
-                />
+                <Circle size={35} color="white" fill="rgba(255,255,255,0.3)" />
               </View>
             </View>
 
-            <Text className="text-3xl font-bold text-black">
-              MindSpace
-            </Text>
+            <Text className="text-3xl font-bold text-black">MindSpace</Text>
 
             <Text className="text-gray-400 mt-1">
               Your student wellness companion
@@ -103,7 +101,6 @@ const LoginScreen = () => {
 
           {/* Input Fields */}
           <View className="w-full mb-5">
-
             {/* Email */}
             <View className="flex-row items-center bg-white rounded-2xl px-4 h-14 mb-4 border border-gray-200">
               <User color="#FFD4B8" size={20} />
@@ -140,7 +137,6 @@ const LoginScreen = () => {
           </Text>
 
           <View className="flex-row justify-between w-full mb-8">
-
             {/* Student */}
             <TouchableOpacity
               onPress={() => setRole("student")}
@@ -150,14 +146,9 @@ const LoginScreen = () => {
                   : "bg-white border border-gray-200"
               }`}
             >
-              <User
-                size={18}
-                color={role === "student" ? "#000" : "#8CC14A"}
-              />
+              <User size={18} color={role === "student" ? "#000" : "#8CC14A"} />
 
-              <Text className="ml-2 font-semibold text-gray-700">
-                Student
-              </Text>
+              <Text className="ml-2 font-semibold text-gray-700">Student</Text>
             </TouchableOpacity>
 
             {/* Counselor */}
@@ -193,15 +184,10 @@ const LoginScreen = () => {
           {/* Register Link */}
           <Text className="text-gray-400 text-sm">
             New here?{" "}
-            <Pressable
-              onPress={() => router.push("/Route/register")}
-            >
-              <Text className="text-black font-bold">
-                Create account
-              </Text>
+            <Pressable onPress={() => router.push("/Route/register")}>
+              <Text className="text-black font-bold">Create account</Text>
             </Pressable>
           </Text>
-
         </View>
       </SafeAreaView>
     </>

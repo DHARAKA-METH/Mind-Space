@@ -11,11 +11,7 @@ import MoodCheckIn from "../(tabs)/(mood)/moodCheckIn";
 import ChatScreen from "../(tabs)/(chat)/chat";
 import BookSession from "../(tabs)/(appointments)/BookSession";
 import RecommendationScreen from "../(tabs)/(Recommendation)/Recommendations";
-
-
-
-
-import AppointmentsScreen from "../(tabs)/(appointments)/BookSession";
+import CounselorDashboard from "../(tabs)/(counselor)/CounselorDashboard";
 
 const PATH_TAB_MAP = {
   "/moodDashboard": "Home",
@@ -51,6 +47,10 @@ export default function TabLayout() {
         return <HomeScreen />;
     }
   };
+
+  if (pathname === "/CounselorDashboard") {
+    return <CounselorDashboard />;
+  }
 
   return (
     <View style={{ flex: 1 }}>

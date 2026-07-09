@@ -50,7 +50,11 @@ const RegisterScreen = () => {
 
       Alert.alert("Success", "Account created successfully");
 
-      router.replace("/(tabs)/(mood)/moodDashboard");
+      if (role === "counselor") {
+        router.replace("/(tabs)/(counselor)/CounselorDashboard");
+      } else {
+        router.replace("/(tabs)/(mood)/moodDashboard");
+      }
     } catch (error: any) {
       let message = "Something went wrong";
 
