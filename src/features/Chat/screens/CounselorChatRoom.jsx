@@ -1,14 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, FlatList, Platform, TextInput } from 'react-native';
+import { getAuth } from 'firebase/auth';
+import { subscribeMessages, sendMessage, markConversationRead } from '../services/anonymousChatService';
 
-// ─── DUMMY DATA ───────────────────────────────────────────────────────────────
-const COUNSELOR_CHAT = [
-  { id: 'm1', sender: 'counselor', text: 'Hello! I\'m here to listen. This is a completely safe, anonymous space. How can I support you today?', time: '10:02 AM' },
-  { id: 'm2', sender: 'user', text: "I've been feeling overwhelmed with everything lately...", time: '10:03 AM' },
-  { id: 'm3', sender: 'counselor', text: "I hear you. Feeling overwhelmed is very real. Can you tell me a little more about what's been weighing on you the most?", time: '10:04 AM' },
-];
-
-// ─── AVATAR ───────────────────────────────────────────────────────────────────
 const Avatar = React.memo(({ emoji, color, size = 36, online }) => (
   <View className="relative">
     <View
@@ -24,6 +18,12 @@ const Avatar = React.memo(({ emoji, color, size = 36, online }) => (
 ));
 Avatar.displayName = 'Avatar';
 
+const formatMsgTime = (ts) => {
+  if (!ts) return '';
+  const d = ts?.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
 const PrivacyBanner = () => (
   <View className="flex-row items-center p-3 bg-purple-50 rounded-2xl border border-purple-300 mb-3">
     <Text className="text-lg mr-2">🔒</Text>
@@ -34,20 +34,17 @@ const PrivacyBanner = () => (
   </View>
 );
 
-const MessageBubble = React.memo(({ msg, systemEmoji, bubbleColor = 'bg-purple-600' }) => {
-  const isUser = msg.sender === 'user';
-  return (
-    <View className={`px-4 mb-3 items-end flex-row ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-      {!isUser && <Avatar emoji={systemEmoji} color="bg-indigo-100" size={32} />}
-      <View className={`max-w-[72%] mx-2 ${isUser ? 'items-end' : 'items-start'}`}>
-        <View className={`rounded-2xl p-3 shadow-sm ${isUser ? `${bubbleColor} rounded-br-sm` : 'bg-white rounded-bl-sm'}`}>
-          <Text className={`text-sm ${isUser ? 'text-white' : 'text-slate-900'}`}>{msg.text}</Text>
-        </View>
-        <Text className="text-[10px] text-slate-400 mt-1">{msg.time}</Text>
+const MessageBubble = React.memo(({ msg, systemEmoji, isUser, bubbleColor = 'bg-purple-600' }) => (
+  <View className={`px-4 mb-3 items-end flex-row ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+    {!isUser && <Avatar emoji={systemEmoji} color="bg-indigo-100" size={32} />}
+    <View className={`max-w-[72%] mx-2 ${isUser ? 'items-end' : 'items-start'}`}>
+      <View className={`rounded-2xl p-3 shadow-sm ${isUser ? `${bubbleColor} rounded-br-sm` : 'bg-white rounded-bl-sm'}`}>
+        <Text className={`text-sm ${isUser ? 'text-white' : 'text-slate-900'}`}>{msg.text}</Text>
       </View>
+      <Text className="text-[10px] text-slate-400 mt-1">{formatMsgTime(msg.createdAt)}</Text>
     </View>
-  );
-});
+  </View>
+));
 MessageBubble.displayName = 'MessageBubble';
 
 const MessageInput = ({ onSend, placeholder = 'Type a message...', showAttach = false }) => {
@@ -74,34 +71,25 @@ const MessageInput = ({ onSend, placeholder = 'Type a message...', showAttach = 
   );
 };
 
-// ─── SCREEN ───────────────────────────────────────────────────────────────────
 const CounselorChatRoom = ({ counselor, onBack }) => {
-  const [messages, setMessages] = useState(COUNSELOR_CHAT);
-  const [typing, setTyping] = useState(false);
+  const [messages, setMessages] = useState([]);
   const flatListRef = useRef();
+  const uid = getAuth().currentUser?.uid;
+
+  useEffect(() => {
+    if (!counselor.conversationId) return;
+    const unsub = subscribeMessages(counselor.conversationId, setMessages);
+    markConversationRead(counselor.conversationId, "student");
+    return unsub;
+  }, [counselor.conversationId]);
 
   const handleSend = (text) => {
-    setMessages((m) => [...m, {
-      id: Date.now().toString(),
-      sender: 'user',
-      text,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    }]);
-    setTyping(true);
-    setTimeout(() => {
-      setTyping(false);
-      setMessages((m) => [...m, {
-        id: Date.now().toString() + 'c',
-        sender: 'counselor',
-        text: 'Thank you for sharing that with me. It takes real courage. I\'m here with you.',
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      }]);
-    }, 2500);
+    if (!uid || !counselor.conversationId) return;
+    sendMessage(counselor.conversationId, uid, "student", text);
   };
 
   return (
     <View className="flex-1">
-      {/* Chat Header */}
       <View className="p-3 bg-white border-b border-slate-200 flex-row items-center">
         <TouchableOpacity
           onPress={onBack}
@@ -122,7 +110,7 @@ const CounselorChatRoom = ({ counselor, onBack }) => {
       <FlatList
         ref={flatListRef}
         data={messages}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id || Math.random().toString()}
         onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
         onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
         className="flex-1"
@@ -146,18 +134,8 @@ const CounselorChatRoom = ({ counselor, onBack }) => {
           </>
         )}
         renderItem={({ item }) => (
-          <MessageBubble msg={item} systemEmoji={counselor.emoji} bubbleColor="bg-purple-600" />
+          <MessageBubble msg={item} systemEmoji={counselor.emoji} isUser={item.senderRole === "student"} bubbleColor="bg-purple-600" />
         )}
-        ListFooterComponent={
-          typing ? (
-            <View className="flex-row items-center px-4 pb-2.5">
-              <Avatar emoji={counselor.emoji} color={counselor.color} size={28} />
-              <Text className="text-[11px] text-slate-400 italic ml-2">
-                {counselor.name.split(' ')[1] || counselor.name} is typing...
-              </Text>
-            </View>
-          ) : null
-        }
       />
 
       <MessageInput onSend={handleSend} placeholder="Message anonymously..." showAttach />

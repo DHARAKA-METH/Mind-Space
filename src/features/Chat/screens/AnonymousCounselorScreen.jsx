@@ -1,35 +1,8 @@
-import React, { useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, FlatList } from 'react-native';
+import { getAuth } from 'firebase/auth';
+import { getCounselors, startOrGetConversation } from '../services/anonymousChatService';
 
-// ─── DATA ─────────────────────────────────────────────────────────────────────
-const COUNSELORS = [
-  {
-    id: 'c1', name: 'Dr. Sarah Chen', specialty: 'Anxiety & Burnout Specialist',
-    bio: 'Helping students navigate academic pressure with evidence-based CBT techniques.',
-    lang: 'English, Mandarin', exp: 8, avgReply: '< 5 min', online: true,
-    emoji: '👩‍⚕️', color: 'bg-indigo-100',
-  },
-  {
-    id: 'c2', name: 'Mr. James Okafor', specialty: 'Depression & Grief Counselor',
-    bio: "Compassionate listening and practical coping strategies for life's hardest moments.",
-    lang: 'English, French', exp: 5, avgReply: '< 10 min', online: true,
-    emoji: '👨‍💼', color: 'bg-pink-100',
-  },
-  {
-    id: 'c3', name: 'Ms. Priya Nair', specialty: 'Stress & Mindfulness Coach',
-    bio: 'Integrating mindfulness, yoga therapy and somatic techniques for holistic wellness.',
-    lang: 'English, Tamil', exp: 6, avgReply: '< 8 min', online: false,
-    emoji: '🧘‍♀️', color: 'bg-emerald-100',
-  },
-  {
-    id: 'c4', name: 'Dr. Leo Park', specialty: 'Academic & Career Counselor',
-    bio: 'Specialized in helping students overcome imposter syndrome and exam anxiety.',
-    lang: 'English, Korean', exp: 10, avgReply: '< 12 min', online: true,
-    emoji: '👨‍🏫', color: 'bg-amber-100',
-  },
-];
-
-// ─── AVATAR ───────────────────────────────────────────────────────────────────
 const Avatar = React.memo(({ emoji, color, size = 36, online }) => (
   <View className="relative">
     <View
@@ -45,7 +18,6 @@ const Avatar = React.memo(({ emoji, color, size = 36, online }) => (
 ));
 Avatar.displayName = 'Avatar';
 
-// ─── COUNSELOR CARD ───────────────────────────────────────────────────────────
 const CounselorCard = React.memo(({ c, onStart }) => (
   <TouchableOpacity
     onPress={() => c.online && onStart(c)}
@@ -84,18 +56,29 @@ const CounselorCard = React.memo(({ c, onStart }) => (
 ));
 CounselorCard.displayName = 'CounselorCard';
 
-// ─── SCREEN ───────────────────────────────────────────────────────────────────
 const AnonymousCounselorScreen = ({ setActiveCounselor }) => {
-  const onlineCount = COUNSELORS.filter((c) => c.online).length;
+  const [counselors, setCounselors] = useState([]);
+
+  useEffect(() => {
+    getCounselors().then(setCounselors);
+  }, []);
+
+  const onlineCount = counselors.filter((c) => c.online).length;
+
+  const handleStart = useCallback(async (c) => {
+    const uid = getAuth().currentUser?.uid;
+    if (!uid) return;
+    const conversationId = await startOrGetConversation(uid, c.id);
+    setActiveCounselor({ ...c, conversationId });
+  }, [setActiveCounselor]);
 
   const renderCounselor = useCallback(
-    ({ item }) => <CounselorCard c={item} onStart={setActiveCounselor} />,
-    [setActiveCounselor],
+    ({ item }) => <CounselorCard c={item} onStart={handleStart} />,
+    [handleStart],
   );
 
   return (
     <View className="flex-1">
-      {/* Header */}
       <View className="p-4 bg-white border-b border-slate-200">
         <View className="flex-row items-center">
           <View className="w-10 h-10 rounded-xl bg-purple-50 items-center justify-center border border-purple-200">
@@ -114,7 +97,7 @@ const AnonymousCounselorScreen = ({ setActiveCounselor }) => {
       </View>
 
       <FlatList
-        data={COUNSELORS}
+        data={counselors}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={() => (
           <Text className="p-4 pb-2 text-xs font-bold text-slate-500 uppercase tracking-wider">
