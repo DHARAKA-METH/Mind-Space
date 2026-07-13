@@ -45,7 +45,7 @@ export const fetchAppointments = async (counselorId: string): Promise<CounselorA
   return results;
 };
 
-export const updateAppointmentStatus = async (appointmentId: string, status: "confirmed" | "cancelled"): Promise<void> => {
+export const updateAppointmentStatus = async (appointmentId: string, status: "confirmed" | "cancelled" | "completed" | "missed"): Promise<void> => {
   await updateDoc(doc(db, "appointments", appointmentId), {
     status,
     updatedAt: new Date().toISOString(),

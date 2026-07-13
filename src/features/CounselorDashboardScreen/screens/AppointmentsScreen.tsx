@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
-import { getAuth } from "firebase/auth";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { fetchAppointments, updateAppointmentStatus, CounselorAppointment } from "../services/appointmentService";
 
 const ceylon = {
@@ -31,9 +31,19 @@ const formatDateTime = (iso: string) => {
   };
 };
 
-const AppointmentRow = ({ appt, delay, onAccept, onReject }: any) => {
+const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
+  pending:   { bg: `${ceylon.terracotta}20`, color: ceylon.terracotta },
+  confirmed: { bg: ceylon.successBg,         color: ceylon.success },
+  cancelled: { bg: ceylon.dangerBg,          color: ceylon.danger },
+  completed: { bg: "#D0E4F0",                color: "#2A6A8A" },
+  missed:    { bg: "#EDE0D0",                color: ceylon.muted },
+};
+
+const AppointmentRow = ({ appt, delay, onAccept, onReject, onComplete, onMissed }: any) => {
   const { date, time } = formatDateTime(appt.appointmentDateTime);
   const isPending = appt.status === "pending";
+  const isConfirmed = appt.status === "confirmed";
+  const s = STATUS_STYLES[appt.status] || STATUS_STYLES.pending;
 
   return (
     <Animated.View entering={FadeInDown.delay(delay).duration(300)}>
@@ -62,24 +72,8 @@ const AppointmentRow = ({ appt, delay, onAccept, onReject }: any) => {
               <Text style={{ fontWeight: "700", fontSize: 13, color: ceylon.ink }}>
                 {appt.studentName}
               </Text>
-              <View
-                style={{
-                  backgroundColor:
-                    appt.status === "confirmed" ? ceylon.successBg :
-                    appt.status === "cancelled" ? ceylon.dangerBg :
-                    `${ceylon.terracotta}20`,
-                  paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6,
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 10, fontWeight: "700", textTransform: "capitalize",
-                    color:
-                      appt.status === "confirmed" ? ceylon.success :
-                      appt.status === "cancelled" ? ceylon.danger :
-                      ceylon.terracotta,
-                  }}
-                >
+              <View style={{ backgroundColor: s.bg, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
+                <Text style={{ fontSize: 10, fontWeight: "700", textTransform: "capitalize", color: s.color }}>
                   {appt.status}
                 </Text>
               </View>
@@ -123,6 +117,27 @@ const AppointmentRow = ({ appt, delay, onAccept, onReject }: any) => {
             </TouchableOpacity>
           </View>
         )}
+
+        {isConfirmed && (
+          <View className="flex-row" style={{ gap: SPACE.sm, marginTop: SPACE.md }}>
+            <TouchableOpacity
+              onPress={() => onComplete(appt)}
+              className="flex-1 py-2.5 rounded-xl items-center flex-row justify-center"
+              style={{ backgroundColor: "#2A6A8A", gap: 6 }}
+            >
+              <Ionicons name="checkmark-done" size={16} color="#fff" />
+              <Text style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}>Completed</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => onMissed(appt)}
+              className="flex-1 py-2.5 rounded-xl items-center flex-row justify-center"
+              style={{ backgroundColor: ceylon.muted, gap: 6 }}
+            >
+              <Ionicons name="close" size={16} color="#fff" />
+              <Text style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}>Missed</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     </Animated.View>
   );
@@ -131,15 +146,23 @@ const AppointmentRow = ({ appt, delay, onAccept, onReject }: any) => {
 export default function AppointmentsScreen({ onBack }: any) {
   const [appointments, setAppointments] = useState<CounselorAppointment[]>([]);
   const [loading, setLoading] = useState(true);
-  const uid = getAuth().currentUser?.uid;
 
   useEffect(() => {
-    if (!uid) return;
-    fetchAppointments(uid).then((data) => {
-      setAppointments(data);
-      setLoading(false);
-    }).catch(() => setLoading(false));
-  }, [uid]);
+    const unsub = onAuthStateChanged(getAuth(), (user) => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+      fetchAppointments(user.uid).then((data) => {
+        setAppointments(data);
+        setLoading(false);
+      }).catch((err) => {
+        console.error("fetchAppointments error", err);
+        setLoading(false);
+      });
+    });
+    return unsub;
+  }, []);
 
   const handleAccept = async (appt: CounselorAppointment) => {
     try {
@@ -165,6 +188,36 @@ export default function AppointmentsScreen({ onBack }: any) {
             );
           } catch {
             Alert.alert("Error", "Could not decline appointment.");
+          }
+        },
+      },
+    ]);
+  };
+
+  const handleComplete = async (appt: CounselorAppointment) => {
+    try {
+      await updateAppointmentStatus(appt.appointmentId, "completed");
+      setAppointments((prev) =>
+        prev.map((a) => a.appointmentId === appt.appointmentId ? { ...a, status: "completed" } : a)
+      );
+    } catch {
+      Alert.alert("Error", "Could not mark appointment.");
+    }
+  };
+
+  const handleMissed = async (appt: CounselorAppointment) => {
+    Alert.alert("Mark Missed", `Mark session with ${appt.studentName} as missed?`, [
+      { text: "No", style: "cancel" },
+      {
+        text: "Yes, missed", style: "destructive",
+        onPress: async () => {
+          try {
+            await updateAppointmentStatus(appt.appointmentId, "missed");
+            setAppointments((prev) =>
+              prev.map((a) => a.appointmentId === appt.appointmentId ? { ...a, status: "missed" } : a)
+            );
+          } catch {
+            Alert.alert("Error", "Could not mark appointment.");
           }
         },
       },
@@ -226,6 +279,8 @@ export default function AppointmentsScreen({ onBack }: any) {
               delay={100 + i * 60}
               onAccept={handleAccept}
               onReject={handleReject}
+              onComplete={handleComplete}
+              onMissed={handleMissed}
             />
           ))
         )}
