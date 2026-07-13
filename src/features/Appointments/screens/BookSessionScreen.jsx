@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from "react-native";
 import { Stack } from "expo-router";
 import dayjs from "dayjs";
@@ -15,9 +16,13 @@ import {
   MONTH_NAMES,
   DAYS,
   TIME_SLOTS,
-  COUNSELORS,
-  INITIAL_APPOINTMENTS,
 } from "../services/mockData";
+import {
+  getCounselors,
+  getLoggedUser,
+  fetchAppointments,
+  createAppointment,
+} from "../services/appointmentService";
 import {
   getDaysInMonth,
   getFirstDayOfMonth,
@@ -29,21 +34,17 @@ import {
 // Initialize Day.js Global UTC Plugin
 dayjs.extend(utc);
 
-// ─── Logged-in User Context Mock ──────────────────────────────────────────────
-const LOGGED_USER = {
-  id: "U001",
-  name: "Kasun Perera",
-};
-
 // ─── Main Functional Component ────────────────────────────────────────────────
 export default function BookSessionScreen() {
   // Lock current baseline to absolute Global UTC Time
   const nowGlobal = useMemo(() => dayjs.utc(), []);
   const todayDateStr = nowGlobal.format("YYYY-MM-DD");
-  const [appointments, setAppointments] = useState(INITIAL_APPOINTMENTS);
+  const LOGGED_USER = useMemo(() => getLoggedUser() || { id: "", name: "Student" }, []);
+  const [appointments, setAppointments] = useState([]);
+  const [counselors, setCounselors] = useState([]);
   const [selectedCounselor, setSelectedCounselor] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [calMonth, setCalMonth] = useState(nowGlobal.month()); // 0-11
+  const [calMonth, setCalMonth] = useState(nowGlobal.month());
   const [calYear, setCalYear] = useState(nowGlobal.year());
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
@@ -51,6 +52,21 @@ export default function BookSessionScreen() {
   const [note, setNote] = useState("");
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [bookLoading, setBookLoading] = useState(false);
+
+  useEffect(() => {
+    getCounselors().then(setCounselors);
+    const user = getLoggedUser();
+    if (user) {
+      fetchAppointments(user.id).then((data) => {
+        setAppointments(data);
+        setLoading(false);
+      });
+    } else {
+      setLoading(false);
+    }
+  }, []);
 
   // 1. Compute Optimized Appointment Lookups (O(1) Hash Map)
   const systemScheduleMap = useMemo(() => {
@@ -83,9 +99,9 @@ export default function BookSessionScreen() {
 
   // Counselor search filtration logic
   const filteredCounselors = useMemo(() => {
-    if (!searchQuery.trim()) return COUNSELORS;
+    if (!searchQuery.trim()) return counselors;
     const q = searchQuery.toLowerCase();
-    return COUNSELORS.filter(
+    return counselors.filter(
       (c) =>
         c.name.toLowerCase().includes(q) ||
         c.specialties.some((s) => s.toLowerCase().includes(q)),
@@ -127,44 +143,50 @@ export default function BookSessionScreen() {
     setSelectedTime(null);
   }
 
-  function handleBook() {
-    if (!selectedCounselor || !selectedDay || !selectedTime || !selectedDateStr)
+  async function handleBook() {
+    if (!selectedCounselor || !selectedDay || !selectedTime || !selectedDateStr || !LOGGED_USER.id)
       return;
 
     const targetTimeISO = timeSlotToISO(selectedTime);
     const daySchedule = systemScheduleMap[selectedDateStr];
 
-    // Final safety validations
     if (daySchedule?.studentHasBooking) return;
     if (daySchedule?.globalSlots.includes(targetTimeISO)) return;
     if ((daySchedule?.globalSlots.length || 0) >= TIME_SLOTS.length) return;
 
-    const newAppointment = {
-      appointmentId: `APP${String(appointments.length + 1).padStart(3, "0")}`,
-      studentId: LOGGED_USER.id,
-      counselorId: selectedCounselor.id,
-      appointmentDateTime: `${selectedDateStr}T${targetTimeISO}:00Z`, // Clean Normalized ISO
-      durationMinutes: 45,
-      type: sessionType,
-      status: "pending",
-      rescheduleCount: 0,
-      createdAt: dayjs.utc().toISOString(),
-      updatedAt: dayjs.utc().toISOString(),
-      note: note.trim(),
-    };
+    setBookLoading(true);
+    try {
+      const appointmentData = {
+        studentId: LOGGED_USER.id,
+        counselorId: selectedCounselor.id,
+        appointmentDateTime: `${selectedDateStr}T${targetTimeISO}:00Z`,
+        durationMinutes: 45,
+        type: sessionType,
+        note: note.trim(),
+      };
 
-    console.log(
-      "🚀 Booking Submitted Successfully:",
-      JSON.stringify(newAppointment, null, 2),
-    );
+      const newId = await createAppointment(appointmentData);
+      const newAppointment = {
+        ...appointmentData,
+        appointmentId: newId,
+        status: "pending",
+        rescheduleCount: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
 
-    setAppointments((prev) => [...prev, newAppointment]);
-    setBookingSuccess(true);
-    setTimeout(() => setBookingSuccess(false), 4000);
+      setAppointments((prev) => [...prev, newAppointment]);
+      setBookingSuccess(true);
+      setTimeout(() => setBookingSuccess(false), 4000);
 
-    setSelectedDay(null);
-    setSelectedTime(null);
-    setNote("");
+      setSelectedDay(null);
+      setSelectedTime(null);
+      setNote("");
+    } catch (error) {
+      Alert.alert("Booking Failed", error.message || "Could not create appointment. Please try again.");
+    } finally {
+      setBookLoading(false);
+    }
   }
 
   const targetTimeISO = selectedTime ? timeSlotToISO(selectedTime) : null;
@@ -381,7 +403,7 @@ export default function BookSessionScreen() {
                   marginBottom: 8,
                 }}
               >
-                📌 Your sessions with {selectedCounselor.name.split(" ").pop()}
+                 Your sessions with {selectedCounselor.name.split(" ").pop()}
               </Text>
               {counselorMyAppointments.map((a) => {
                 const displayDate = dayjs
@@ -403,24 +425,48 @@ export default function BookSessionScreen() {
                     <Text style={{ fontSize: 12, color: "#374151" }}>
                       📅 {displayDate}
                     </Text>
-                    <View
-                      style={{
-                        backgroundColor:
-                          a.type === "online" ? "#DBEAFE" : "#F3E8FF",
-                        paddingHorizontal: 8,
-                        paddingVertical: 2,
-                        borderRadius: 6,
-                      }}
-                    >
-                      <Text
+                    <View className="flex-row" style={{ gap: 4 }}>
+                      <View
                         style={{
-                          color: a.type === "online" ? "#1D4ED8" : "#7C3AED",
-                          fontSize: 10,
-                          fontWeight: "700",
+                          backgroundColor:
+                            a.type === "online" ? "#DBEAFE" : "#F3E8FF",
+                          paddingHorizontal: 8,
+                          paddingVertical: 2,
+                          borderRadius: 6,
                         }}
                       >
-                        {a.type}
-                      </Text>
+                        <Text
+                          style={{
+                            color: a.type === "online" ? "#1D4ED8" : "#7C3AED",
+                            fontSize: 10,
+                            fontWeight: "700",
+                          }}
+                        >
+                          {a.type}
+                        </Text>
+                      </View>
+                      <View
+                        style={{
+                          backgroundColor:
+                            a.status === "confirmed" ? "#D1FAE5" :
+                            a.status === "pending" ? "#FEF3C7" : "#FEE2E2",
+                          paddingHorizontal: 8,
+                          paddingVertical: 2,
+                          borderRadius: 6,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            color:
+                              a.status === "confirmed" ? "#065F46" :
+                              a.status === "pending" ? "#92400E" : "#991B1B",
+                            fontSize: 10,
+                            fontWeight: "700",
+                          }}
+                        >
+                          {a.status}
+                        </Text>
+                      </View>
                     </View>
                   </View>
                 );
@@ -841,22 +887,26 @@ export default function BookSessionScreen() {
 
           {/* Dynamic Action Trigger Button */}
           <TouchableOpacity
-            disabled={!canBook}
+            disabled={!canBook || bookLoading}
             onPress={handleBook}
             style={{
-              backgroundColor: canBook ? accentColor : "#E5E7EB",
+              backgroundColor: canBook && !bookLoading ? accentColor : "#E5E7EB",
               borderRadius: 16,
               paddingVertical: 16,
               alignItems: "center",
               justifyContent: "center",
-              shadowColor: canBook ? accentColor : "transparent",
+              flexDirection: "row",
+              shadowColor: canBook && !bookLoading ? accentColor : "transparent",
               shadowOpacity: 0.15,
               shadowRadius: 10,
-              elevation: canBook ? 4 : 0,
+              elevation: canBook && !bookLoading ? 4 : 0,
             }}
           >
-            <Text style={{ color: canBook ? "#fff" : "#9CA3AF", fontSize: 15, fontWeight: "700" }}>
-              Confirm Appointment
+            {bookLoading && (
+              <Text style={{ marginRight: 8, fontSize: 15 }}>⏳</Text>
+            )}
+            <Text style={{ color: canBook && !bookLoading ? "#fff" : "#9CA3AF", fontSize: 15, fontWeight: "700" }}>
+              {bookLoading ? "Booking..." : "Confirm Appointment"}
             </Text>
           </TouchableOpacity>
         </ScrollView>
