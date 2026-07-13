@@ -1,6 +1,6 @@
 import { db } from "@/src/config/firebase";
 import {
-  collection, doc, getDoc, setDoc, updateDoc, query, where, orderBy, onSnapshot, serverTimestamp, increment,
+  collection, doc, getDoc, getDocs, setDoc, updateDoc, query, where, orderBy, onSnapshot, serverTimestamp, increment, limit,
 } from "firebase/firestore";
 
 export interface ConversationStudent {
@@ -122,4 +122,17 @@ export const sendMessage = async (
 
 export const markConversationRead = async (conversationId: string): Promise<void> => {
   await updateDoc(doc(db, "conversations", conversationId), { unreadCounselor: 0 });
+};
+
+export const findConversationByStudent = async (counselorId: string, studentId: string): Promise<string | null> => {
+  const q = query(
+    collection(db, "conversations"),
+    where("counselorId", "==", counselorId),
+    where("studentId", "==", studentId),
+    where("status", "==", "active"),
+    limit(1),
+  );
+  const snap = await getDocs(q);
+  if (snap.empty) return null;
+  return snap.docs[0].id;
 };

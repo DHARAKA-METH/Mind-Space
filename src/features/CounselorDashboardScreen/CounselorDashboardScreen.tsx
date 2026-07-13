@@ -1,10 +1,16 @@
-import React, { useState, useMemo } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import React, { useState, useEffect, useMemo } from "react";
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
+import { getAuth } from "firebase/auth";
 import AppointmentsScreen from "./screens/AppointmentsScreen";
 import ChatScreen from "./screens/ChatScreen";
+import {
+  fetchCounselorName, fetchTodayAppointments, fetchStressAlerts, fetchActiveChatsCount,
+  TodayAppointment, StressAlert,
+} from "./services/dashboardService";
+import { findConversationByStudent } from "./services/counselorService";
 
 const ceylon = {
   ink: "#3D2E1F",
@@ -22,31 +28,13 @@ const ceylon = {
 
 const SPACE = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 28 };
 
-const COUNSELOR_USER = { name: "Ms. R. Silva", role: "Counselor" };
-
-const STRESS_ALERTS = [
-  {
-    id: "a1",
-    studentTag: "Student #A104",
-    detail: "Stress level 9 — needs attention",
-    emoji: "😰",
-    urgent: true,
-  },
-  {
-    id: "a2",
-    studentTag: "Student #B207",
-    detail: "Mood declining for 3 days",
-    emoji: "😔",
-    urgent: false,
-  },
-];
-
-const TODAYS_APPOINTMENTS = [
-  { id: "ap1", time: "10:00 AM", studentTag: "Student #C312", type: "Online", duration: "45 min" },
-  { id: "ap2", time: "1:30 PM", studentTag: "Student #D118", type: "Physical", duration: "30 min" },
-];
-
-const STATS = { activeChats: 7, todaysAppts: 4 };
+const STATUS_COLORS: Record<string, string> = {
+  confirmed: "#4A7856",
+  pending: "#C97B4A",
+  cancelled: "#B5555C",
+  completed: "#3D7A9A",
+  missed: "#8A7A63",
+};
 
 const StatCard = ({ label, value, color, bg, icon, delay }: any) => (
   <Animated.View
@@ -61,39 +49,59 @@ const StatCard = ({ label, value, color, bg, icon, delay }: any) => (
   </Animated.View>
 );
 
-const StressAlertRow = ({ alert, delay }: any) => (
+const StressAlertRow = ({ alert, delay, onPress }: any) => (
   <Animated.View entering={FadeInDown.delay(delay).duration(300)}>
-    <View
+    <TouchableOpacity
+      onPress={onPress}
       className="flex-row items-center"
       style={{
-        backgroundColor: alert.urgent ? ceylon.dangerBg : "#fff",
+        backgroundColor: alert.urgency === "high" ? ceylon.dangerBg : "#fff",
         borderRadius: 18,
         padding: SPACE.md,
         marginBottom: SPACE.sm,
-        borderWidth: alert.urgent ? 0 : 1,
+        borderWidth: alert.urgency === "high" ? 0 : 1,
         borderColor: ceylon.sand,
       }}
     >
       <View
         style={{
           width: 42, height: 42, borderRadius: 21,
-          backgroundColor: alert.urgent ? "#fff" : ceylon.sand,
+          backgroundColor: alert.urgency === "high" ? "#fff" : ceylon.sand,
           alignItems: "center", justifyContent: "center",
         }}
       >
         <Text style={{ fontSize: 20 }}>{alert.emoji}</Text>
       </View>
       <View style={{ flex: 1, marginLeft: SPACE.md }}>
-        <Text style={{ fontWeight: "700", fontSize: 13, color: alert.urgent ? ceylon.danger : ceylon.ink }}>
-          {alert.studentTag}
+        <Text style={{ fontWeight: "700", fontSize: 13, color: alert.urgency === "high" ? ceylon.danger : ceylon.ink }}>
+          {alert.studentName}
         </Text>
-        <Text style={{ fontSize: 11, color: alert.urgent ? "#9A4A50" : ceylon.muted, marginTop: 2 }}>
+        <Text style={{ fontSize: 11, color: alert.urgency === "high" ? "#9A4A50" : ceylon.muted, marginTop: 2 }}>
           {alert.detail}
         </Text>
       </View>
-    </View>
+      <Ionicons name="chevron-forward" size={16} color={ceylon.mutedLight} />
+    </TouchableOpacity>
   </Animated.View>
 );
+
+const statusBadge = (status: string) => {
+  const bg = STATUS_COLORS[status] || ceylon.muted;
+  const label = status.charAt(0).toUpperCase() + status.slice(1);
+  return (
+    <View
+      style={{
+        backgroundColor: `${bg}20`,
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 8,
+        alignSelf: "flex-start",
+      }}
+    >
+      <Text style={{ fontSize: 10, fontWeight: "600", color: bg }}>{label}</Text>
+    </View>
+  );
+};
 
 const AppointmentRow = ({ appt, delay }: any) => (
   <Animated.View entering={FadeInDown.delay(delay).duration(300)}>
@@ -111,12 +119,15 @@ const AppointmentRow = ({ appt, delay }: any) => (
         <Ionicons name="alarm-outline" size={18} color={ceylon.terracotta} />
       </View>
       <View style={{ flex: 1, marginLeft: SPACE.md }}>
-        <Text style={{ fontWeight: "700", fontSize: 13, color: ceylon.ink }}>
-          {appt.time} — {appt.studentTag}
-        </Text>
-        <View className="flex-row items-center" style={{ gap: 5, marginTop: 2 }}>
+        <View className="flex-row items-center" style={{ gap: 6 }}>
+          <Text style={{ fontWeight: "700", fontSize: 13, color: ceylon.ink }}>
+            {appt.time} — {appt.studentName}
+          </Text>
+          {statusBadge(appt.status)}
+        </View>
+        <View className="flex-row items-center" style={{ gap: 5, marginTop: 3 }}>
           <Ionicons name={appt.type === "Online" ? "videocam-outline" : "location-outline"} size={12} color={ceylon.muted} />
-          <Text style={{ fontSize: 11, color: ceylon.muted }}>{appt.type} · {appt.duration}</Text>
+          <Text style={{ fontSize: 11, color: ceylon.muted }}>{appt.type}</Text>
         </View>
       </View>
       <Ionicons name="chevron-forward" size={16} color={ceylon.mutedLight} />
@@ -124,8 +135,59 @@ const AppointmentRow = ({ appt, delay }: any) => (
   </Animated.View>
 );
 
-const CounselorBoard = ({ onViewAppointments }: any) => {
-  const urgentCount = useMemo(() => STRESS_ALERTS.filter((a) => a.urgent).length, []);
+type ScreenState = "board" | "chats" | "appointments";
+
+const CounselorBoard = ({ onViewAppointments, onAlertPress }: any) => {
+  const [loading, setLoading] = useState(true);
+  const [counselorName, setCounselorName] = useState("");
+  const [activeChats, setActiveChats] = useState(0);
+  const [todaysAppts, setTodaysAppts] = useState(0);
+  const [appointments, setAppointments] = useState<TodayAppointment[]>([]);
+  const [alerts, setAlerts] = useState<StressAlert[]>([]);
+  const uid = getAuth().currentUser?.uid;
+
+  useEffect(() => {
+    if (!uid) return;
+    (async () => {
+      try {
+        const [name, chatsCount, todayAppts, stressAlerts] = await Promise.all([
+          fetchCounselorName(uid),
+          fetchActiveChatsCount(uid),
+          fetchTodayAppointments(uid),
+          fetchStressAlerts(uid),
+        ]);
+        setCounselorName(name);
+        setActiveChats(chatsCount);
+        setTodaysAppts(todayAppts.length);
+        setAppointments(todayAppts);
+        setAlerts(stressAlerts);
+      } catch (err) {
+        console.error("Board fetch error", err);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [uid]);
+
+  const urgentCount = useMemo(() => alerts.filter((a) => a.urgency === "high").length, [alerts]);
+
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center" style={{ backgroundColor: ceylon.background }}>
+        <View
+          style={{
+            width: 56, height: 56, borderRadius: 28,
+            backgroundColor: "#fff",
+            alignItems: "center", justifyContent: "center",
+            marginBottom: SPACE.md,
+          }}
+        >
+          <ActivityIndicator color={ceylon.sage} size="small" />
+        </View>
+        <Text style={{ color: ceylon.muted, fontSize: 13 }}>Loading board…</Text>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1" style={{ backgroundColor: ceylon.background }}>
@@ -137,7 +199,7 @@ const CounselorBoard = ({ onViewAppointments }: any) => {
           <View>
             <Text style={{ fontSize: 13, color: ceylon.muted }}>Welcome back,</Text>
             <Text style={{ fontSize: 20, fontWeight: "800", color: ceylon.ink, marginTop: 2 }}>
-              {COUNSELOR_USER.name}
+              {counselorName}
             </Text>
           </View>
           <TouchableOpacity
@@ -151,23 +213,28 @@ const CounselorBoard = ({ onViewAppointments }: any) => {
         </Animated.View>
 
         <View className="flex-row" style={{ gap: SPACE.md, marginBottom: SPACE.xl }}>
-          <StatCard label="ACTIVE CHATS" value={STATS.activeChats} color={ceylon.teaGreen} bg={`${ceylon.sage}20`} icon="chatbubbles-outline" delay={60} />
-          <StatCard label="TODAY'S APPTS" value={STATS.todaysAppts} color={ceylon.terracotta} bg={ceylon.sand} icon="calendar-outline" delay={120} />
+          <StatCard label="ACTIVE CHATS" value={activeChats} color={ceylon.teaGreen} bg={`${ceylon.sage}20`} icon="chatbubbles-outline" delay={60} />
+          <StatCard label="TODAY'S APPTS" value={todaysAppts} color={ceylon.terracotta} bg={ceylon.sand} icon="calendar-outline" delay={120} />
         </View>
 
         <View className="flex-row items-center" style={{ marginBottom: SPACE.md, gap: 6 }}>
           <Ionicons name="alert-circle" size={16} color={ceylon.danger} />
           <Text style={{ fontSize: 14, fontWeight: "700", color: ceylon.ink }}>High-stress alerts</Text>
         </View>
-        {STRESS_ALERTS.length === 0 ? (
+        {alerts.length === 0 ? (
           <View style={{ backgroundColor: "#fff", borderRadius: 18, padding: SPACE.lg, marginBottom: SPACE.xl, alignItems: "center" }}>
             <Ionicons name="leaf-outline" size={20} color={ceylon.sage} style={{ marginBottom: 6 }} />
             <Text style={{ fontSize: 12, color: ceylon.muted }}>No alerts right now</Text>
           </View>
         ) : (
           <View style={{ marginBottom: SPACE.xl }}>
-            {STRESS_ALERTS.map((a, i) => (
-              <StressAlertRow key={a.id} alert={a} delay={160 + i * 60} />
+            {alerts.map((a, i) => (
+              <StressAlertRow
+                key={a.id}
+                alert={a}
+                delay={160 + i * 60}
+                onPress={() => onAlertPress?.(a)}
+              />
             ))}
           </View>
         )}
@@ -175,15 +242,22 @@ const CounselorBoard = ({ onViewAppointments }: any) => {
         <View className="flex-row items-center justify-between" style={{ marginBottom: SPACE.md }}>
           <View className="flex-row items-center" style={{ gap: 6 }}>
             <Ionicons name="calendar" size={16} color={ceylon.ink} />
-            <Text style={{ fontSize: 14, fontWeight: "700", color: ceylon.ink }}>Today`s appointments</Text>
+            <Text style={{ fontSize: 14, fontWeight: "700", color: ceylon.ink }}>Today&apos;s appointments</Text>
           </View>
           <TouchableOpacity onPress={onViewAppointments}>
             <Text style={{ fontSize: 12, color: ceylon.teaGreen, fontWeight: "700" }}>View all</Text>
           </TouchableOpacity>
         </View>
-        {TODAYS_APPOINTMENTS.map((appt, i) => (
-          <AppointmentRow key={appt.id} appt={appt} delay={300 + i * 60} />
-        ))}
+        {appointments.length === 0 ? (
+          <View style={{ backgroundColor: "#fff", borderRadius: 18, padding: SPACE.lg, alignItems: "center" }}>
+            <Ionicons name="calendar-outline" size={20} color={ceylon.mutedLight} style={{ marginBottom: 6 }} />
+            <Text style={{ fontSize: 12, color: ceylon.muted }}>No appointments scheduled today</Text>
+          </View>
+        ) : (
+          appointments.map((appt, i) => (
+            <AppointmentRow key={appt.id} appt={appt} delay={300 + i * 60} />
+          ))
+        )}
       </ScrollView>
     </View>
   );
@@ -264,20 +338,42 @@ const BottomNav = ({ active, onChange }: any) => (
 );
 
 export default function CounselorDashboardScreen() {
-  const [screen, setScreen] = useState<"board" | "chats" | "appointments">("board");
+  const [screen, setScreen] = useState<ScreenState>("board");
+  const [openConversationId, setOpenConversationId] = useState<string | undefined>();
+
+  const handleAlertPress = async (alert: StressAlert) => {
+    const uid = getAuth().currentUser?.uid;
+    if (!uid) return;
+    const conversationId = await findConversationByStudent(uid, alert.studentId);
+    if (conversationId) {
+      setOpenConversationId(conversationId);
+      setScreen("chats");
+    }
+  };
 
   return (
     <View className="flex-1" style={{ backgroundColor: ceylon.background }}>
       <View style={{ flex: 1 }}>
         {screen === "board" && (
-          <CounselorBoard onViewAppointments={() => setScreen("appointments")} />
+          <CounselorBoard
+            onViewAppointments={() => setScreen("appointments")}
+            onAlertPress={handleAlertPress}
+          />
         )}
-        {screen === "chats" && <ChatScreen />}
+        {screen === "chats" && (
+          <ChatScreen
+            openConversationId={openConversationId}
+            onBackToBoard={() => {
+              setOpenConversationId(undefined);
+              setScreen("board");
+            }}
+          />
+        )}
         {screen === "appointments" && (
           <AppointmentsScreen onBack={() => setScreen("board")} />
         )}
       </View>
-      <BottomNav active={screen} onChange={(key: string) => setScreen(key as any)} />
+      <BottomNav active={screen} onChange={(key: string) => setScreen(key as ScreenState)} />
     </View>
   );
 }
