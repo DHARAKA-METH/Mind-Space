@@ -1,7 +1,9 @@
-import React from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
+import { getAuth } from "firebase/auth";
+import { fetchAppointments, updateAppointmentStatus, CounselorAppointment } from "../services/appointmentService";
 
 const ceylon = {
   ink: "#3D2E1F",
@@ -15,54 +17,178 @@ const ceylon = {
   background: "#F4EFE9",
   danger: "#B5555C",
   dangerBg: "#F7DDD6",
+  success: "#4A7856",
+  successBg: "#DCEBDD",
 };
 
 const SPACE = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 28 };
 
-const TODAYS_APPOINTMENTS = [
-  { id: "ap1", time: "10:00 AM", studentTag: "Student #C312", type: "Online", duration: "45 min" },
-  { id: "ap2", time: "1:30 PM", studentTag: "Student #D118", type: "Physical", duration: "30 min" },
-];
+const formatDateTime = (iso: string) => {
+  const d = new Date(iso);
+  return {
+    date: d.toLocaleDateString([], { month: "short", day: "numeric" }),
+    time: d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+  };
+};
 
-const AppointmentRow = ({ appt, delay }: any) => (
-  <Animated.View entering={FadeInDown.delay(delay).duration(300)}>
-    <View
-      className="flex-row items-center"
-      style={{ backgroundColor: "#fff", borderRadius: 18, padding: SPACE.md, marginBottom: SPACE.sm }}
-    >
+const AppointmentRow = ({ appt, delay, onAccept, onReject }: any) => {
+  const { date, time } = formatDateTime(appt.appointmentDateTime);
+  const isPending = appt.status === "pending";
+
+  return (
+    <Animated.View entering={FadeInDown.delay(delay).duration(300)}>
       <View
         style={{
-          width: 42,
-          height: 42,
-          borderRadius: 21,
-          backgroundColor: `${ceylon.terracotta}18`,
-          alignItems: "center",
-          justifyContent: "center",
+          backgroundColor: "#fff",
+          borderRadius: 18,
+          padding: SPACE.md,
+          marginBottom: SPACE.sm,
+          borderWidth: isPending ? 1.5 : 1,
+          borderColor: isPending ? ceylon.terracotta : ceylon.sand,
         }}
       >
-        <Ionicons name="alarm-outline" size={18} color={ceylon.terracotta} />
-      </View>
-      <View style={{ flex: 1, marginLeft: SPACE.md }}>
-        <Text style={{ fontWeight: "700", fontSize: 13, color: ceylon.ink }}>
-          {appt.time} — {appt.studentTag}
-        </Text>
-        <View className="flex-row items-center" style={{ gap: 5, marginTop: 2 }}>
-          <Ionicons
-            name={appt.type === "Online" ? "videocam-outline" : "location-outline"}
-            size={12}
-            color={ceylon.muted}
-          />
-          <Text style={{ fontSize: 11, color: ceylon.muted }}>
-            {appt.type} · {appt.duration}
-          </Text>
+        <View className="flex-row items-start">
+          <View
+            style={{
+              width: 42, height: 42, borderRadius: 21,
+              backgroundColor: `${ceylon.terracotta}18`,
+              alignItems: "center", justifyContent: "center",
+            }}
+          >
+            <Text style={{ fontSize: 20 }}>{appt.studentEmoji}</Text>
+          </View>
+          <View style={{ flex: 1, marginLeft: SPACE.md }}>
+            <View className="flex-row justify-between items-center">
+              <Text style={{ fontWeight: "700", fontSize: 13, color: ceylon.ink }}>
+                {appt.studentName}
+              </Text>
+              <View
+                style={{
+                  backgroundColor:
+                    appt.status === "confirmed" ? ceylon.successBg :
+                    appt.status === "cancelled" ? ceylon.dangerBg :
+                    `${ceylon.terracotta}20`,
+                  paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 10, fontWeight: "700", textTransform: "capitalize",
+                    color:
+                      appt.status === "confirmed" ? ceylon.success :
+                      appt.status === "cancelled" ? ceylon.danger :
+                      ceylon.terracotta,
+                  }}
+                >
+                  {appt.status}
+                </Text>
+              </View>
+            </View>
+            <View className="flex-row items-center" style={{ gap: 5, marginTop: 3 }}>
+              <Ionicons name="calendar-outline" size={12} color={ceylon.muted} />
+              <Text style={{ fontSize: 11, color: ceylon.muted }}>
+                {date} at {time}
+              </Text>
+            </View>
+            <View className="flex-row items-center" style={{ gap: 5, marginTop: 1 }}>
+              <Ionicons
+                name={appt.type === "online" ? "videocam-outline" : "location-outline"}
+                size={12}
+                color={ceylon.muted}
+              />
+              <Text style={{ fontSize: 11, color: ceylon.muted }}>
+                {appt.type} · {appt.durationMinutes} min
+              </Text>
+            </View>
+          </View>
         </View>
+
+        {isPending && (
+          <View className="flex-row" style={{ gap: SPACE.sm, marginTop: SPACE.md }}>
+            <TouchableOpacity
+              onPress={() => onAccept(appt)}
+              className="flex-1 py-2.5 rounded-xl items-center flex-row justify-center"
+              style={{ backgroundColor: ceylon.success, gap: 6 }}
+            >
+              <Ionicons name="checkmark" size={16} color="#fff" />
+              <Text style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}>Accept</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => onReject(appt)}
+              className="flex-1 py-2.5 rounded-xl items-center flex-row justify-center"
+              style={{ backgroundColor: ceylon.danger, gap: 6 }}
+            >
+              <Ionicons name="close" size={16} color="#fff" />
+              <Text style={{ color: "#fff", fontSize: 12, fontWeight: "700" }}>Decline</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
-      <Ionicons name="chevron-forward" size={16} color={ceylon.mutedLight} />
-    </View>
-  </Animated.View>
-);
+    </Animated.View>
+  );
+};
 
 export default function AppointmentsScreen({ onBack }: any) {
+  const [appointments, setAppointments] = useState<CounselorAppointment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const uid = getAuth().currentUser?.uid;
+
+  useEffect(() => {
+    if (!uid) return;
+    fetchAppointments(uid).then((data) => {
+      setAppointments(data);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, [uid]);
+
+  const handleAccept = async (appt: CounselorAppointment) => {
+    try {
+      await updateAppointmentStatus(appt.appointmentId, "confirmed");
+      setAppointments((prev) =>
+        prev.map((a) => a.appointmentId === appt.appointmentId ? { ...a, status: "confirmed" } : a)
+      );
+    } catch {
+      Alert.alert("Error", "Could not accept appointment.");
+    }
+  };
+
+  const handleReject = async (appt: CounselorAppointment) => {
+    Alert.alert("Decline Appointment", `Cancel this session with ${appt.studentName}?`, [
+      { text: "No", style: "cancel" },
+      {
+        text: "Yes, decline", style: "destructive",
+        onPress: async () => {
+          try {
+            await updateAppointmentStatus(appt.appointmentId, "cancelled");
+            setAppointments((prev) =>
+              prev.map((a) => a.appointmentId === appt.appointmentId ? { ...a, status: "cancelled" } : a)
+            );
+          } catch {
+            Alert.alert("Error", "Could not decline appointment.");
+          }
+        },
+      },
+    ]);
+  };
+
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center" style={{ backgroundColor: ceylon.background }}>
+        <View
+          style={{
+            width: 56, height: 56, borderRadius: 28,
+            backgroundColor: "#fff",
+            alignItems: "center", justifyContent: "center",
+            marginBottom: SPACE.md,
+          }}
+        >
+          <ActivityIndicator color={ceylon.sage} size="small" />
+        </View>
+        <Text style={{ color: ceylon.muted, fontSize: 13 }}>Loading appointments…</Text>
+      </View>
+    );
+  }
+
   return (
     <View className="flex-1" style={{ backgroundColor: ceylon.background }}>
       <View
@@ -85,11 +211,24 @@ export default function AppointmentsScreen({ onBack }: any) {
           entering={FadeIn.duration(300)}
           style={{ fontSize: 13, color: ceylon.muted, marginBottom: SPACE.md }}
         >
-          {TODAYS_APPOINTMENTS.length} appointment{TODAYS_APPOINTMENTS.length !== 1 ? "s" : ""} today
+          {appointments.length} appointment{appointments.length !== 1 ? "s" : ""}
         </Animated.Text>
-        {TODAYS_APPOINTMENTS.map((appt, i) => (
-          <AppointmentRow key={appt.id} appt={appt} delay={100 + i * 60} />
-        ))}
+        {appointments.length === 0 ? (
+          <View style={{ backgroundColor: "#fff", borderRadius: 18, padding: SPACE.xl, alignItems: "center" }}>
+            <Ionicons name="calendar-outline" size={28} color={ceylon.mutedLight} style={{ marginBottom: SPACE.sm }} />
+            <Text style={{ fontSize: 12, color: ceylon.muted }}>No appointments yet</Text>
+          </View>
+        ) : (
+          appointments.map((appt, i) => (
+            <AppointmentRow
+              key={appt.appointmentId}
+              appt={appt}
+              delay={100 + i * 60}
+              onAccept={handleAccept}
+              onReject={handleReject}
+            />
+          ))
+        )}
       </ScrollView>
     </View>
   );
