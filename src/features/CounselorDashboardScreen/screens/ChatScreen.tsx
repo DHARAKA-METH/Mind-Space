@@ -1,6 +1,11 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { View, Text, TouchableOpacity, FlatList, TextInput, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { getAuth } from "firebase/auth";
+import {
+  subscribeConversations, subscribeMessages, sendMessage, markConversationRead,
+  ConversationStudent, MessageData,
+} from "../services/counselorService";
 
 const ceylon = {
   ink: "#3D2E1F",
@@ -18,36 +23,13 @@ const ceylon = {
 
 const SPACE = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 28 };
 
-const STUDENTS = [
-  {
-    id: "s1", anonymousId: "anon_evvi9i", stressLevel: 8, lastActive: "2 min ago",
-    concern: "Exam anxiety — trembling before tests", emoji: "😰", online: true,
-  },
-  {
-    id: "s2", anonymousId: "anon_ck3f7p", stressLevel: 6, lastActive: "15 min ago",
-    concern: "Sleep deprivation, can't fall asleep before 3 AM", emoji: "😔", online: true,
-  },
-  {
-    id: "s3", anonymousId: "anon_mh2b8q", stressLevel: 9, lastActive: "1 hour ago",
-    concern: "Panic attacks during lectures", emoji: "😨", online: false,
-  },
-  {
-    id: "s4", anonymousId: "anon_9w5d1x", stressLevel: 4, lastActive: "Yesterday",
-    concern: "Feeling lonely since moving to campus", emoji: "🥺", online: true,
-  },
-  {
-    id: "s5", anonymousId: "anon_tn6r3k", stressLevel: 7, lastActive: "3 hours ago",
-    concern: "Family pressure about grades", emoji: "😮‍💨", online: false,
-  },
-];
+const formatMsgTime = (ts: any) => {
+  if (!ts) return "";
+  const d = ts?.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+};
 
-const INITIAL_CHAT = [
-  { id: "m1", sender: "student", text: "Hi, I've been feeling really anxious about my upcoming exams. I can't sleep properly.", time: "10:02 AM" },
-  { id: "m2", sender: "counselor", text: "I'm sorry to hear that. Exam anxiety is very common and there are strategies we can try. Can you tell me more about what's keeping you up at night?", time: "10:04 AM" },
-  { id: "m3", sender: "student", text: "I keep thinking I'm going to fail even though I've been studying. My heart races every time I think about the test.", time: "10:06 AM" },
-];
-
-const StudentCard = React.memo(({ student, onChat }: any) => (
+const StudentCard = React.memo(({ student, onChat }: { student: ConversationStudent; onChat: (s: ConversationStudent) => void }) => (
   <TouchableOpacity
     onPress={() => student.online && onChat(student)}
     className="bg-white rounded-2xl p-4 mx-4 my-1.5"
@@ -90,7 +72,7 @@ const StudentCard = React.memo(({ student, onChat }: any) => (
             </Text>
           </View>
         </View>
-        <Text className="text-xs mt-1.5 leading-5" style={{ color: ceylon.muted }}>{student.concern}</Text>
+        <Text className="text-xs mt-1.5 leading-5" style={{ color: ceylon.muted }}>{student.lastMessage || student.concern}</Text>
         <View className="flex-row flex-wrap mt-2" style={{ gap: 6 }}>
           <View className="px-2 py-0.5 rounded-lg" style={{ backgroundColor: ceylon.background, borderWidth: 1, borderColor: ceylon.sand }}>
             <Text className="text-[10px] font-medium" style={{ color: ceylon.muted }}>🔥 Stress {student.stressLevel}/10</Text>
@@ -98,6 +80,11 @@ const StudentCard = React.memo(({ student, onChat }: any) => (
           <View className="px-2 py-0.5 rounded-lg" style={{ backgroundColor: ceylon.background, borderWidth: 1, borderColor: ceylon.sand }}>
             <Text className="text-[10px] font-medium" style={{ color: ceylon.muted }}>⏱ {student.lastActive}</Text>
           </View>
+          {student.unread > 0 && (
+            <View className="px-2 py-0.5 rounded-lg" style={{ backgroundColor: `${ceylon.danger}18`, borderWidth: 1, borderColor: ceylon.dangerBg }}>
+              <Text className="text-[10px] font-bold" style={{ color: ceylon.danger }}>{student.unread} new</Text>
+            </View>
+          )}
         </View>
       </View>
     </View>
@@ -110,39 +97,25 @@ const StudentCard = React.memo(({ student, onChat }: any) => (
 ));
 StudentCard.displayName = "StudentCard";
 
-const CounselorStudentChatRoom = ({ student, onBack }: any) => {
-  const [messages, setMessages] = useState(INITIAL_CHAT);
+const CounselorStudentChatRoom = ({ student, onBack }: { student: ConversationStudent; onBack: () => void }) => {
+  const [messages, setMessages] = useState<MessageData[]>([]);
   const [text, setText] = useState("");
-  const [typing, setTyping] = useState(false);
   const flatListRef = useRef<any>(null);
+  const uid = getAuth().currentUser?.uid || "";
+
+  useEffect(() => {
+    const unsub = subscribeMessages(student.conversationId, setMessages);
+    markConversationRead(student.conversationId);
+    return unsub;
+  }, [student.conversationId]);
 
   const handleSend = () => {
-    if (!text.trim()) return;
-    const msg = {
-      id: Date.now().toString(),
-      sender: "counselor",
-      text: text.trim(),
-      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    };
-    setMessages((prev) => [...prev, msg]);
+    if (!text.trim() || !uid) return;
+    sendMessage(student.conversationId, uid, text.trim());
     setText("");
-
-    setTyping(true);
-    setTimeout(() => {
-      setTyping(false);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now().toString() + "s",
-          sender: "student",
-          text: "Thank you, that helps. I'll try that tonight.",
-          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        },
-      ]);
-    }, 2500);
   };
 
-  const isCounselor = (sender: string) => sender === "counselor";
+  const isCounselor = (msg: MessageData) => msg.senderRole === "counselor";
 
   return (
     <View className="flex-1" style={{ backgroundColor: ceylon.background }}>
@@ -169,7 +142,7 @@ const CounselorStudentChatRoom = ({ student, onBack }: any) => {
       <FlatList
         ref={flatListRef}
         data={messages}
-        keyExtractor={(item: any) => item.id}
+        keyExtractor={(item: MessageData) => item.id}
         onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
         onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
         className="flex-1"
@@ -198,8 +171,8 @@ const CounselorStudentChatRoom = ({ student, onBack }: any) => {
             </View>
           </>
         )}
-        renderItem={({ item }: any) => {
-          const fromCounselor = isCounselor(item.sender);
+        renderItem={({ item }: { item: MessageData }) => {
+          const fromCounselor = isCounselor(item);
           return (
             <View className={`px-4 mb-3 items-end flex-row ${fromCounselor ? "flex-row-reverse" : "flex-row"}`}>
               {!fromCounselor && (
@@ -220,21 +193,11 @@ const CounselorStudentChatRoom = ({ student, onBack }: any) => {
                 >
                   <Text style={{ fontSize: 13.5, color: fromCounselor ? "#fff" : ceylon.ink, lineHeight: 19 }}>{item.text}</Text>
                 </View>
-                <Text style={{ fontSize: 10, color: ceylon.mutedLight, marginTop: 4 }}>{item.time}</Text>
+                <Text style={{ fontSize: 10, color: ceylon.mutedLight, marginTop: 4 }}>{formatMsgTime(item.createdAt)}</Text>
               </View>
             </View>
           );
         }}
-        ListFooterComponent={
-          typing ? (
-            <View className="flex-row items-center px-4 pb-2.5" style={{ gap: 8 }}>
-              <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: `${ceylon.terracotta}22`, alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: "#fff" }}>
-                <Text style={{ fontSize: 14 }}>{student.emoji}</Text>
-              </View>
-              <Text className="text-[11px] italic" style={{ color: ceylon.muted }}>{student.anonymousId} is typing...</Text>
-            </View>
-          ) : null
-        }
       />
 
       <View className="flex-row items-center p-3" style={{ backgroundColor: "#fff", paddingBottom: Platform.OS === "ios" ? 24 : 12 }}>
@@ -259,8 +222,23 @@ const CounselorStudentChatRoom = ({ student, onBack }: any) => {
   );
 };
 
-export default function ChatScreen() {
-  const [activeStudent, setActiveStudent] = useState<any>(null);
+export default function ChatScreen({ openConversationId, onBackToBoard }: { openConversationId?: string; onBackToBoard?: () => void }) {
+  const [students, setStudents] = useState<ConversationStudent[]>([]);
+  const [activeStudent, setActiveStudent] = useState<ConversationStudent | null>(null);
+  const uid = getAuth().currentUser?.uid;
+
+  useEffect(() => {
+    if (!uid) return;
+    const unsub = subscribeConversations(uid, setStudents);
+    return unsub;
+  }, [uid]);
+
+  useEffect(() => {
+    if (openConversationId && !activeStudent) {
+      const found = students.find((s) => s.conversationId === openConversationId);
+      if (found) setActiveStudent(found);
+    }
+  }, [openConversationId, students, activeStudent]);
 
   if (activeStudent) {
     return (
@@ -271,7 +249,9 @@ export default function ChatScreen() {
     );
   }
 
-  const onlineCount = STUDENTS.filter((s) => s.online).length;
+  const onlineCount = students.filter((s) => s.online).length;
+  const sorted = [...students].sort((a, b) => b.stressLevel - a.stressLevel);
+
   return (
     <View className="flex-1" style={{ backgroundColor: ceylon.background }}>
       <View className="p-4" style={{ backgroundColor: "#fff", borderBottomWidth: 1, borderBottomColor: ceylon.sand }}>
@@ -293,12 +273,19 @@ export default function ChatScreen() {
         </View>
       </View>
 
-      <FlatList
-        data={[...STUDENTS].sort((a, b) => b.stressLevel - a.stressLevel)}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingVertical: SPACE.sm }}
-        renderItem={({ item }) => <StudentCard student={item} onChat={setActiveStudent} />}
-      />
+      {sorted.length === 0 ? (
+        <View className="flex-1 items-center justify-center px-8">
+          <Ionicons name="chatbubbles-outline" size={40} color={ceylon.mutedLight} />
+          <Text className="text-sm mt-3 text-center" style={{ color: ceylon.muted }}>No student conversations yet. When a student starts a chat, it will appear here.</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={sorted}
+          keyExtractor={(item) => item.conversationId}
+          contentContainerStyle={{ paddingVertical: SPACE.sm }}
+          renderItem={({ item }) => <StudentCard student={item} onChat={setActiveStudent} />}
+        />
+      )}
     </View>
   );
 }

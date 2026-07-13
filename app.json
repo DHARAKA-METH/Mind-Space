@@ -19,7 +19,14 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "package": "com.anonymous.MindSpace"
     },
     "web": {
       "output": "static",
@@ -43,7 +50,9 @@
       "expo-font",
       [
         "expo-camera",
-        { "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera to capture your expression alongside your check-in." }
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera to capture your expression alongside your check-in."
+        }
       ]
     ],
     "experiments": {
