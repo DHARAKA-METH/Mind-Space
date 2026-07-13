@@ -8,15 +8,15 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { Stack } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import Animated, { FadeInDown, FadeIn, Layout } from "react-native-reanimated";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import {
-  MONTH_NAMES,
-  DAYS,
-  TIME_SLOTS,
-} from "../services/mockData";
+import { MONTH_NAMES, DAYS, TIME_SLOTS } from "../services/mockData";
 import {
   getCounselors,
   getLoggedUser,
@@ -31,15 +31,32 @@ import {
   timeSlotToISO,
 } from "../hooks/dateHelpers";
 
-// Initialize Day.js Global UTC Plugin
 dayjs.extend(utc);
 
-// ─── Main Functional Component ────────────────────────────────────────────────
+// ─── THEME ────────────────────────────────────────────────────────────────
+const ceylon = {
+  ink: "#3D2E1F",
+  muted: "#8A7A63",
+  mutedLight: "#B8A78C",
+  teaGreen: "#4A7856",
+  sage: "#7C9885",
+  terracotta: "#C97B4A",
+  sand: "#F0E4D3",
+  cream: "#FBF3EA",
+  background: "#F4EFE9",
+  danger: "#B5555C",
+  dangerBg: "#F7DDD6",
+  success: "#4A7856",
+  successBg: "#DCEBDD",
+};
+
+const SPACE = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 28 };
+
 export default function BookSessionScreen() {
-  // Lock current baseline to absolute Global UTC Time
   const nowGlobal = useMemo(() => dayjs.utc(), []);
   const todayDateStr = nowGlobal.format("YYYY-MM-DD");
   const LOGGED_USER = useMemo(() => getLoggedUser() || { id: "", name: "Student" }, []);
+
   const [appointments, setAppointments] = useState([]);
   const [counselors, setCounselors] = useState([]);
   const [selectedCounselor, setSelectedCounselor] = useState(null);
@@ -68,22 +85,15 @@ export default function BookSessionScreen() {
     }
   }, []);
 
-  // 1. Compute Optimized Appointment Lookups (O(1) Hash Map)
   const systemScheduleMap = useMemo(() => {
     const map = {};
     appointments.forEach((appt) => {
       const [datePart, timePart] = appt.appointmentDateTime.split("T");
-      const cleanTime = timePart.substring(0, 5); // Extracts "HH:MM"
-
+      const cleanTime = timePart.substring(0, 5);
       if (!map[datePart]) {
-        map[datePart] = {
-          globalSlots: [],
-          studentHasBooking: false,
-          studentBookingDetails: null,
-        };
+        map[datePart] = { globalSlots: [], studentHasBooking: false, studentBookingDetails: null };
       }
       map[datePart].globalSlots.push(cleanTime);
-
       if (appt.studentId === LOGGED_USER.id) {
         map[datePart].studentHasBooking = true;
         map[datePart].studentBookingDetails = appt;
@@ -92,30 +102,22 @@ export default function BookSessionScreen() {
     return map;
   }, [appointments]);
 
-  // Filter out current user's profile appointments for history stream
-  const myAppointments = useMemo(() => {
-    return appointments.filter((a) => a.studentId === LOGGED_USER.id);
-  }, [appointments]);
+  const myAppointments = useMemo(
+    () => appointments.filter((a) => a.studentId === LOGGED_USER.id),
+    [appointments]
+  );
 
-  // Counselor search filtration logic
   const filteredCounselors = useMemo(() => {
     if (!searchQuery.trim()) return counselors;
     const q = searchQuery.toLowerCase();
     return counselors.filter(
-      (c) =>
-        c.name.toLowerCase().includes(q) ||
-        c.specialties.some((s) => s.toLowerCase().includes(q)),
+      (c) => c.name.toLowerCase().includes(q) || c.specialties.some((s) => s.toLowerCase().includes(q))
     );
-  }, [searchQuery]);
+  }, [searchQuery, counselors]);
 
-  const selectedDateStr = selectedDay
-    ? dateKey(calYear, calMonth, selectedDay)
-    : null;
-  const myExistingOnDate = selectedDateStr
-    ? systemScheduleMap[selectedDateStr]?.studentBookingDetails || null
-    : null;
+  const selectedDateStr = selectedDay ? dateKey(calYear, calMonth, selectedDay) : null;
+  const myExistingOnDate = selectedDateStr ? systemScheduleMap[selectedDateStr]?.studentBookingDetails || null : null;
 
-  // Selected counselor profile tracking
   const counselorMyAppointments = useMemo(() => {
     if (!selectedCounselor) return [];
     return myAppointments.filter((a) => a.counselorId === selectedCounselor.id);
@@ -124,8 +126,8 @@ export default function BookSessionScreen() {
   const daysInMonth = getDaysInMonth(calYear, calMonth);
   const firstDay = getFirstDayOfMonth(calYear, calMonth);
 
-  // ── Navigation Rules ──
   function prevMonth() {
+    Haptics.selectionAsync().catch(() => {});
     if (calMonth === 0) {
       setCalMonth(11);
       setCalYear((y) => y - 1);
@@ -135,6 +137,7 @@ export default function BookSessionScreen() {
   }
 
   function nextMonth() {
+    Haptics.selectionAsync().catch(() => {});
     if (calMonth === 11) {
       setCalMonth(0);
       setCalYear((y) => y + 1);
@@ -144,8 +147,7 @@ export default function BookSessionScreen() {
   }
 
   async function handleBook() {
-    if (!selectedCounselor || !selectedDay || !selectedTime || !selectedDateStr || !LOGGED_USER.id)
-      return;
+    if (!selectedCounselor || !selectedDay || !selectedTime || !selectedDateStr || !LOGGED_USER.id) return;
 
     const targetTimeISO = timeSlotToISO(selectedTime);
     const daySchedule = systemScheduleMap[selectedDateStr];
@@ -175,6 +177,7 @@ export default function BookSessionScreen() {
         updatedAt: new Date().toISOString(),
       };
 
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       setAppointments((prev) => [...prev, newAppointment]);
       setBookingSuccess(true);
       setTimeout(() => setBookingSuccess(false), 4000);
@@ -183,6 +186,7 @@ export default function BookSessionScreen() {
       setSelectedTime(null);
       setNote("");
     } catch (error) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
       Alert.alert("Booking Failed", error.message || "Could not create appointment. Please try again.");
     } finally {
       setBookLoading(false);
@@ -191,279 +195,260 @@ export default function BookSessionScreen() {
 
   const targetTimeISO = selectedTime ? timeSlotToISO(selectedTime) : null;
   const selectedDaySchedule = systemScheduleMap[selectedDateStr];
-  const isSelectedTimeTaken =
-    targetTimeISO && selectedDaySchedule?.globalSlots.includes(targetTimeISO);
-  const isSelectedDayFull =
-    (selectedDaySchedule?.globalSlots.length || 0) >= TIME_SLOTS.length;
+  const isSelectedTimeTaken = targetTimeISO && selectedDaySchedule?.globalSlots.includes(targetTimeISO);
+  const isSelectedDayFull = (selectedDaySchedule?.globalSlots.length || 0) >= TIME_SLOTS.length;
 
   const canBook =
-    !!selectedCounselor &&
-    !!selectedDay &&
-    !!selectedTime &&
-    !myExistingOnDate &&
-    !isSelectedTimeTaken &&
-    !isSelectedDayFull;
+    !!selectedCounselor && !!selectedDay && !!selectedTime && !myExistingOnDate && !isSelectedTimeTaken && !isSelectedDayFull;
 
-  const accentColor = selectedCounselor?.color || "#7C3AED";
+  const accentColor = selectedCounselor?.color || ceylon.teaGreen;
+  const accentBg = selectedCounselor?.bgColor || `${ceylon.sage}18`;
+
+  // ─── LOADING STATE ────────────────────────────────────────────────────────
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center" style={{ backgroundColor: ceylon.background }}>
+        <Stack.Screen
+          options={{
+            headerTitle: "Book a session",
+            headerStyle: { backgroundColor: ceylon.cream },
+            headerShadowVisible: false,
+          }}
+        />
+        <View
+          style={{
+            width: 64,
+            height: 64,
+            borderRadius: 32,
+            backgroundColor: "#fff",
+            alignItems: "center",
+            justifyContent: "center",
+            marginBottom: SPACE.md,
+          }}
+        >
+          <ActivityIndicator color={ceylon.sage} />
+        </View>
+        <Text style={{ color: ceylon.muted, fontSize: 13 }}>Finding available counselors…</Text>
+      </View>
+    );
+  }
 
   return (
-    <View className="flex-1 bg-[#F5F3FF]">
-      {/* Dynamic Native Stack Configuration (Fixed Top Element Context) */}
+    <View className="flex-1" style={{ backgroundColor: ceylon.background }}>
       <Stack.Screen
         options={{
           headerTitle: "Book a session",
-          headerTitleStyle: { fontWeight: "600", fontSize: 18 },
-          headerStyle: { backgroundColor: "#F9FAF5" },
+          headerTitleStyle: { fontWeight: "700", fontSize: 17, color: ceylon.ink },
+          headerStyle: { backgroundColor: ceylon.cream },
           headerShadowVisible: false,
           headerLeft: () => null,
           headerBackVisible: false,
-          headerShown: true, // 👈 Ensures the navigation header stays fixed and visible
+          headerShown: true,
         }}
       />
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        className="flex-1"
-      >
-        {/* Removed pt-12 to prevent elements from dropping down out of viewport */}
+      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} className="flex-1">
         <ScrollView
-          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 60, paddingTop: 16 }}
+          contentContainerStyle={{ paddingHorizontal: SPACE.lg, paddingBottom: SPACE.xxl, paddingTop: SPACE.lg }}
           showsVerticalScrollIndicator={false}
           className="flex-1"
         >
-          {/* Success Alert Feedback Banner */}
+          {/* Success banner */}
           {bookingSuccess && (
-            <View className="bg-emerald-100 border border-emerald-300 rounded-2xl p-4 mb-4">
-              <Text className="text-emerald-800 text-xs font-semibold">
-                ✅ Appointment confirmed! System states synced to global UTC database context.
+            <Animated.View
+              entering={FadeInDown.duration(280)}
+              style={{
+                backgroundColor: ceylon.successBg,
+                borderRadius: 18,
+                padding: SPACE.md,
+                marginBottom: SPACE.lg,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: SPACE.sm,
+              }}
+            >
+              <Ionicons name="checkmark-circle" size={20} color={ceylon.success} />
+              <Text style={{ color: ceylon.success, fontSize: 12, fontWeight: "600", flex: 1 }}>
+                Appointment requested! You&apos;ll be notified once it&apos;s confirmed.
               </Text>
-            </View>
+            </Animated.View>
           )}
 
-          {/* Search Bar Input Container */}
-          <Text className="text-gray-500 font-semibold text-xs mb-2">
+          {/* Search */}
+          <Text style={{ fontSize: 12, fontWeight: "700", color: ceylon.mutedLight, marginBottom: SPACE.sm }}>
             Choose your counselor
           </Text>
-          <View className="bg-gray-100 rounded-2xl px-4 py-3 flex-row items-center mb-4">
-            <Text className="text-gray-400 mr-2 text-sm">🔍</Text>
+          <View
+            className="flex-row items-center"
+            style={{ backgroundColor: "#fff", borderRadius: 16, paddingHorizontal: SPACE.md, height: 46, marginBottom: SPACE.lg }}
+          >
+            <Ionicons name="search" size={16} color={ceylon.mutedLight} />
             <TextInput
               value={searchQuery}
               onChangeText={setSearchQuery}
               placeholder="Search by name or specialty..."
-              placeholderTextColor="#9CA3AF"
-              className="flex-1 text-sm text-gray-900 p-0"
+              placeholderTextColor={ceylon.mutedLight}
+              style={{ flex: 1, marginLeft: SPACE.sm, fontSize: 13, color: ceylon.ink }}
             />
             {searchQuery !== "" && (
               <TouchableOpacity onPress={() => setSearchQuery("")}>
-                <Text className="text-gray-400 text-sm ml-2">✕</Text>
+                <Ionicons name="close-circle" size={16} color={ceylon.mutedLight} />
               </TouchableOpacity>
             )}
           </View>
 
-          {/* Counselor Selector Group */}
-          <View className="mb-4">
+          {/* Counselor list */}
+          <View style={{ marginBottom: SPACE.lg }}>
             {filteredCounselors.length === 0 && (
-              <Text className="text-gray-400 text-xs text-center py-4">
-                No counselors found
-              </Text>
+              <View style={{ alignItems: "center", paddingVertical: SPACE.xl }}>
+                <Ionicons name="search-outline" size={22} color={ceylon.mutedLight} style={{ marginBottom: 6 }} />
+                <Text style={{ color: ceylon.mutedLight, fontSize: 12 }}>No counselors found</Text>
+              </View>
             )}
-            {(showAll
-              ? filteredCounselors
-              : filteredCounselors.slice(0, 3)
-            ).map((c) => {
+
+            {(showAll ? filteredCounselors : filteredCounselors.slice(0, 3)).map((c, i) => {
               const chosen = selectedCounselor?.id === c.id;
-              const myCount = myAppointments.filter(
-                (a) => a.counselorId === c.id,
-              ).length;
+              const myCount = myAppointments.filter((a) => a.counselorId === c.id).length;
               return (
-                <TouchableOpacity
-                  key={c.id}
-                  onPress={() => {
-                    setSelectedCounselor(c);
-                    setSelectedDay(null);
-                    setSelectedTime(null);
-                  }}
-                  style={{
-                    borderColor: chosen ? c.color : "#E5E7EB",
-                    borderWidth: chosen ? 2 : 1.5,
-                    backgroundColor: chosen ? c.bgColor : "#FFFFFF",
-                    marginBottom: 8,
-                    borderRadius: 16,
-                    flex_direction: "row",
-                    flexDirection: "row",
-                    alignItems: "center",
-                    padding: 14,
-                  }}
-                >
-                  <View
+                <Animated.View key={c.id} entering={FadeInDown.delay(i * 50).duration(260)}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      Haptics.selectionAsync().catch(() => {});
+                      setSelectedCounselor(c);
+                      setSelectedDay(null);
+                      setSelectedTime(null);
+                    }}
+                    activeOpacity={0.8}
                     style={{
-                      backgroundColor: c.bgColor,
-                      width: 48,
-                      height: 48,
-                      borderRadius: 12,
+                      borderColor: chosen ? c.color : ceylon.sand,
+                      borderWidth: chosen ? 2 : 1.5,
+                      backgroundColor: chosen ? c.bgColor : "#fff",
+                      marginBottom: SPACE.sm,
+                      borderRadius: 18,
+                      flexDirection: "row",
                       alignItems: "center",
-                      justifyContent: "center",
-                      marginRight: 12,
+                      padding: SPACE.md,
                     }}
                   >
-                    <Text style={{ fontSize: 24 }}>{c.avatar}</Text>
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text
+                    <View
                       style={{
-                        color: chosen ? c.color : "#111827",
-                        fontSize: 14,
-                        fontWeight: "700",
+                        backgroundColor: c.bgColor,
+                        width: 48,
+                        height: 48,
+                        borderRadius: 14,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginRight: SPACE.md,
                       }}
                     >
-                      {c.name}
-                    </Text>
-                    <Text
-                      style={{ fontSize: 12, color: "#6B7280", marginTop: 2 }}
-                    >
-                      {c.specialties.join(" · ")}
-                    </Text>
-                    {myCount > 0 && (
-                      <View
-                        style={{
-                          backgroundColor: c.bgColor,
-                          alignSelf: "flex-start",
-                          marginTop: 4,
-                          paddingHorizontal: 8,
-                          paddingVertical: 2,
-                          borderRadius: 6,
-                        }}
-                      >
-                        <Text
+                      <Text style={{ fontSize: 24 }}>{c.avatar}</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ color: chosen ? c.color : ceylon.ink, fontSize: 14, fontWeight: "700" }}>
+                        {c.name}
+                      </Text>
+                      <Text style={{ fontSize: 12, color: ceylon.muted, marginTop: 2 }}>
+                        {c.specialties.join(" · ")}
+                      </Text>
+                      {myCount > 0 && (
+                        <View
                           style={{
-                            color: c.color,
-                            fontSize: 10,
-                            fontWeight: "700",
+                            backgroundColor: c.bgColor,
+                            alignSelf: "flex-start",
+                            marginTop: 4,
+                            paddingHorizontal: 8,
+                            paddingVertical: 2,
+                            borderRadius: 6,
                           }}
                         >
-                          {myCount} session{myCount > 1 ? "s" : ""} booked
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                  <View
-                    style={{
-                      backgroundColor: chosen ? c.color : "#F3F4F6",
-                      paddingHorizontal: 12,
-                      paddingVertical: 6,
-                      borderRadius: 10,
-                    }}
-                  >
-                    <Text
+                          <Text style={{ color: c.color, fontSize: 10, fontWeight: "700" }}>
+                            {myCount} session{myCount > 1 ? "s" : ""} booked
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                    <View
                       style={{
-                        color: chosen ? "#fff" : "#374151",
-                        fontSize: 12,
-                        fontWeight: "700",
+                        backgroundColor: chosen ? c.color : ceylon.background,
+                        paddingHorizontal: 12,
+                        paddingVertical: 6,
+                        borderRadius: 10,
                       }}
                     >
-                      {chosen ? "✓ Chosen" : "Select"}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
+                      <Text style={{ color: chosen ? "#fff" : ceylon.muted, fontSize: 12, fontWeight: "700" }}>
+                        {chosen ? "✓ Chosen" : "Select"}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                </Animated.View>
               );
             })}
+
             {filteredCounselors.length > 3 && (
               <TouchableOpacity
-                onPress={() => setShowAll((v) => !v)}
-                style={{ paddingVertical: 4 }}
+                onPress={() => {
+                  Haptics.selectionAsync().catch(() => {});
+                  setShowAll((v) => !v);
+                }}
+                style={{ paddingVertical: SPACE.xs, alignItems: "center" }}
               >
-                <Text
-                  style={{ color: "#7C3AED", fontSize: 12, fontWeight: "600" }}
-                >
-                  {showAll
-                    ? "▲ Show less"
-                    : `▼ Show ${filteredCounselors.length - 3} more counselors`}
+                <Text style={{ color: ceylon.teaGreen, fontSize: 12, fontWeight: "700" }}>
+                  {showAll ? "▲ Show less" : `▼ Show ${filteredCounselors.length - 3} more counselors`}
                 </Text>
               </TouchableOpacity>
             )}
           </View>
 
-          {/* Existing Counselor Booking Relations */}
+          {/* Existing sessions with selected counselor */}
           {selectedCounselor && counselorMyAppointments.length > 0 && (
-            <View
+            <Animated.View
+              entering={FadeIn.duration(240)}
               style={{
                 backgroundColor: selectedCounselor.bgColor,
                 borderColor: `${selectedCounselor.color}33`,
                 borderWidth: 1,
-                borderRadius: 16,
-                padding: 14,
-                marginBottom: 16,
+                borderRadius: 18,
+                padding: SPACE.md,
+                marginBottom: SPACE.lg,
               }}
             >
-              <Text
-                style={{
-                  color: selectedCounselor.color,
-                  fontSize: 12,
-                  fontWeight: "700",
-                  marginBottom: 8,
-                }}
-              >
-                 Your sessions with {selectedCounselor.name.split(" ").pop()}
+              <Text style={{ color: selectedCounselor.color, fontSize: 12, fontWeight: "700", marginBottom: SPACE.sm }}>
+                Your sessions with {selectedCounselor.name.split(" ").pop()}
               </Text>
               {counselorMyAppointments.map((a) => {
-                const displayDate = dayjs
-                  .utc(a.appointmentDateTime)
-                  .format("DD MMM YYYY · hh:mm A");
+                const displayDate = dayjs.utc(a.appointmentDateTime).format("DD MMM YYYY · hh:mm A");
+                const statusMeta =
+                  a.status === "confirmed"
+                    ? { bg: ceylon.successBg, color: ceylon.success }
+                    : a.status === "pending"
+                    ? { bg: `${ceylon.terracotta}20`, color: ceylon.terracotta }
+                    : { bg: ceylon.dangerBg, color: ceylon.danger };
+
                 return (
                   <View
                     key={a.appointmentId}
                     style={{
                       backgroundColor: "#fff",
-                      borderRadius: 10,
-                      padding: 10,
-                      marginBottom: 6,
+                      borderRadius: 12,
+                      padding: SPACE.sm,
+                      marginBottom: SPACE.xs + 2,
                       flexDirection: "row",
                       justifyContent: "space-between",
                       alignItems: "center",
                     }}
                   >
-                    <Text style={{ fontSize: 12, color: "#374151" }}>
-                      📅 {displayDate}
-                    </Text>
+                    <View className="flex-row items-center" style={{ gap: 6 }}>
+                      <Ionicons name="calendar-outline" size={12} color={ceylon.muted} />
+                      <Text style={{ fontSize: 12, color: ceylon.ink }}>{displayDate}</Text>
+                    </View>
                     <View className="flex-row" style={{ gap: 4 }}>
-                      <View
-                        style={{
-                          backgroundColor:
-                            a.type === "online" ? "#DBEAFE" : "#F3E8FF",
-                          paddingHorizontal: 8,
-                          paddingVertical: 2,
-                          borderRadius: 6,
-                        }}
-                      >
-                        <Text
-                          style={{
-                            color: a.type === "online" ? "#1D4ED8" : "#7C3AED",
-                            fontSize: 10,
-                            fontWeight: "700",
-                          }}
-                        >
+                      <View style={{ backgroundColor: ceylon.sand, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
+                        <Text style={{ color: ceylon.ink, fontSize: 10, fontWeight: "700", textTransform: "capitalize" }}>
                           {a.type}
                         </Text>
                       </View>
-                      <View
-                        style={{
-                          backgroundColor:
-                            a.status === "confirmed" ? "#D1FAE5" :
-                            a.status === "pending" ? "#FEF3C7" : "#FEE2E2",
-                          paddingHorizontal: 8,
-                          paddingVertical: 2,
-                          borderRadius: 6,
-                        }}
-                      >
-                        <Text
-                          style={{
-                            color:
-                              a.status === "confirmed" ? "#065F46" :
-                              a.status === "pending" ? "#92400E" : "#991B1B",
-                            fontSize: 10,
-                            fontWeight: "700",
-                          }}
-                        >
+                      <View style={{ backgroundColor: statusMeta.bg, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
+                        <Text style={{ color: statusMeta.color, fontSize: 10, fontWeight: "700", textTransform: "capitalize" }}>
                           {a.status}
                         </Text>
                       </View>
@@ -471,73 +456,43 @@ export default function BookSessionScreen() {
                   </View>
                 );
               })}
-            </View>
+            </Animated.View>
           )}
 
-          {/* Calendar Card Component Engine */}
+          {/* Calendar */}
           <View
             style={{
               backgroundColor: "#fff",
               borderRadius: 24,
-              padding: 16,
-              marginBottom: 16,
-              shadowColor: "#7C3AED",
+              padding: SPACE.lg,
+              marginBottom: SPACE.lg,
+              shadowColor: ceylon.sage,
               shadowOpacity: 0.08,
               shadowRadius: 12,
               elevation: 3,
             }}
           >
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: 16,
-              }}
-            >
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: SPACE.lg }}>
               <TouchableOpacity
                 onPress={prevMonth}
-                style={{
-                  backgroundColor: "#F3F4F6",
-                  width: 36,
-                  height: 36,
-                  borderRadius: 12,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+                style={{ backgroundColor: ceylon.background, width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" }}
               >
-                <Text style={{ fontSize: 18, fontWeight: "700", color: "#374151" }}>‹</Text>
+                <Ionicons name="chevron-back" size={18} color={ceylon.ink} />
               </TouchableOpacity>
-              <Text style={{ fontSize: 16, fontWeight: "800", color: "#111827" }}>
+              <Text style={{ fontSize: 16, fontWeight: "800", color: ceylon.ink }}>
                 {MONTH_NAMES[calMonth]} {calYear}
               </Text>
               <TouchableOpacity
                 onPress={nextMonth}
-                style={{
-                  backgroundColor: "#F3F4F6",
-                  width: 36,
-                  height: 36,
-                  borderRadius: 12,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+                style={{ backgroundColor: ceylon.background, width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" }}
               >
-                <Text style={{ fontSize: 18, fontWeight: "700", color: "#374151" }}>›</Text>
+                <Ionicons name="chevron-forward" size={18} color={ceylon.ink} />
               </TouchableOpacity>
             </View>
 
-            <View style={{ flexDirection: "row", justifyContent: "space-around", marginBottom: 6 }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-around", marginBottom: SPACE.xs + 2 }}>
               {DAYS.map((d) => (
-                <Text
-                  key={d}
-                  style={{
-                    width: "14.28%",
-                    textAlign: "center",
-                    fontSize: 12,
-                    fontWeight: "700",
-                    color: "#9CA3AF",
-                  }}
-                >
+                <Text key={d} style={{ width: "14.28%", textAlign: "center", fontSize: 12, fontWeight: "700", color: ceylon.mutedLight }}>
                   {d}
                 </Text>
               ))}
@@ -550,10 +505,8 @@ export default function BookSessionScreen() {
               {Array.from({ length: daysInMonth }).map((_, i) => {
                 const day = i + 1;
                 const loopDateStr = dateKey(calYear, calMonth, day);
-
                 const isToday = loopDateStr === todayDateStr;
                 const isPast = loopDateStr < todayDateStr;
-
                 const dayMetadata = systemScheduleMap[loopDateStr];
                 const totalBookedSlots = dayMetadata?.globalSlots.length || 0;
                 const hasBookings = totalBookedSlots > 0;
@@ -565,6 +518,7 @@ export default function BookSessionScreen() {
                     key={day}
                     disabled={isPast || full}
                     onPress={() => {
+                      Haptics.selectionAsync().catch(() => {});
                       setSelectedDay(day);
                       setSelectedTime(null);
                     }}
@@ -575,11 +529,7 @@ export default function BookSessionScreen() {
                       justifyContent: "center",
                       borderRadius: 14,
                       marginVertical: 3,
-                      backgroundColor: selected
-                        ? accentColor
-                        : isToday
-                          ? "#F3E8FF"
-                          : "transparent",
+                      backgroundColor: selected ? accentColor : isToday ? accentBg : "transparent",
                       opacity: isPast ? 0.3 : 1,
                       position: "relative",
                     }}
@@ -588,13 +538,7 @@ export default function BookSessionScreen() {
                       style={{
                         fontSize: 15,
                         fontWeight: selected || isToday ? "800" : "400",
-                        color: selected
-                          ? "#fff"
-                          : full
-                            ? "#EF4444"
-                            : isToday
-                              ? "#7C3AED"
-                              : "#374151",
+                        color: selected ? "#fff" : full ? ceylon.danger : isToday ? accentColor : ceylon.ink,
                       }}
                     >
                       {day}
@@ -607,24 +551,13 @@ export default function BookSessionScreen() {
                           width: 5,
                           height: 5,
                           borderRadius: 3,
-                          backgroundColor: full ? "#EF4444" : accentColor,
+                          backgroundColor: full ? ceylon.danger : accentColor,
                         }}
                       />
                     )}
                     {full && !selected && (
-                      <View
-                        style={{
-                          position: "absolute",
-                          top: 2,
-                          right: 1,
-                          backgroundColor: "#FEE2E2",
-                          borderRadius: 3,
-                          paddingHorizontal: 2,
-                        }}
-                      >
-                        <Text style={{ fontSize: 7, color: "#EF4444", fontWeight: "700" }}>
-                          FULL
-                        </Text>
+                      <View style={{ position: "absolute", top: 2, right: 1, backgroundColor: ceylon.dangerBg, borderRadius: 3, paddingHorizontal: 2 }}>
+                        <Text style={{ fontSize: 7, color: ceylon.danger, fontWeight: "700" }}>FULL</Text>
                       </View>
                     )}
                   </TouchableOpacity>
@@ -632,87 +565,49 @@ export default function BookSessionScreen() {
               })}
             </View>
 
-            {/* Color Indicators Legend Layout */}
-            <View
-              style={{
-                flexDirection: "row",
-                gap: 12,
-                marginTop: 12,
-                paddingTop: 10,
-                borderTopWidth: 0.5,
-                borderTopColor: "#E5E7EB",
-              }}
-            >
+            <View style={{ flexDirection: "row", gap: SPACE.md, marginTop: SPACE.md, paddingTop: SPACE.sm, borderTopWidth: 0.5, borderTopColor: ceylon.sand }}>
               {[
                 { color: accentColor, label: "Booked" },
-                { color: "#EF4444", label: "Full (3/3)" },
-                { color: "#F3E8FF", label: "Today", border: "#7C3AED" },
+                { color: ceylon.danger, label: "Full (3/3)" },
+                { color: accentBg, label: "Today", border: accentColor },
               ].map(({ color, label, border }) => (
                 <View key={label} style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-                  <View
-                    style={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: 4,
-                      backgroundColor: color,
-                      borderWidth: border ? 1 : 0,
-                      borderColor: border || "transparent",
-                    }}
-                  />
-                  <Text style={{ fontSize: 10, color: "#9CA3AF" }}>{label}</Text>
+                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color, borderWidth: border ? 1 : 0, borderColor: border || "transparent" }} />
+                  <Text style={{ fontSize: 10, color: ceylon.mutedLight }}>{label}</Text>
                 </View>
               ))}
             </View>
           </View>
 
-          {/* Dynamic Context Banner Rules */}
+          {/* Selected day banner */}
           {selectedDay && (
-            <View
+            <Animated.View
+              entering={FadeInDown.duration(220)}
               style={{
-                backgroundColor: myExistingOnDate
-                  ? "#FEF2F2"
-                  : isSelectedDayFull
-                    ? "#FEF2F2"
-                    : "#F3E8FF",
-                borderRadius: 12,
-                padding: 12,
-                marginBottom: 16,
+                backgroundColor: myExistingOnDate || isSelectedDayFull ? ceylon.dangerBg : accentBg,
+                borderRadius: 14,
+                padding: SPACE.md,
+                marginBottom: SPACE.lg,
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
               }}
             >
-              <Text
-                style={{
-                  color: myExistingOnDate
-                    ? "#B91C1C"
-                    : isSelectedDayFull
-                      ? "#B91C1C"
-                      : "#6D28D9",
-                  fontSize: 12,
-                  fontWeight: "700",
-                }}
-              >
-                ⦾ {formatDisplayDate(calYear, calMonth, selectedDay)}
+              <Text style={{ color: myExistingOnDate || isSelectedDayFull ? ceylon.danger : accentColor, fontSize: 12, fontWeight: "700" }}>
+                {formatDisplayDate(calYear, calMonth, selectedDay)}
               </Text>
               {myExistingOnDate && (
-                <Text style={{ color: "#DC2626", fontSize: 11, fontWeight: "700" }}>
-                  ⚠ You already booked this day
-                </Text>
+                <Text style={{ color: ceylon.danger, fontSize: 11, fontWeight: "700" }}>⚠ Already booked this day</Text>
               )}
               {!myExistingOnDate && isSelectedDayFull && (
-                <Text style={{ color: "#EF4444", fontSize: 11, fontWeight: "700" }}>
-                  ⚠ All 3 slots full
-                </Text>
+                <Text style={{ color: ceylon.danger, fontSize: 11, fontWeight: "700" }}>⚠ All slots full</Text>
               )}
-            </View>
+            </Animated.View>
           )}
 
-          {/* Time Slots Option Group */}
-          <Text style={{ fontSize: 12, color: "#6B7280", fontWeight: "700", marginBottom: 8 }}>
-            Select time
-          </Text>
-          <View style={{ gap: 10, marginBottom: 16 }}>
+          {/* Time slots */}
+          <Text style={{ fontSize: 12, color: ceylon.mutedLight, fontWeight: "700", marginBottom: SPACE.sm }}>Select time</Text>
+          <View style={{ gap: SPACE.sm, marginBottom: SPACE.lg }}>
             {TIME_SLOTS.map((t) => {
               const sel = selectedTime === t;
               const currentSlotISO = timeSlotToISO(t);
@@ -723,51 +618,38 @@ export default function BookSessionScreen() {
                 <TouchableOpacity
                   key={t}
                   disabled={disabled}
-                  onPress={() => setSelectedTime(t)}
+                  onPress={() => {
+                    Haptics.selectionAsync().catch(() => {});
+                    setSelectedTime(t);
+                  }}
                   style={{
-                    borderColor: sel ? accentColor : taken ? "#FCA5A5" : "#E5E7EB",
+                    borderColor: sel ? accentColor : taken ? "#E8A6AA" : ceylon.sand,
                     borderWidth: sel ? 2 : 1.5,
-                    backgroundColor: sel ? accentColor : taken ? "#FEF2F2" : "#F9FAFB",
+                    backgroundColor: sel ? accentColor : taken ? ceylon.dangerBg : "#fff",
                     opacity: disabled && !sel ? 0.65 : 1,
-                    paddingVertical: 15,
-                    paddingHorizontal: 18,
-                    borderRadius: 14,
+                    paddingVertical: SPACE.md,
+                    paddingHorizontal: SPACE.lg,
+                    borderRadius: 16,
                     flexDirection: "row",
                     alignItems: "center",
                     justifyContent: "space-between",
                   }}
                 >
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                    <Text style={{ fontSize: 18 }}>{t.includes("AM") ? "🌤" : "🌇"}</Text>
-                    <Text
-                      style={{
-                        color: sel ? "#fff" : taken ? "#EF4444" : "#374151",
-                        fontSize: 15,
-                        fontWeight: "700",
-                      }}
-                    >
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: SPACE.sm }}>
+                    <Ionicons name={t.includes("AM") ? "partly-sunny-outline" : "moon-outline"} size={18} color={sel ? "#fff" : ceylon.muted} />
+                    <Text style={{ color: sel ? "#fff" : taken ? ceylon.danger : ceylon.ink, fontSize: 15, fontWeight: "700" }}>
                       {t}
                     </Text>
                   </View>
                   <View
                     style={{
-                      backgroundColor: sel
-                        ? "rgba(255,255,255,0.25)"
-                        : taken
-                          ? "#FEE2E2"
-                          : "#E5E7EB",
+                      backgroundColor: sel ? "rgba(255,255,255,0.25)" : taken ? "#F2D5D5" : ceylon.background,
                       paddingHorizontal: 12,
                       paddingVertical: 4,
                       borderRadius: 8,
                     }}
                   >
-                    <Text
-                      style={{
-                        fontSize: 11,
-                        fontWeight: "700",
-                        color: sel ? "#fff" : taken ? "#EF4444" : "#6B7280",
-                      }}
-                    >
+                    <Text style={{ fontSize: 11, fontWeight: "700", color: sel ? "#fff" : taken ? ceylon.danger : ceylon.muted }}>
                       {sel ? "✓ Selected" : taken ? "Booked" : "Available"}
                     </Text>
                   </View>
@@ -776,136 +658,124 @@ export default function BookSessionScreen() {
             })}
           </View>
 
-          {/* Session Type Group */}
-          <Text style={{ fontSize: 12, color: "#6B7280", fontWeight: "700", marginBottom: 8 }}>
-            Session type
-          </Text>
-          <View style={{ flexDirection: "row", gap: 10, marginBottom: 16 }}>
+          {/* Session type */}
+          <Text style={{ fontSize: 12, color: ceylon.mutedLight, fontWeight: "700", marginBottom: SPACE.sm }}>Session type</Text>
+          <View style={{ flexDirection: "row", gap: SPACE.sm, marginBottom: SPACE.lg }}>
             {["online", "physical"].map((type) => {
               const sel = sessionType === type;
               return (
                 <TouchableOpacity
                   key={type}
-                  onPress={() => setSessionType(type)}
+                  onPress={() => {
+                    Haptics.selectionAsync().catch(() => {});
+                    setSessionType(type);
+                  }}
                   style={{
                     flex: 1,
-                    paddingVertical: 13,
+                    paddingVertical: SPACE.md,
                     borderRadius: 14,
                     alignItems: "center",
                     justifyContent: "center",
-                    backgroundColor: sel ? accentColor : "#F9FAFB",
+                    flexDirection: "row",
+                    gap: 6,
+                    backgroundColor: sel ? accentColor : "#fff",
                     borderWidth: 1.5,
-                    borderColor: sel ? "transparent" : "#E5E7EB",
+                    borderColor: sel ? "transparent" : ceylon.sand,
                   }}
                 >
-                  <Text style={{ color: sel ? "#fff" : "#374151", fontSize: 13, fontWeight: "700" }}>
-                    {type === "online" ? "💻 Online" : "🏥 Physical"} {sel ? " ✓" : ""}
+                  <Ionicons name={type === "online" ? "videocam-outline" : "location-outline"} size={15} color={sel ? "#fff" : ceylon.muted} />
+                  <Text style={{ color: sel ? "#fff" : ceylon.ink, fontSize: 13, fontWeight: "700", textTransform: "capitalize" }}>
+                    {type} {sel ? " ✓" : ""}
                   </Text>
                 </TouchableOpacity>
               );
             })}
           </View>
 
-          {/* Student Session Notes Module */}
-          <Text style={{ fontSize: 12, color: "#6B7280", fontWeight: "700", marginBottom: 8 }}>
-            📝 Add a note (optional)
+          {/* Note */}
+          <Text style={{ fontSize: 12, color: ceylon.mutedLight, fontWeight: "700", marginBottom: SPACE.sm }}>
+            Add a note (optional)
           </Text>
           <TextInput
             value={note}
             onChangeText={setNote}
             placeholder="Describe what you'd like to discuss in this session..."
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={ceylon.mutedLight}
             multiline
             numberOfLines={3}
             textAlignVertical="top"
             style={{
-              backgroundColor: "#F9FAFB",
+              backgroundColor: "#fff",
               borderWidth: 1.5,
-              borderColor: "#E5E7EB",
-              borderRadius: 14,
-              padding: 14,
+              borderColor: ceylon.sand,
+              borderRadius: 16,
+              padding: SPACE.md,
               fontSize: 13,
-              color: "#374151",
-              minHeight: 80,
-              marginBottom: 4,
+              color: ceylon.ink,
+              minHeight: 84,
+              marginBottom: SPACE.xs,
             }}
           />
-          <Text style={{ fontSize: 10, color: "#9CA3AF", textAlign: "right", marginBottom: 16 }}>
+          <Text style={{ fontSize: 10, color: ceylon.mutedLight, textAlign: "right", marginBottom: SPACE.lg }}>
             {note.length} characters
           </Text>
 
-          {/* Structural Review Summary Card Component */}
-          {selectedCounselor &&
-            selectedDay &&
-            selectedTime &&
-            !isSelectedTimeTaken &&
-            !myExistingOnDate && (
-              <View
-                style={{
-                  backgroundColor: selectedCounselor.bgColor,
-                  borderColor: `${selectedCounselor.color}33`,
-                  borderWidth: 1,
-                  borderRadius: 16,
-                  padding: 16,
-                  marginBottom: 16,
-                }}
-              >
-                <Text
-                  style={{
-                    color: selectedCounselor.color,
-                    fontSize: 12,
-                    fontWeight: "700",
-                    marginBottom: 10,
-                  }}
+          {/* Summary */}
+          {selectedCounselor && selectedDay && selectedTime && !isSelectedTimeTaken && !myExistingOnDate && (
+            <Animated.View
+              entering={FadeInDown.duration(240)}
+              style={{
+                backgroundColor: accentBg,
+                borderColor: `${accentColor}33`,
+                borderWidth: 1,
+                borderRadius: 18,
+                padding: SPACE.lg,
+                marginBottom: SPACE.lg,
+              }}
+            >
+              <Text style={{ color: accentColor, fontSize: 12, fontWeight: "700", marginBottom: SPACE.sm }}>
+                Booking summary
+              </Text>
+              {[
+                ["Counselor", selectedCounselor.name],
+                ["Date", formatDisplayDate(calYear, calMonth, selectedDay)],
+                ["Time", selectedTime],
+                ["Type", sessionType.charAt(0).toUpperCase() + sessionType.slice(1)],
+                ["Duration", "45 minutes"],
+                ["Student", LOGGED_USER.name],
+              ].map(([label, val]) => (
+                <View
+                  key={label}
+                  style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 5, borderBottomWidth: 0.5, borderBottomColor: `${ceylon.sand}` }}
                 >
-                  📋 Booking Summary
-                </Text>
-                {[
-                  ["Counselor", selectedCounselor.name],
-                  ["Date", formatDisplayDate(calYear, calMonth, selectedDay)],
-                  ["Time", selectedTime],
-                  ["Type", sessionType.charAt(0).toUpperCase() + sessionType.slice(1)],
-                  ["Duration", "45 minutes"],
-                  ["Student", LOGGED_USER.name],
-                ].map(([label, val]) => (
-                  <View
-                    key={label}
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      paddingVertical: 5,
-                      borderBottomWidth: 0.5,
-                      borderBottomColor: "#E5E7EB80",
-                    }}
-                  >
-                    <Text style={{ color: "#6B7280", fontSize: 12 }}>{label}</Text>
-                    <Text style={{ color: "#374151", fontSize: 12, fontWeight: "600" }}>{val}</Text>
-                  </View>
-                ))}
-              </View>
-            )}
+                  <Text style={{ color: ceylon.muted, fontSize: 12 }}>{label}</Text>
+                  <Text style={{ color: ceylon.ink, fontSize: 12, fontWeight: "600" }}>{val}</Text>
+                </View>
+              ))}
+            </Animated.View>
+          )}
 
-          {/* Dynamic Action Trigger Button */}
+          {/* Confirm button */}
           <TouchableOpacity
             disabled={!canBook || bookLoading}
             onPress={handleBook}
+            activeOpacity={0.85}
             style={{
-              backgroundColor: canBook && !bookLoading ? accentColor : "#E5E7EB",
-              borderRadius: 16,
-              paddingVertical: 16,
+              backgroundColor: canBook && !bookLoading ? accentColor : ceylon.mutedLight,
+              borderRadius: 18,
+              paddingVertical: SPACE.md + 4,
               alignItems: "center",
               justifyContent: "center",
               flexDirection: "row",
+              gap: SPACE.sm,
               shadowColor: canBook && !bookLoading ? accentColor : "transparent",
               shadowOpacity: 0.15,
               shadowRadius: 10,
               elevation: canBook && !bookLoading ? 4 : 0,
             }}
           >
-            {bookLoading && (
-              <Text style={{ marginRight: 8, fontSize: 15 }}>⏳</Text>
-            )}
-            <Text style={{ color: canBook && !bookLoading ? "#fff" : "#9CA3AF", fontSize: 15, fontWeight: "700" }}>
+            {bookLoading && <ActivityIndicator color="#fff" size="small" />}
+            <Text style={{ color: canBook && !bookLoading ? "#fff" : "#fff", fontSize: 15, fontWeight: "700" }}>
               {bookLoading ? "Booking..." : "Confirm Appointment"}
             </Text>
           </TouchableOpacity>
