@@ -63,7 +63,7 @@ export const subscribeConversations = (
         stressLevel: conv.stressLevel ?? 0,
         concern: conv.concern || "Connected for support",
         lastActive,
-        online: user.online ?? false,
+        online: user.online ?? true,
         lastMessage: conv.lastMessage || "",
         lastMessageTime: conv.lastMessageTime?.toDate?.()?.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) || "",
         unread: conv.unreadCounselor ?? 0,

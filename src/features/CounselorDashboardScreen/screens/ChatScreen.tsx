@@ -31,7 +31,7 @@ const formatMsgTime = (ts: any) => {
 
 const StudentCard = React.memo(({ student, onChat }: { student: ConversationStudent; onChat: (s: ConversationStudent) => void }) => (
   <TouchableOpacity
-    onPress={() => student.online && onChat(student)}
+    onPress={() => onChat(student)}
     className="bg-white rounded-2xl p-4 mx-4 my-1.5"
     style={{ borderWidth: 1, borderColor: ceylon.sand }}
   >
@@ -88,10 +88,8 @@ const StudentCard = React.memo(({ student, onChat }: { student: ConversationStud
         </View>
       </View>
     </View>
-    <View className="w-full mt-3 py-2.5 rounded-xl items-center" style={{ backgroundColor: student.online ? ceylon.teaGreen : ceylon.background }}>
-      <Text className="font-bold text-xs" style={{ color: student.online ? "#fff" : ceylon.mutedLight }}>
-        {student.online ? "💬 Open Chat" : "Currently Unavailable"}
-      </Text>
+    <View className="w-full mt-3 py-2.5 rounded-xl items-center" style={{ backgroundColor: ceylon.teaGreen }}>
+      <Text className="font-bold text-xs" style={{ color: "#fff" }}>💬 Open Chat</Text>
     </View>
   </TouchableOpacity>
 ));
