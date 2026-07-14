@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useLayoutEffect } from "react";
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
 import { getAuth } from "firebase/auth";
+import { useNavigation } from "expo-router";
 import AppointmentsScreen from "./screens/AppointmentsScreen";
 import ChatScreen from "./screens/ChatScreen";
 import {
@@ -137,6 +138,12 @@ const AppointmentRow = ({ appt, delay }: any) => (
 
 type ScreenState = "board" | "chats" | "appointments";
 
+const HEADER_TITLES: Record<ScreenState, string> = {
+  board: "Board",
+  chats: "Chats",
+  appointments: "Appointments",
+};
+
 const CounselorBoard = ({ onViewAppointments, onAlertPress }: any) => {
   const [loading, setLoading] = useState(true);
   const [counselorName, setCounselorName] = useState("");
@@ -169,8 +176,6 @@ const CounselorBoard = ({ onViewAppointments, onAlertPress }: any) => {
     })();
   }, [uid]);
 
-  const urgentCount = useMemo(() => alerts.filter((a) => a.urgency === "high").length, [alerts]);
-
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center" style={{ backgroundColor: ceylon.background }}>
@@ -193,25 +198,8 @@ const CounselorBoard = ({ onViewAppointments, onAlertPress }: any) => {
     <View className="flex-1" style={{ backgroundColor: ceylon.background }}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ padding: SPACE.lg, paddingBottom: SPACE.xxl }}
+        contentContainerStyle={{ padding: SPACE.lg, paddingBottom: 100 }}
       >
-        <Animated.View entering={FadeIn.duration(300)} className="flex-row items-center justify-between" style={{ marginBottom: SPACE.xl }}>
-          <View>
-            <Text style={{ fontSize: 13, color: ceylon.muted }}>Welcome back,</Text>
-            <Text style={{ fontSize: 20, fontWeight: "800", color: ceylon.ink, marginTop: 2 }}>
-              {counselorName}
-            </Text>
-          </View>
-          <TouchableOpacity
-            style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: "#fff", alignItems: "center", justifyContent: "center" }}
-          >
-            <Ionicons name="notifications-outline" size={20} color={ceylon.ink} />
-            {urgentCount > 0 && (
-              <View style={{ position: "absolute", top: 8, right: 9, width: 8, height: 8, borderRadius: 4, backgroundColor: ceylon.danger }} />
-            )}
-          </TouchableOpacity>
-        </Animated.View>
-
         <View className="flex-row" style={{ gap: SPACE.md, marginBottom: SPACE.xl }}>
           <StatCard label="ACTIVE CHATS" value={activeChats} color={ceylon.teaGreen} bg={`${ceylon.sage}20`} icon="chatbubbles-outline" delay={60} />
           <StatCard label="TODAY'S APPTS" value={todaysAppts} color={ceylon.terracotta} bg={ceylon.sand} icon="calendar-outline" delay={120} />
@@ -263,7 +251,7 @@ const CounselorBoard = ({ onViewAppointments, onAlertPress }: any) => {
   );
 };
 
-// ─── BOTTOM NAV ──────────────────────────────────────────────────────────────
+// ─── FOOTER ──────────────────────────────────────────────────────────────────
 const NAV_ITEMS = [
   { key: "board", label: "Board", icon: "grid-outline", activeIcon: "grid" },
   { key: "chats", label: "Chats", icon: "chatbubble-outline", activeIcon: "chatbubble" },
@@ -272,74 +260,77 @@ const NAV_ITEMS = [
 
 const BottomNav = ({ active, onChange }: any) => (
   <View
-    className="flex-row items-center justify-between"
-    style={{
-      backgroundColor: "#fff",
-      paddingHorizontal: SPACE.xl,
-      paddingTop: SPACE.sm,
-      paddingBottom: SPACE.md,
-      borderTopLeftRadius: 24,
-      borderTopRightRadius: 24,
-      shadowColor: "#000",
-      shadowOpacity: 0.05,
-      shadowRadius: 12,
-      shadowOffset: { width: 0, height: -3 },
-      elevation: 6,
-    }}
+    pointerEvents="box-none"
+    className="items-center"
+    style={{ position: "absolute", bottom: 24, left: 0, right: 0 }}
   >
-    {NAV_ITEMS.map((item) => {
-      const isActive = active === item.key;
-      return (
-        <TouchableOpacity
-          key={item.key}
-          onPress={() => {
-            Haptics.selectionAsync().catch(() => {});
-            onChange(item.key);
-          }}
-          className="items-center"
-          style={{ flex: 1, paddingVertical: 4 }}
-        >
-          {item.key === "board" ? (
+    <View
+      className="flex-row items-center justify-center"
+      style={{
+        backgroundColor: "#fff",
+        borderRadius: 50,
+        borderWidth: 1,
+        borderColor: "#ebb557",
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        gap: 4,
+        shadowColor: "#000",
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 4 },
+        elevation: 8,
+      }}
+    >
+      {NAV_ITEMS.map((item) => {
+        const isActive = active === item.key;
+        return (
+          <TouchableOpacity
+            key={item.key}
+            onPress={() => {
+              Haptics.selectionAsync().catch(() => {});
+              onChange(item.key);
+            }}
+            activeOpacity={0.8}
+          >
             <View
               style={{
-                width: 46, height: 46, borderRadius: 23,
-                backgroundColor: isActive ? ceylon.sage : "transparent",
-                alignItems: "center", justifyContent: "center",
-                marginBottom: 3,
+                width: 46,
+                height: 46,
+                borderRadius: 16,
+                backgroundColor: isActive ? "#1c1917" : "transparent",
+                alignItems: "center",
+                justifyContent: "center",
+                overflow: "hidden",
               }}
             >
               <Ionicons
                 name={isActive ? item.activeIcon : item.icon}
-                size={20}
-                color={isActive ? "#fff" : ceylon.mutedLight}
+                size={22}
+                color={isActive ? "#FFF" : "#A8A29E"}
               />
             </View>
-          ) : (
-            <Ionicons
-              name={isActive ? item.activeIcon : item.icon}
-              size={22}
-              color={isActive ? ceylon.teaGreen : ceylon.mutedLight}
-              style={{ marginBottom: 3 }}
-            />
-          )}
-          <Text
-            style={{
-              fontSize: 10,
-              fontWeight: isActive ? "700" : "500",
-              color: isActive ? ceylon.teaGreen : ceylon.mutedLight,
-            }}
-          >
-            {item.label}
-          </Text>
-        </TouchableOpacity>
-      );
-    })}
+          </TouchableOpacity>
+        );
+      })}
+    </View>
   </View>
 );
 
 export default function CounselorDashboardScreen() {
   const [screen, setScreen] = useState<ScreenState>("board");
+  const navigation = useNavigation();
   const [openConversationId, setOpenConversationId] = useState<string | undefined>();
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerTitle: HEADER_TITLES[screen],
+      headerBackVisible: false,
+      headerShadowVisible: false,
+      headerStyle: {
+        backgroundColor: ceylon.background,
+      },
+    });
+  }, [navigation, screen]);
 
   const handleAlertPress = async (alert: StressAlert) => {
     const uid = getAuth().currentUser?.uid;
