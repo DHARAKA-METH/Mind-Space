@@ -219,7 +219,7 @@ const DashboardScreen = () => {
               style={{
                 letterSpacing: 6,
                 fontWeight: "200",
-                fontStyle: "italic",
+                
               }}
             >
               How do you feel about your{" "}

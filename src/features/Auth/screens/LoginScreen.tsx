@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Pressable,
   Alert,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, Stack } from "expo-router";
@@ -86,11 +87,7 @@ const LoginScreen = () => {
         <View className="flex-1 px-8 items-center justify-center mb-[130px]">
           {/* Logo */}
           <View className="items-center mb-10">
-            <View className="w-24 h-24 bg-primary rounded-[30px] items-center justify-center mb-4">
-              <View className="w-14 h-14 bg-skyBlue rounded-2xl items-center justify-center">
-                <Circle size={35} color="white" fill="rgba(255,255,255,0.3)" />
-              </View>
-            </View>
+            <Image source={require("../../../../assets/images/icon.png")} style={{ width: 96, height: 96, borderRadius: 30 }} />
 
             <Text className="text-3xl font-bold text-black">MindSpace</Text>
 
