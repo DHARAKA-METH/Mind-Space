@@ -4,9 +4,12 @@ import { Stack, useRouter } from "expo-router";
 import { getAuth } from "firebase/auth";
 import React, { useEffect, useState } from "react";
 import {
+  Alert,
   Image,
   KeyboardAvoidingView,
+  Modal,
   Platform,
+  Pressable,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -53,7 +56,11 @@ const CONTEXT_TAGS = [
   "Work",
 ];
 
-const DashboardHeader = React.memo(function DashboardHeader() {
+const DashboardHeader = React.memo(function DashboardHeader({
+  onProfilePress,
+}: {
+  onProfilePress: () => void;
+}) {
   return (
     <View className="flex-row justify-between items-center px-4 pt-4 pb-2">
       <View className="w-10 h-10 rounded-full items-center justify-center bg-white">
@@ -78,7 +85,11 @@ const DashboardHeader = React.memo(function DashboardHeader() {
           />
         </TouchableOpacity>
         <View className="relative">
-          <TouchableOpacity className="w-10 h-10 rounded-full items-center justify-center border border-[#f0e4d3] bg-white">
+          <TouchableOpacity
+            onPress={onProfilePress}
+            className="w-10 h-10 rounded-full items-center justify-center border border-[#f0e4d3] bg-white"
+            activeOpacity={0.6}
+          >
             <Image
               source={icons.profile}
               className="w-8 h-8 rounded-full"
@@ -133,12 +144,23 @@ const DashboardScreen = () => {
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [noteOpen, setNoteOpen] = useState(false);
   const [userName, setUserName] = useState<string>("");
+  const [showProfilePopup, setShowProfilePopup] = useState(false);
 
   const auth = getAuth();
   const userID = auth.currentUser;
   const userId = userID ? userID.uid : null;
 
   const currentMoodObj = moods.find((m) => m.id === selectedMood);
+
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();
+      setShowProfilePopup(false);
+      router.replace("/Route/login");
+    } catch (error) {
+      Alert.alert("Error", "Failed to log out. Please try again.");
+    }
+  };
 
   useEffect(() => {
     loadMoodData();
@@ -187,7 +209,9 @@ const DashboardScreen = () => {
     <>
       <Stack.Screen
         options={{
-          headerTitle: () => <DashboardHeader />,
+          headerTitle: () => (
+            <DashboardHeader onProfilePress={() => setShowProfilePopup(true)} />
+          ),
           headerBackVisible: false,
           headerShadowVisible: false,
           headerStyle: {
@@ -355,6 +379,100 @@ const DashboardScreen = () => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <Modal
+        visible={showProfilePopup}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowProfilePopup(false)}
+      >
+        <Pressable
+          className="flex-1 bg-black/30 justify-start items-end pt-[60px] pr-4"
+          onPress={() => setShowProfilePopup(false)}
+        >
+          <Pressable
+            onPress={(e) => e.stopPropagation()}
+            className="rounded-2xl overflow-hidden"
+            style={{
+              width: 200,
+              backgroundColor: "#FBF3EA",
+              shadowColor: "#3D2E1F",
+              shadowOpacity: 0.15,
+              shadowRadius: 20,
+              shadowOffset: { width: 0, height: 8 },
+              elevation: 8,
+            }}
+          >
+            <View
+              className="px-4 py-4 border-b"
+              style={{ borderColor: "#f0e4d3" }}
+            >
+              <View className="flex-row items-center gap-3">
+                <View
+                  className="w-10 h-10 rounded-full items-center justify-center border"
+                  style={{ borderColor: "#f0e4d3", backgroundColor: "#fff" }}
+                >
+                  <Image
+                    source={icons.profile}
+                    className="w-8 h-8 rounded-full"
+                    style={{ tintColor: "#3D2E1F" }}
+                    resizeMode="cover"
+                  />
+                </View>
+                <View className="flex-1">
+                  <Text
+                    className="text-sm font-semibold"
+                    style={{ color: ceylon.ink }}
+                    numberOfLines={1}
+                  >
+                    {userName || "User"}
+                  </Text>
+                  <Text
+                    className="text-xs"
+                    style={{ color: ceylon.muted }}
+                  >
+                    {auth.currentUser?.email || ""}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* <TouchableOpacity
+              onPress={() => {
+                setShowProfilePopup(false);
+                // router.push("");
+              }}
+              className="px-4 py-3 flex-row items-center gap-3 active:opacity-60"
+            >
+              <View
+                className="w-8 h-8 rounded-full items-center justify-center"
+                style={{ backgroundColor: "#fff" }}
+              >
+                <Text className="text-sm">⚙</Text>
+              </View>
+              <Text className="text-sm" style={{ color: ceylon.ink }}>
+                Settings
+              </Text>
+            </TouchableOpacity> */}
+
+            <TouchableOpacity
+              onPress={handleLogout}
+              className="px-4 py-3 flex-row items-center gap-3 active:opacity-60"
+              style={{ borderTopWidth: 1, borderTopColor: "#f0e4d3" }}
+            >
+              <View
+                className="w-8 h-8 rounded-full items-center justify-center"
+                style={{ backgroundColor: "#fff" }}
+              >
+                <Text className="text-sm">→</Text>
+              </View>
+              <Text className="text-sm" style={{ color: ceylon.terracotta }}>
+                Log Out
+              </Text>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </>
   );
 };
