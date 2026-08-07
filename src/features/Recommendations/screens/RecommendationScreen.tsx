@@ -60,19 +60,23 @@ export default function WellnessScreen() {
     }
   }
 
-  const handleMediaRedirect = async (url: string) => {
-    if (!url) return;
-    try {
-      const canOpen = await Linking.canOpenURL(url);
-      if (canOpen) {
-        await Linking.openURL(url);
-      } else {
-        Alert.alert("Redirecting", `Opening link:\n${url}`);
-      }
-    } catch {
-      Alert.alert("Navigation Error", "Could not open the link.");
-    }
-  };
+const handleMediaRedirect = async (url: string) => {
+  if (!url || !url.trim()) {
+    Alert.alert("Invalid Link", "No valid link was provided.");
+    return;
+  }
+
+  try {
+    await Linking.openURL(url.trim());
+  } catch (error) {
+    console.error("Failed to open media link:", error);
+
+    Alert.alert(
+      "Navigation Error",
+      "Could not open this link. Please make sure a browser or the required app is installed."
+    );
+  }
+};
 
   const handleDismissItem = (id: string) => {
     setRecommendations((prev) =>

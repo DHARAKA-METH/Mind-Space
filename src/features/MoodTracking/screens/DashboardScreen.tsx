@@ -211,7 +211,7 @@ const DashboardScreen = () => {
               Daily reflection
             </Text>
             <Text className="text-4xl text-gray-900 mb-3">
-              Hello, {userName || "there"} 👋
+              Hello, {userName || "there"}
             </Text>
 
             <Text
