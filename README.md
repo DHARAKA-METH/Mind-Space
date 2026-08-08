@@ -1,50 +1,244 @@
-# Welcome to your Expo app 👋
+#  MindSpace
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+### Mental Wellness Support Platform for University Students
 
-## Get started
+MindSpace is a mental wellness support mobile application designed for university students to track their mood and stress, access suitable wellness resources, receive AI-assisted general support, communicate anonymously with counselors, and book counseling appointments through a single platform.
 
-1. Install dependencies
 
-   ```bash
-   npm install
-   ```
+##  Features
 
-2. Start the app
+###  Authentication & User Management
 
-   ```bash
-   npx expo start
-   ```
+Secure user registration, login, logout, session handling, and role-aware access are provided using Firebase Authentication.
 
-In the output, you'll find options to open the app in a
+###  Mood & Stress Check-In
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Students can record their current mood, self-reported stress level from `0–10`, an optional personal note, and optionally provide a facial image for supplementary emotion analysis.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+###  Personal Mood Dashboard
 
-## Get a fresh project
+The dashboard displays previously recorded mood and stress information so students can review and reflect on changes in their emotional well-being over time.
 
-When you're ready, run:
+###  Facial Emotion Analysis
 
-```bash
-npm run reset-project
+Optional facial-emotion analysis provides supplementary emotional information that may support stress estimation but is never treated as a medical or psychological diagnosis.
+
+###  Wellness Hub
+
+The Wellness Hub recommends and provides access to meditation, relaxing music, breathing exercises, stress-management tips, self-care guidance, and educational wellness resources based on the student's mood and stress level.
+
+###  YouTube & Spotify Resources
+
+Wellness content from YouTube and Spotify is provided through approved external links and search links, allowing students to open relevant meditation videos, music, and playlists in the corresponding application or browser.
+
+> **MindSpace does not use the YouTube API or Spotify API; it only provides external links/search links to relevant content.**
+
+###  AI Wellness Assistant
+
+The AI wellness assistant provides empathetic, non-diagnostic support, general wellness guidance, suitable resource suggestions, and safety-focused responses when potentially serious emotional distress is detected.
+
+###  Anonymous Counselor Chat
+
+Students can communicate with an assigned counselor through a real-time privacy-focused chat where unnecessary personal identity information is hidden from the conversation interface.
+
+###  Appointment Booking
+
+Students can select a counselor, choose an available date and time, select a session type, book an appointment, and later view their booked appointment information.
+
+###  Privacy & Role-Based Access
+
+Firebase Authentication, Firestore Security Rules, role-based permissions, ownership checks, and anonymous chat controls are used to restrict access to sensitive student information.
+
+---
+
+#  Technology Stack
+
+## Mobile Application
+
+- **React Native**
+- **Expo**
+- **TypeScript**
+- **Tailwind CSS**
+
+## Backend & Cloud
+
+- **Firebase Authentication**
+- **Cloud Firestore**
+- **Firebase Cloud Functions**
+
+## AI Services
+
+- AI model for wellness-support conversations and recommendations
+- Hugging Face model for optional facial-emotion analysis
+
+## External Wellness Resources
+
+- **YouTube links/search links**
+- **Spotify links/search links**
+
+
+#  System Architecture
+
+MindSpace follows a cloud-connected mobile architecture where the React Native application communicates with Firebase services for authentication, application data, real-time communication, and trusted server-side operations.
+
+```text
+                         ┌─────────────────────────┐
+                         │     MindSpace Mobile    │
+                         │   React Native + Expo   │
+                         │       TypeScript        │
+                         └────────────┬────────────┘
+                                      │
+                                      │
+                       Firebase SDK / HTTPS
+                                      │
+                                      ▼
+                    ┌─────────────────────────────┐
+                    │          Firebase           │
+                    └──────────────┬──────────────┘
+                                   │
+              ┌────────────────────┼─────────────────────┐
+              │                    │                     │
+              ▼                    ▼                     ▼
+     ┌────────────────┐   ┌─────────────────┐   ┌──────────────────┐
+     │    Firebase    │   │ Cloud Firestore │   │ Firebase Cloud   │
+     │ Authentication │   │                 │   │    Functions     │
+     └────────────────┘   └────────-────────┘   └─────────┬────────┘
+                                                           │
+                                                           │
+                                                           │
+                                                           │
+                                                           ▼
+                                                      AI Service
+                                                            │
+                                                            │
+                                                            │
+                                                         ┌──┴───────────┐
+                                                         │              │
+                                                         ▼              ▼
+                                                   AI Wellness     Facial Emotion
+                                                     Support         Analysis
+                                                        │
+                                                        │
+                                                Wellness Resources
+              
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
-## Learn more
+---
 
-To learn more about developing your project with Expo, look at the following resources:
+#  Getting Started
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Prerequisites
 
-## Join the community
+Install the following before running the project:
 
-Join our community of developers creating universal apps.
+- Node.js
+- npm
+- Git
+- Expo
+- Android Studio or Expo Go
+- Firebase project configuration
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+---
+
+## 1. Clone the Repository
+
+```bash
+git clone https://github.com/DHARAKA-METH/Mind-Space.git
+```
+
+Move into the project:
+
+```bash
+cd Mind-Space
+```
+
+---
+
+## 2. Install Dependencies
+
+```bash
+npm install
+```
+
+---
+
+## 3. Configure Environment Variables
+
+Create the required environment configuration according to the Firebase and AI-service setup used by the project.
+
+```env
+  EXPO_PUBLIC_KODEKLOUD_API_KEY= 
+  EXPO_PUBLIC_HF_TOKEN=  
+```
+
+---
+
+## 4. Start the Development Server
+
+```bash
+npx expo start
+```
+
+To clear the Expo/Metro cache:
+
+```bash
+npx expo start --clear
+```
+
+The application can then be tested using:
+
+- Expo Go
+- Android Emulator
+- Physical Android Device
+
+---
+
+#  Android Build
+
+MindSpace uses **Expo Application Services (EAS)** to create Android builds.
+
+Configure EAS:
+
+```bash
+eas build:configure
+```
+
+Create a testing APK:
+
+```bash
+eas build --platform android --profile preview
+```
+
+Create a production Android build:
+
+```bash
+eas build --platform android --profile production
+```
+
+
+# 📄 License
+
+This application was developed primarily for academic and educational purposes.
+---
+
+Please contact the project maintainers before using the project or its content for commercial purposes.
+
+---
+
+
+##  Screenshots
+
+
+<img width="688" height="1538" alt="ss 1" src="https://github.com/user-attachments/assets/9dd0660c-9e85-40b1-9e1f-9208d71ec3de" />
+
+<img width="688" height="1538" alt="ss 2" src="https://github.com/user-attachments/assets/3926c5c5-9607-45af-a2c0-76ba89f07d91" />
+
+
+
+
+
+
+
+
+      
