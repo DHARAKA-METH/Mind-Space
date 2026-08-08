@@ -1,6 +1,6 @@
 import { db } from "@/src/config/firebase";
 import {
-  collection, doc, getDocs, setDoc, query, where, orderBy,
+  collection, doc, getDoc, getDocs, setDoc, query, where, orderBy,
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { Counselor, Appointment } from "../types";
@@ -52,6 +52,19 @@ export const fetchAppointments = async (studentId: string): Promise<Appointment[
       note: data.note || "",
     } as Appointment;
   });
+};
+
+export const fetchCurrentStressPercentage = async (
+  studentId: string,
+): Promise<number | null> => {
+  const snap = await getDoc(doc(db, "users", studentId));
+  if (!snap.exists()) return null;
+
+  const stress = Number(snap.data().currentStressLevel);
+  if (!Number.isFinite(stress)) return null;
+
+  // currentStressLevel is stored on a 0-10 scale.
+  return Math.round(Math.min(10, Math.max(0, stress)) * 10);
 };
 
 export const createAppointment = async (data: {

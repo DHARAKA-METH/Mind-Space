@@ -20,6 +20,8 @@ import { calculateAverageDayStressLevel } from "../hooks/calculateAverageDayStre
 import { fetchMoodFromDb } from "../services/fetchFromDb";
 import { db } from "@/src/config/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { Ionicons } from "@expo/vector-icons";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { PulsingMoodButton } from "./PulsingCheckInBorder";
 import { calmColors, commonColors, spacing, typography } from "@/src/theme";
 
@@ -201,6 +203,27 @@ const HeroDecoration = () => {
   );
 };
 
+const getStressAccent = (percentage: number) => {
+  if (percentage <= 30) {
+    return {
+      color: calmColors.success,
+      backgroundColor: calmColors.successSoft,
+    };
+  }
+
+  if (percentage <= 60) {
+    return {
+      color: calmColors.primaryDark,
+      backgroundColor: calmColors.primarySoft,
+    };
+  }
+
+  return {
+    color: calmColors.error,
+    backgroundColor: calmColors.errorSoft,
+  };
+};
+
 /* -------------------------------------------------------------------------- */
 /*                              DASHBOARD SCREEN                              */
 /* -------------------------------------------------------------------------- */
@@ -212,6 +235,7 @@ const DashboardScreen = () => {
   const [, setWeeklyProgress] = useState<number>(0);
 
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
+  const [stressPercentage, setStressPercentage] = useState<number | null>(null);
 
   const [userName, setUserName] = useState<string>("");
   const [showProfilePopup, setShowProfilePopup] = useState(false);
@@ -225,6 +249,10 @@ const DashboardScreen = () => {
 
   const wellnessMessage = selectedMood
     ? WELLNESS_MESSAGES[selectedMood]
+    : null;
+
+  const stressAccent = stressPercentage !== null
+    ? getStressAccent(stressPercentage)
     : null;
 
   const handleGoToWellness = () => {
@@ -279,8 +307,21 @@ const DashboardScreen = () => {
         if (data.name) {
           setUserName(data.name);
         }
+
+        const currentStress = Number(data.currentStressLevel);
+
+        setStressPercentage(
+          Number.isFinite(currentStress)
+            ? Math.round(
+                Math.min(10, Math.max(0, currentStress)) * 10
+              )
+            : null
+        );
+      } else {
+        setStressPercentage(null);
       }
     } catch (error) {
+      setStressPercentage(null);
       console.error("Failed to load current mood status:", error);
     }
   }
@@ -371,8 +412,8 @@ const DashboardScreen = () => {
             >
               <HeroDecoration />
 
-              <View style={{ maxWidth: "72%" }}>
-                <View className="flex-row items-center mb-5">
+              <View className="mb-5 flex-row items-center justify-between">
+                <View className="flex-row items-center">
                   <Text
                     style={{
                       color: calmColors.primary,
@@ -394,6 +435,49 @@ const DashboardScreen = () => {
                     ✦
                   </Text>
                 </View>
+
+                {stressPercentage !== null && stressAccent && (
+                    <Animated.View
+                      entering={FadeInDown.duration(260)}
+                      accessibilityRole="progressbar"
+                      accessibilityLabel="Current stress level"
+                      accessibilityValue={{
+                        min: 0,
+                        max: 100,
+                        now: stressPercentage,
+                        text: `${stressPercentage} percent`,
+                      }}
+                      className="flex-row items-center rounded-full border border-calm-surface px-3 py-2"
+                      style={{
+                        backgroundColor: stressAccent.backgroundColor,
+                      }}
+                    >
+                      <View
+                        className="mr-2 h-7 w-7 items-center justify-center rounded-full bg-calm-surface"
+                      >
+                        <Ionicons
+                          name="pulse"
+                          size={15}
+                          color={stressAccent.color}
+                        />
+                      </View>
+
+                      <View>
+                        <Text
+                          className="text-caption font-extrabold"
+                          style={{ color: stressAccent.color }}
+                        >
+                          {stressPercentage}%
+                        </Text>
+                        <Text className="text-caption font-semibold text-calm-textSecondary">
+                          current stress
+                        </Text>
+                      </View>
+                    </Animated.View>
+                )}
+              </View>
+
+              <View style={{ maxWidth: "72%" }}>
 
                 <Text
                   style={{

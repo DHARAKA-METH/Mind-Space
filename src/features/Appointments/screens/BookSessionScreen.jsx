@@ -52,6 +52,7 @@ import {
   createAppointment,
   updateAppointmentStatus,
   hideAppointmentForStudent,
+  fetchCurrentStressPercentage,
 } from "../services/appointmentService";
 
 import {
@@ -118,6 +119,134 @@ const AppointmentHeader = () => {
         </Text>
       </View>
     </View>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
+/*                            STRESS INSIGHT CARD                             */
+/* -------------------------------------------------------------------------- */
+
+const getStressInsight = (percentage) => {
+  if (percentage <= 30) {
+    return {
+      label: "Low",
+      message: "You seem to be managing well. Support can help you stay balanced.",
+      color: studentColors.success,
+      softColor: studentColors.successSoft,
+    };
+  }
+
+  if (percentage <= 60) {
+    return {
+      label: "Moderate",
+      message: "A conversation may help you unpack what has been weighing on you.",
+      color: studentColors.warning,
+      softColor: studentColors.warningSoft,
+    };
+  }
+
+  return {
+    label: "High",
+    message: "Reaching out is a positive next step. Choose someone you feel safe with.",
+    color: studentColors.error,
+    softColor: studentColors.errorSoft,
+  };
+};
+
+const StressInsightCard = ({ percentage, loading }) => {
+  if (loading) {
+    return (
+      <View className="mb-5 min-h-[116px] items-center justify-center rounded-[22px] border border-app-border bg-app-surface">
+        <ActivityIndicator color={studentColors.primary} />
+        <Text className="mt-2 text-caption text-app-textSecondary">
+          Checking your latest mood insight...
+        </Text>
+      </View>
+    );
+  }
+
+  if (percentage === null) {
+    return (
+      <View
+        accessible
+        accessibilityLabel="No recent stress level is available"
+        className="mb-5 flex-row items-center rounded-[22px] border border-app-border bg-app-surface p-4"
+      >
+        <View className="h-12 w-12 items-center justify-center rounded-2xl bg-app-primarySoft">
+          <Ionicons name="pulse-outline" size={22} color={studentColors.primary} />
+        </View>
+        <View className="ml-3 flex-1">
+          <Text className="text-body font-extrabold text-app-textPrimary">
+            Stress insight unavailable
+          </Text>
+          <Text className="mt-1 text-caption text-app-textSecondary">
+            Complete a mood check-in to see your latest stress percentage here.
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  const insight = getStressInsight(percentage);
+
+  return (
+    <Animated.View
+      entering={FadeInDown.duration(260)}
+      className="mb-5 overflow-hidden rounded-[22px] border border-app-border bg-app-surface p-4"
+    >
+      <View
+        pointerEvents="none"
+        className="absolute -right-8 -top-10 h-28 w-28 rounded-full"
+        style={{ backgroundColor: insight.softColor }}
+      />
+
+      <View className="flex-row items-center">
+        <View
+          className="h-12 w-12 items-center justify-center rounded-2xl"
+          style={{ backgroundColor: insight.softColor }}
+        >
+          <Ionicons name="pulse" size={22} color={insight.color} />
+        </View>
+
+        <View className="ml-3 flex-1">
+          <Text className="text-caption font-bold uppercase text-app-textSecondary">
+            Current stress
+          </Text>
+          <View className="mt-0.5 flex-row items-center">
+            <Text className="text-body font-extrabold text-app-textPrimary">
+              {insight.label}
+            </Text>
+            <View
+              className="ml-2 rounded-full px-2 py-0.5"
+              style={{ backgroundColor: insight.softColor }}
+            >
+              <Text className="text-caption font-bold" style={{ color: insight.color }}>
+                Latest check-in
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        <Text className="text-heading font-extrabold" style={{ color: insight.color }}>
+          {percentage}%
+        </Text>
+      </View>
+
+      <View
+        accessibilityRole="progressbar"
+        accessibilityValue={{ min: 0, max: 100, now: percentage }}
+        className="mt-4 h-2.5 overflow-hidden rounded-full bg-app-borderSoft"
+      >
+        <View
+          className="h-full rounded-full"
+          style={{ width: `${percentage}%`, backgroundColor: insight.color }}
+        />
+      </View>
+
+      <Text className="mt-3 text-caption leading-5 text-app-textSecondary">
+        {insight.message}
+      </Text>
+    </Animated.View>
   );
 };
 
@@ -1227,6 +1356,16 @@ export default function BookSessionScreen() {
     setActiveView,
   ] = useState("book");
 
+  const [
+    stressPercentage,
+    setStressPercentage,
+  ] = useState(null);
+
+  const [
+    stressLoading,
+    setStressLoading,
+  ] = useState(true);
+
   /* ------------------------------------------------------------------------ */
   /*                              LOAD DATA                                   */
   /* ------------------------------------------------------------------------ */
@@ -1240,6 +1379,23 @@ export default function BookSessionScreen() {
       getLoggedUser();
 
     if (user) {
+      fetchCurrentStressPercentage(
+        user.id
+      )
+        .then(
+          setStressPercentage
+        )
+        .catch((error) => {
+          console.error(
+            "Could not load stress insight:",
+            error
+          );
+          setStressPercentage(null);
+        })
+        .finally(() =>
+          setStressLoading(false)
+        );
+
       fetchAppointments(
         user.id
       ).then((data) => {
@@ -1248,6 +1404,7 @@ export default function BookSessionScreen() {
       });
     } else {
       setLoading(false);
+      setStressLoading(false);
     }
   }, []);
 
@@ -2017,6 +2174,15 @@ export default function BookSessionScreen() {
                     session.
                   </Text>
                 </View>
+
+                <StressInsightCard
+                  percentage={
+                    stressPercentage
+                  }
+                  loading={
+                    stressLoading
+                  }
+                />
 
                 {/* Success */}
 

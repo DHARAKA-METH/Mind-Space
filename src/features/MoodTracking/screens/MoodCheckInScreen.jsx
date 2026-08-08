@@ -59,6 +59,8 @@ import {
 import {
   addDoc,
   collection,
+  doc,
+  writeBatch,
 } from "firebase/firestore";
 
 import {
@@ -830,11 +832,27 @@ export default function MoodCheckInScreen() {
       /* ------------------------------------------------------------------ */
 
       try {
-        await addDoc(
-          collection(
-            db,
-            "moodEntries"
-          ),
+        const createdAt =
+          new Date();
+
+        const currentMoodStatus =
+          clean.mood === "meh"
+            ? "neutral"
+            : clean.mood;
+
+        const batch =
+          writeBatch(db);
+
+        const moodEntryRef =
+          doc(
+            collection(
+              db,
+              "moodEntries"
+            )
+          );
+
+        batch.set(
+          moodEntryRef,
           {
             userId,
 
@@ -852,10 +870,28 @@ export default function MoodCheckInScreen() {
             note:
               clean.note,
 
-            createdAt:
-              new Date(),
+            createdAt,
           }
         );
+
+        batch.update(
+          doc(
+            db,
+            "users",
+            userId
+          ),
+          {
+            currentStressLevel:
+              finalStress,
+
+            currentMoodStatus,
+
+            updatedAt:
+              createdAt.toISOString(),
+          }
+        );
+
+        await batch.commit();
 
         /* -------------------------------------------------------------- */
         /* SAVE RECOMMENDATIONS                                           */
