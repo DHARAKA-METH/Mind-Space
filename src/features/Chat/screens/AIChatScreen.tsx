@@ -575,9 +575,9 @@ const ChatRoomsList = ({ rooms, onOpenRoom, onNewChat, onOpenActions }: any) => 
           borderBottomRightRadius: 28,
         }}
       >
-        <View className="flex-row items-center justify-between" style={{ marginBottom: SPACE.lg }}>
+        <View className="flex-row items-center justify-between ml-3" style={{ marginBottom: SPACE.lg }}>
           <View>
-            <Text style={{ fontSize: 22, fontWeight: "700", color: ceylon.ink }}>Support Chat</Text>
+            <Text style={{ fontSize: 18, fontWeight: "700", color: ceylon.ink }}>AI Chat</Text>
             <Text style={{ fontSize: 12, color: ceylon.muted, marginTop: 2 }}>A calm space, whenever you need it</Text>
           </View>
           <TouchableOpacity
