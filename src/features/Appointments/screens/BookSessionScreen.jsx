@@ -50,6 +50,8 @@ import {
   getLoggedUser,
   fetchAppointments,
   createAppointment,
+  updateAppointmentStatus,
+  hideAppointmentForStudent,
 } from "../services/appointmentService";
 
 import {
@@ -270,18 +272,22 @@ const AppointmentCard = ({
   appointment,
   counselor,
   isPast,
+  isNext = false,
+  onCancel,
+  onRemove,
+  actionLoading = false,
 }) => {
-  const displayDate = dayjs
-    .utc(
-      appointment.appointmentDateTime
-    )
-    .format("MMM DD, YYYY");
+  const appointmentTime = dayjs.utc(
+    appointment.appointmentDateTime
+  );
 
-  const displayTime = dayjs
-    .utc(
-      appointment.appointmentDateTime
-    )
-    .format("hh:mm A");
+  const displayDate = appointmentTime.format(
+    "MMM DD, YYYY"
+  );
+
+  const displayTime = appointmentTime.format(
+    "hh:mm A"
+  );
 
   const statusConfig = {
     confirmed: {
@@ -301,34 +307,101 @@ const AppointmentCard = ({
       color: colors.danger,
       label: "Cancelled",
     },
+
+    completed: {
+      bg: "#EAF0F8",
+      color: "#5F7EA7",
+      label: "Completed",
+    },
+
+    missed: {
+      bg: "#F1EFED",
+      color: colors.secondaryText,
+      label: "Missed",
+    },
   };
 
   const status =
-    statusConfig[
+    statusConfig[appointment.status] ||
+    statusConfig.pending;
+
+  const isFuture = appointmentTime.isAfter(
+    dayjs.utc()
+  );
+
+  const canCancel =
+    isFuture &&
+    ["pending", "confirmed"].includes(
       appointment.status
-    ] || statusConfig.pending;
+    );
+
+  const canRemove =
+    !isFuture ||
+    ["cancelled", "completed", "missed"].includes(
+      appointment.status
+    );
 
   return (
     <Animated.View
       entering={FadeInDown
-        .duration(280)
+        .duration(260)
         .springify()}
       layout={Layout}
-      className="
+      className={`
         bg-white
         rounded-[22px]
         overflow-hidden
         mb-3
         border
-        border-[#ECE6E2]
-      "
+
+        ${
+          isNext
+            ? "border-[#CFC5E8]"
+            : "border-[#ECE6E2]"
+        }
+      `}
       style={{
-        opacity: isPast ? 0.62 : 1,
+        opacity:
+          isPast &&
+          appointment.status !== "cancelled"
+            ? 0.72
+            : 1,
       }}
     >
-      <View className="p-4">
-        {/* Counselor */}
+      {isNext && (
+        <View
+          className="
+            flex-row
+            items-center
+            px-4
+            py-2.5
+            bg-[#F2EEF9]
+            border-b
+            border-[#E5DDEF]
+          "
+        >
+          <Ionicons
+            name="sparkles-outline"
+            size={13}
+            color={colors.purple}
+          />
 
+          <Text
+            className="
+              ml-1.5
+              text-[9.5px]
+              font-extrabold
+              tracking-[0.7px]
+              uppercase
+              text-[#6D5AB5]
+            "
+          >
+            Next session
+          </Text>
+        </View>
+      )}
+
+      <View className="p-4">
         <View className="flex-row items-start">
           <View
             className="
@@ -346,8 +419,7 @@ const AppointmentCard = ({
             }}
           >
             <Text className="text-[22px]">
-              {counselor?.avatar ||
-                "🧑‍⚕️"}
+              {counselor?.avatar || "🧑‍⚕️"}
             </Text>
           </View>
 
@@ -362,8 +434,7 @@ const AppointmentCard = ({
                     text-[#1F1F2E]
                   "
                 >
-                  {counselor?.name ||
-                    "Counselor"}
+                  {counselor?.name || "Counselor"}
                 </Text>
 
                 <Text
@@ -375,10 +446,9 @@ const AppointmentCard = ({
                     text-[#8C8992]
                   "
                 >
-                  {counselor
-                    ?.specialties
-                    ?.join(" · ") ||
-                    "General Counseling"}
+                  {counselor?.specialties?.join(
+                    " · "
+                  ) || "General Counseling"}
                 </Text>
               </View>
 
@@ -389,8 +459,7 @@ const AppointmentCard = ({
                   rounded-full
                 "
                 style={{
-                  backgroundColor:
-                    status.bg,
+                  backgroundColor: status.bg,
                 }}
               >
                 <Text
@@ -399,8 +468,7 @@ const AppointmentCard = ({
                     font-extrabold
                   "
                   style={{
-                    color:
-                      status.color,
+                    color: status.color,
                   }}
                 >
                   {status.label}
@@ -409,8 +477,6 @@ const AppointmentCard = ({
             </View>
           </View>
         </View>
-
-        {/* Appointment details */}
 
         <View
           className="
@@ -425,9 +491,7 @@ const AppointmentCard = ({
               <Ionicons
                 name="calendar-outline"
                 size={14}
-                color={
-                  colors.purple
-                }
+                color={colors.purple}
               />
 
               <Text
@@ -446,9 +510,7 @@ const AppointmentCard = ({
               <Ionicons
                 name="time-outline"
                 size={14}
-                color={
-                  colors.purple
-                }
+                color={colors.purple}
               />
 
               <Text
@@ -466,15 +528,12 @@ const AppointmentCard = ({
             <View className="flex-row items-center">
               <Ionicons
                 name={
-                  appointment.type ===
-                  "online"
+                  appointment.type === "online"
                     ? "videocam-outline"
                     : "location-outline"
                 }
                 size={14}
-                color={
-                  colors.purple
-                }
+                color={colors.purple}
               />
 
               <Text
@@ -492,57 +551,92 @@ const AppointmentCard = ({
           </View>
         </View>
 
-        {/* Actions */}
+        {canCancel && (
+          <TouchableOpacity
+            activeOpacity={0.78}
+            disabled={actionLoading}
+            onPress={() => onCancel?.(appointment)}
+            className="
+              mt-4
+              h-10
+              rounded-[13px]
+              bg-[#FBE8E9]
+              border
+              border-[#F2D3D6]
+              flex-row
+              items-center
+              justify-center
+            "
+          >
+            {actionLoading ? (
+              <ActivityIndicator
+                size="small"
+                color={colors.danger}
+              />
+            ) : (
+              <>
+                <Ionicons
+                  name="close-circle-outline"
+                  size={15}
+                  color={colors.danger}
+                />
 
-        {!isPast &&
-          appointment.status !==
-            "cancelled" && (
-            <View className="flex-row gap-2 mt-4">
-              <TouchableOpacity
-                activeOpacity={0.75}
-                className="
-                  flex-1
-                  h-10
-                  rounded-xl
-                  bg-[#F2EEF9]
-                  items-center
-                  justify-center
-                "
-              >
                 <Text
                   className="
-                    text-[11px]
-                    font-bold
-                    text-[#6D5AB5]
-                  "
-                >
-                  Reschedule
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                activeOpacity={0.75}
-                className="
-                  flex-1
-                  h-10
-                  rounded-xl
-                  bg-[#FBE8E9]
-                  items-center
-                  justify-center
-                "
-              >
-                <Text
-                  className="
+                    ml-1.5
                     text-[11px]
                     font-bold
                     text-[#C45B65]
                   "
                 >
-                  Cancel
+                  Cancel session
                 </Text>
-              </TouchableOpacity>
-            </View>
-          )}
+              </>
+            )}
+          </TouchableOpacity>
+        )}
+
+        {canRemove && (
+          <TouchableOpacity
+            activeOpacity={0.75}
+            disabled={actionLoading}
+            onPress={() => onRemove?.(appointment)}
+            className="
+              self-end
+              mt-3
+              flex-row
+              items-center
+              px-2
+              py-1.5
+            "
+          >
+            {actionLoading ? (
+              <ActivityIndicator
+                size="small"
+                color={colors.secondaryText}
+              />
+            ) : (
+              <>
+                <Ionicons
+                  name="trash-outline"
+                  size={13}
+                  color={colors.secondaryText}
+                />
+
+                <Text
+                  className="
+                    ml-1
+                    text-[10px]
+                    font-semibold
+                    text-[#8C8992]
+                  "
+                >
+                  Remove
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
+        )}
       </View>
     </Animated.View>
   );
@@ -552,86 +646,146 @@ const AppointmentCard = ({
 /*                            BOOKED DETAILS                                  */
 /* -------------------------------------------------------------------------- */
 
+const SESSION_FILTERS = [
+  { id: "all", label: "All" },
+  { id: "upcoming", label: "Upcoming" },
+  { id: "pending", label: "Pending" },
+  { id: "confirmed", label: "Confirmed" },
+  { id: "history", label: "History" },
+];
+
 const BookedDetailsView = ({
   appointments,
   counselors,
+  onCancel,
+  onRemove,
+  actionId,
 }) => {
+  const [filter, setFilter] = useState("all");
+
   const now = dayjs.utc();
 
-  const grouped = useMemo(() => {
-    const upcoming =
-      appointments
-        .filter(
-          (appointment) =>
-            dayjs
-              .utc(
-                appointment.appointmentDateTime
-              )
-              .isAfter(now) &&
-            appointment.status !==
-              "cancelled"
-        )
-        .sort((a, b) =>
-          dayjs
-            .utc(
-              a.appointmentDateTime
-            )
-            .diff(
-              dayjs.utc(
-                b.appointmentDateTime
-              )
-            )
-        );
+  const getCounselor = (counselorId) =>
+    counselors.find(
+      (counselor) =>
+        counselor.id === counselorId
+    );
 
-    const past =
-      appointments
-        .filter(
-          (appointment) =>
-            dayjs
-              .utc(
-                appointment.appointmentDateTime
-              )
-              .isBefore(now) ||
-            appointment.status ===
-              "cancelled"
-        )
-        .sort((a, b) =>
-          dayjs
-            .utc(
+  const sessionData = useMemo(() => {
+    const visible = appointments.filter(
+      (appointment) =>
+        !appointment.hiddenByStudent
+    );
+
+    const upcoming = visible
+      .filter((appointment) => {
+        const future = dayjs
+          .utc(appointment.appointmentDateTime)
+          .isAfter(now);
+
+        return (
+          future &&
+          ["pending", "confirmed"].includes(
+            appointment.status
+          )
+        );
+      })
+      .sort((a, b) =>
+        dayjs
+          .utc(a.appointmentDateTime)
+          .diff(
+            dayjs.utc(
               b.appointmentDateTime
             )
-            .diff(
-              dayjs.utc(
-                a.appointmentDateTime
-              )
-            )
+          )
+      );
+
+    const history = visible
+      .filter((appointment) => {
+        const future = dayjs
+          .utc(appointment.appointmentDateTime)
+          .isAfter(now);
+
+        return (
+          !future ||
+          [
+            "cancelled",
+            "completed",
+            "missed",
+          ].includes(appointment.status)
         );
+      })
+      .sort((a, b) =>
+        dayjs
+          .utc(b.appointmentDateTime)
+          .diff(
+            dayjs.utc(
+              a.appointmentDateTime
+            )
+          )
+      );
 
     return {
+      visible,
       upcoming,
-      past,
+      nextSession: upcoming[0] || null,
+      remainingUpcoming: upcoming.slice(1),
+      history,
+      pending: upcoming.filter(
+        (appointment) =>
+          appointment.status === "pending"
+      ),
+      confirmed: upcoming.filter(
+        (appointment) =>
+          appointment.status === "confirmed"
+      ),
     };
   }, [appointments]);
 
-  const getCounselor = (
-    counselorId
-  ) =>
-    counselors.find(
-      (counselor) =>
-        counselor.id ===
-        counselorId
-    );
+  const renderCard = (
+    appointment,
+    options = {}
+  ) => (
+    <AppointmentCard
+      key={appointment.appointmentId}
+      appointment={appointment}
+      counselor={getCounselor(
+        appointment.counselorId
+      )}
+      isPast={
+        !dayjs
+          .utc(
+            appointment.appointmentDateTime
+          )
+          .isAfter(now)
+      }
+      isNext={options.isNext}
+      onCancel={onCancel}
+      onRemove={onRemove}
+      actionLoading={
+        actionId ===
+        appointment.appointmentId
+      }
+    />
+  );
 
-  if (
-    appointments.length === 0
-  ) {
+  const filteredList =
+    filter === "pending"
+      ? sessionData.pending
+      : filter === "confirmed"
+      ? sessionData.confirmed
+      : filter === "history"
+      ? sessionData.history
+      : [];
+
+  if (sessionData.visible.length === 0) {
     return (
       <View className="items-center justify-center py-16">
         <View
           className="
-            w-[76px]
-            h-[76px]
-            rounded-[26px]
+            w-[70px]
+            h-[70px]
+            rounded-[24px]
             bg-[#F2EEF9]
             items-center
             justify-center
@@ -640,14 +794,14 @@ const BookedDetailsView = ({
         >
           <Ionicons
             name="calendar-outline"
-            size={30}
+            size={28}
             color={colors.purple}
           />
         </View>
 
         <Text
           className="
-            text-[16px]
+            text-[15px]
             font-extrabold
             text-[#1F1F2E]
           "
@@ -657,18 +811,17 @@ const BookedDetailsView = ({
 
         <Text
           className="
-            text-[12px]
-            leading-[18px]
+            text-[11px]
+            leading-[17px]
             mt-1.5
             text-center
             text-[#8C8992]
             max-w-[250px]
           "
         >
-          When you're ready,
-          choose a counselor and
-          schedule your first
-          session.
+          When you're ready, choose a
+          counselor and schedule your
+          first session.
         </Text>
       </View>
     );
@@ -676,146 +829,316 @@ const BookedDetailsView = ({
 
   return (
     <View className="mt-5">
-      {grouped.upcoming.length >
-        0 && (
-        <View className="mb-7">
-          <View className="flex-row items-center mb-3">
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingRight: 10,
+        }}
+        className="mb-5"
+      >
+        {SESSION_FILTERS.map((item) => {
+          const selected = filter === item.id;
+
+          return (
+            <TouchableOpacity
+              key={item.id}
+              activeOpacity={0.78}
+              onPress={() => {
+                Haptics
+                  .selectionAsync()
+                  .catch(() => {});
+
+                setFilter(item.id);
+              }}
+              className={`
+                px-3.5
+                py-2
+                mr-2
+                rounded-full
+                border
+
+                ${
+                  selected
+                    ? "bg-[#F2EEF9] border-[#CCC5E8]"
+                    : "bg-white border-[#ECE6E2]"
+                }
+              `}
+            >
+              <Text
+                className={`
+                  text-[10.5px]
+                  font-bold
+
+                  ${
+                    selected
+                      ? "text-[#6D5AB5]"
+                      : "text-[#8C8992]"
+                  }
+                `}
+              >
+                {item.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+
+      {(filter === "all" ||
+        filter === "upcoming") && (
+        <>
+          {sessionData.nextSession ? (
+            <View className="mb-6">
+              <View className="flex-row items-center mb-3">
+                <View
+                  className="
+                    w-8
+                    h-8
+                    rounded-xl
+                    bg-[#F2EEF9]
+                    items-center
+                    justify-center
+                    mr-2.5
+                  "
+                >
+                  <Ionicons
+                    name="sparkles-outline"
+                    size={15}
+                    color={colors.purple}
+                  />
+                </View>
+
+                <View>
+                  <Text
+                    className="
+                      text-[14px]
+                      font-extrabold
+                      text-[#1F1F2E]
+                    "
+                  >
+                    Next session
+                  </Text>
+
+                  <Text
+                    className="
+                      text-[10px]
+                      text-[#8C8992]
+                    "
+                  >
+                    Your nearest upcoming appointment
+                  </Text>
+                </View>
+              </View>
+
+              {renderCard(
+                sessionData.nextSession,
+                { isNext: true }
+              )}
+            </View>
+          ) : (
             <View
               className="
-                w-8
-                h-8
-                rounded-xl
-                bg-[#EEE9F7]
+                bg-white
+                border
+                border-[#ECE6E2]
+                rounded-[20px]
+                py-6
                 items-center
-                justify-center
-                mr-2.5
+                mb-6
               "
             >
               <Ionicons
-                name="calendar-outline"
-                size={15}
-                color={
-                  colors.purple
-                }
+                name="calendar-clear-outline"
+                size={22}
+                color={colors.lightText}
               />
-            </View>
-
-            <View>
-              <Text
-                className="
-                  text-[14px]
-                  font-extrabold
-                  text-[#1F1F2E]
-                "
-              >
-                Upcoming sessions
-              </Text>
 
               <Text
                 className="
-                  text-[10px]
+                  mt-2
+                  text-[11px]
+                  font-semibold
                   text-[#8C8992]
                 "
               >
-                {
-                  grouped.upcoming
-                    .length
-                }{" "}
-                scheduled
+                No upcoming sessions
               </Text>
             </View>
-          </View>
-
-          {grouped.upcoming.map(
-            (appointment) => (
-              <AppointmentCard
-                key={
-                  appointment.appointmentId
-                }
-                appointment={
-                  appointment
-                }
-                counselor={getCounselor(
-                  appointment.counselorId
-                )}
-                isPast={false}
-              />
-            )
           )}
-        </View>
+
+          {sessionData.remainingUpcoming.length > 0 && (
+            <View className="mb-6">
+              <View className="flex-row items-center mb-3">
+                <View
+                  className="
+                    w-8
+                    h-8
+                    rounded-xl
+                    bg-[#EEE9F7]
+                    items-center
+                    justify-center
+                    mr-2.5
+                  "
+                >
+                  <Ionicons
+                    name="calendar-outline"
+                    size={15}
+                    color={colors.purple}
+                  />
+                </View>
+
+                <View>
+                  <Text
+                    className="
+                      text-[14px]
+                      font-extrabold
+                      text-[#1F1F2E]
+                    "
+                  >
+                    Upcoming
+                  </Text>
+
+                  <Text
+                    className="
+                      text-[10px]
+                      text-[#8C8992]
+                    "
+                  >
+                    {sessionData.remainingUpcoming.length}{" "}
+                    more scheduled
+                  </Text>
+                </View>
+              </View>
+
+              {sessionData.remainingUpcoming.map(
+                (appointment) =>
+                  renderCard(appointment)
+              )}
+            </View>
+          )}
+
+          {filter === "all" &&
+            sessionData.history.length > 0 && (
+              <View>
+                <View className="flex-row items-center mb-3">
+                  <View
+                    className="
+                      w-8
+                      h-8
+                      rounded-xl
+                      bg-[#FDE8E2]
+                      items-center
+                      justify-center
+                      mr-2.5
+                    "
+                  >
+                    <Ionicons
+                      name="time-outline"
+                      size={15}
+                      color={colors.peach}
+                    />
+                  </View>
+
+                  <View>
+                    <Text
+                      className="
+                        text-[14px]
+                        font-extrabold
+                        text-[#1F1F2E]
+                      "
+                    >
+                      History
+                    </Text>
+
+                    <Text
+                      className="
+                        text-[10px]
+                        text-[#8C8992]
+                      "
+                    >
+                      {sessionData.history.length}{" "}
+                      previous or cancelled
+                    </Text>
+                  </View>
+                </View>
+
+                {sessionData.history.map(
+                  (appointment) =>
+                    renderCard(appointment)
+                )}
+              </View>
+            )}
+        </>
       )}
 
-      {grouped.past.length >
-        0 && (
+      {["pending", "confirmed", "history"].includes(
+        filter
+      ) && (
         <View>
-          <View className="flex-row items-center mb-3">
+          <View className="flex-row items-center justify-between mb-3">
+            <Text
+              className="
+                text-[14px]
+                font-extrabold
+                text-[#1F1F2E]
+              "
+            >
+              {filter === "pending"
+                ? "Pending requests"
+                : filter === "confirmed"
+                ? "Confirmed sessions"
+                : "Session history"}
+            </Text>
+
+            <Text
+              className="
+                text-[10px]
+                text-[#8C8992]
+              "
+            >
+              {filteredList.length}
+            </Text>
+          </View>
+
+          {filteredList.length > 0 ? (
+            filteredList.map((appointment) =>
+              renderCard(appointment)
+            )
+          ) : (
             <View
               className="
-                w-8
-                h-8
-                rounded-xl
-                bg-[#FDE8E2]
+                bg-white
+                border
+                border-[#ECE6E2]
+                rounded-[20px]
+                py-7
                 items-center
-                justify-center
-                mr-2.5
               "
             >
               <Ionicons
-                name="time-outline"
-                size={15}
-                color={
-                  colors.peach
-                }
+                name="filter-outline"
+                size={22}
+                color={colors.lightText}
               />
-            </View>
-
-            <View>
-              <Text
-                className="
-                  text-[14px]
-                  font-extrabold
-                  text-[#1F1F2E]
-                "
-              >
-                Previous sessions
-              </Text>
 
               <Text
                 className="
-                  text-[10px]
+                  mt-2
+                  text-[11px]
+                  font-semibold
                   text-[#8C8992]
                 "
               >
-                {
-                  grouped.past
-                    .length
-                }{" "}
-                sessions
+                No sessions in this filter
               </Text>
             </View>
-          </View>
-
-          {grouped.past.map(
-            (appointment) => (
-              <AppointmentCard
-                key={
-                  appointment.appointmentId
-                }
-                appointment={
-                  appointment
-                }
-                counselor={getCounselor(
-                  appointment.counselorId
-                )}
-                isPast
-              />
-            )
           )}
         </View>
       )}
     </View>
   );
 };
+
 
 /* -------------------------------------------------------------------------- */
 /*                               MAIN SCREEN                                  */
@@ -919,6 +1242,11 @@ export default function BookSessionScreen() {
   ] = useState(false);
 
   const [
+    sessionActionId,
+    setSessionActionId,
+  ] = useState(null);
+
+  const [
     activeView,
     setActiveView,
   ] = useState("book");
@@ -957,6 +1285,11 @@ export default function BookSessionScreen() {
 
       appointments.forEach(
         (appointment) => {
+          // Cancelled sessions must not keep a date/time blocked.
+          if (appointment.status === "cancelled") {
+            return;
+          }
+
           const [
             datePart,
             timePart,
@@ -1020,7 +1353,8 @@ export default function BookSessionScreen() {
         appointments.filter(
           (appointment) =>
             appointment.studentId ===
-            LOGGED_USER.id
+              LOGGED_USER.id &&
+            !appointment.hiddenByStudent
         ),
       [
         appointments,
@@ -1318,6 +1652,137 @@ export default function BookSessionScreen() {
       setBookLoading(false);
     }
   }
+
+  /* ------------------------------------------------------------------------ */
+  /*                         SESSION ACTIONS                                  */
+  /* ------------------------------------------------------------------------ */
+
+  const handleCancelAppointment = (appointment) => {
+    const counselor = counselors.find(
+      (item) =>
+        item.id === appointment.counselorId
+    );
+
+    const counselorName =
+      counselor?.name || "your counselor";
+
+    Alert.alert(
+      "Cancel session",
+      `Cancel your session with ${counselorName}?`,
+      [
+        {
+          text: "Keep session",
+          style: "cancel",
+        },
+        {
+          text: "Cancel session",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setSessionActionId(
+                appointment.appointmentId
+              );
+
+              await updateAppointmentStatus(
+                appointment.appointmentId,
+                "cancelled"
+              );
+
+              setAppointments((previous) =>
+                previous.map((item) =>
+                  item.appointmentId ===
+                  appointment.appointmentId
+                    ? {
+                        ...item,
+                        status: "cancelled",
+                        updatedAt:
+                          new Date().toISOString(),
+                      }
+                    : item
+                )
+              );
+
+              Haptics
+                .notificationAsync(
+                  Haptics
+                    .NotificationFeedbackType
+                    .Success
+                )
+                .catch(() => {});
+            } catch (error) {
+              console.error(
+                "Cancel appointment error:",
+                error
+              );
+
+              Alert.alert(
+                "Could not cancel",
+                "Please try again."
+              );
+            } finally {
+              setSessionActionId(null);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleRemoveAppointment = (appointment) => {
+    Alert.alert(
+      "Remove session",
+      "Remove this session from My Sessions? This only hides it from your list and does not erase the counselor record.",
+      [
+        {
+          text: "Keep",
+          style: "cancel",
+        },
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setSessionActionId(
+                appointment.appointmentId
+              );
+
+              await hideAppointmentForStudent(
+                appointment.appointmentId
+              );
+
+              setAppointments((previous) =>
+                previous.map((item) =>
+                  item.appointmentId ===
+                  appointment.appointmentId
+                    ? {
+                        ...item,
+                        hiddenByStudent: true,
+                      }
+                    : item
+                )
+              );
+
+              Haptics
+                .selectionAsync()
+                .catch(() => {});
+            } catch (error) {
+              console.error(
+                "Remove appointment error:",
+                error
+              );
+
+              Alert.alert(
+                "Could not remove",
+                "Please try again."
+              );
+            } finally {
+              setSessionActionId(null);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   /* ------------------------------------------------------------------------ */
   /*                              BOOKING STATE                               */
@@ -3152,10 +3617,9 @@ export default function BookSessionScreen() {
                       text-[#8C8992]
                     "
                   >
-                    View upcoming
-                    appointments and
-                    revisit your
-                    previous sessions.
+                    See your next session,
+                    manage upcoming bookings,
+                    and review your history.
                   </Text>
                 </View>
 
@@ -3165,6 +3629,15 @@ export default function BookSessionScreen() {
                   }
                   counselors={
                     counselors
+                  }
+                  onCancel={
+                    handleCancelAppointment
+                  }
+                  onRemove={
+                    handleRemoveAppointment
+                  }
+                  actionId={
+                    sessionActionId
                   }
                 />
               </Animated.View>
