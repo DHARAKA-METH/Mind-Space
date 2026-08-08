@@ -208,6 +208,7 @@ const getStressAccent = (percentage: number) => {
     return {
       color: calmColors.success,
       backgroundColor: calmColors.successSoft,
+      heroBackgroundColor: calmColors.successSoft,
     };
   }
 
@@ -215,12 +216,14 @@ const getStressAccent = (percentage: number) => {
     return {
       color: calmColors.primaryDark,
       backgroundColor: calmColors.primarySoft,
+      heroBackgroundColor: calmColors.primaryVerySoft,
     };
   }
 
   return {
     color: calmColors.error,
     backgroundColor: calmColors.errorSoft,
+    heroBackgroundColor: calmColors.errorSoft,
   };
 };
 
@@ -402,7 +405,9 @@ const DashboardScreen = () => {
           <View className="px-5 pt-5">
             <View
               style={{
-                backgroundColor: calmColors.primaryVerySoft,
+                backgroundColor:
+                  stressAccent?.heroBackgroundColor ||
+                  calmColors.primaryVerySoft,
                 borderRadius: 32,
                 paddingHorizontal: 24,
                 paddingVertical: 28,
