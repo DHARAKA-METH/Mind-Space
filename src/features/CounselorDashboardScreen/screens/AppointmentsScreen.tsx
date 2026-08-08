@@ -36,37 +36,12 @@ import {
   CounselorAppointment,
 } from "../services/appointmentService";
 
-/* -------------------------------------------------------------------------- */
-/*                              COLOR SYSTEM                                  */
-/* -------------------------------------------------------------------------- */
-
-const COLORS = {
-  background: "#F5F7F6",
-
-  teal: "#4F7C78",
-  tealDark: "#3F6864",
-  tealSoft: "#E7F0EE",
-  tealVerySoft: "#F1F6F5",
-
-  amber: "#D79A5B",
-  amberSoft: "#FAEEE2",
-
-  blue: "#64869B",
-  blueSoft: "#E8F0F4",
-
-  text: "#25312F",
-  secondaryText: "#71807C",
-  lightText: "#9BA6A3",
-
-  white: "#FFFFFF",
-  border: "#E2E9E6",
-
-  danger: "#B85C62",
-  dangerSoft: "#F8E8E9",
-
-  success: "#56836C",
-  successSoft: "#E5F0E9",
-};
+import {
+  commonColors,
+  counselorColors,
+  spacing,
+  typography,
+} from "@/src/theme";
 
 /* -------------------------------------------------------------------------- */
 /*                                   TYPES                                    */
@@ -225,40 +200,40 @@ const STATUS_STYLES: Record<
   }
 > = {
   pending: {
-    bg: COLORS.amberSoft,
-    color: COLORS.amber,
+    bg: counselorColors.warningSoft,
+    color: counselorColors.warning,
     label: "Needs approval",
     icon: "time-outline",
   },
 
   confirmed: {
-    bg: COLORS.successSoft,
-    color: COLORS.success,
+    bg: counselorColors.successSoft,
+    color: counselorColors.success,
     label: "Confirmed",
     icon:
       "checkmark-circle-outline",
   },
 
   cancelled: {
-    bg: COLORS.dangerSoft,
-    color: COLORS.danger,
+    bg: counselorColors.errorSoft,
+    color: counselorColors.error,
     label: "Cancelled",
     icon:
       "close-circle-outline",
   },
 
   completed: {
-    bg: COLORS.blueSoft,
-    color: COLORS.blue,
+    bg: counselorColors.infoSoft,
+    color: counselorColors.info,
     label: "Completed",
     icon:
       "checkmark-done-outline",
   },
 
   missed: {
-    bg: "#EEF1F0",
+    bg: counselorColors.surfaceMuted,
     color:
-      COLORS.secondaryText,
+      counselorColors.textSecondary,
     label: "Missed",
     icon:
       "remove-circle-outline",
@@ -307,7 +282,7 @@ const StatusBadge = ({
       <Text
         className="
           ml-1
-          text-[8.5px]
+          text-caption
           font-extrabold
         "
         style={{
@@ -361,8 +336,8 @@ const FilterButton = ({
 
         ${
           active
-            ? "bg-[#4F7C78] border-[#4F7C78]"
-            : "bg-white border-[#E2E9E6]"
+            ? "bg-counselor-primary border-counselor-primary"
+            : "bg-counselor-surface border-counselor-border"
         }
       `}
     >
@@ -377,8 +352,8 @@ const FilterButton = ({
 
               ${
                 active
-                  ? "bg-white"
-                  : "bg-[#D79A5B]"
+                  ? "bg-counselor-surface"
+                  : "bg-counselor-accent"
               }
             `}
           />
@@ -386,13 +361,13 @@ const FilterButton = ({
 
       <Text
         className={`
-          text-[10.5px]
+          text-caption
           font-bold
 
           ${
             active
               ? "text-white"
-              : "text-[#71807C]"
+              : "text-counselor-textSecondary"
           }
         `}
       >
@@ -411,17 +386,17 @@ const FilterButton = ({
 
           ${
             active
-              ? "bg-white/20"
+              ? "bg-counselor-surface/20"
               : urgent &&
                 count > 0
-              ? "bg-[#FAEEE2]"
-              : "bg-[#F1F6F5]"
+              ? "bg-counselor-accentSoft"
+              : "bg-counselor-surfaceMuted"
           }
         `}
       >
         <Text
           className={`
-            text-[8.5px]
+            text-caption
             font-extrabold
 
             ${
@@ -429,8 +404,8 @@ const FilterButton = ({
                 ? "text-white"
                 : urgent &&
                   count > 0
-                ? "text-[#B77C43]"
-                : "text-[#71807C]"
+                ? "text-counselor-accent"
+                : "text-counselor-textSecondary"
             }
           `}
         >
@@ -467,7 +442,7 @@ const SummaryCard = ({
         rounded-[22px]
         p-4
         border
-        border-[#E2E9E6]
+        border-counselor-border
       "
       style={{
         backgroundColor:
@@ -479,7 +454,7 @@ const SummaryCard = ({
           w-9
           h-9
           rounded-[13px]
-          bg-white
+          bg-counselor-surface
           items-center
           justify-center
         "
@@ -493,7 +468,7 @@ const SummaryCard = ({
 
       <Text
         className="
-          text-[27px]
+          text-heading
           font-extrabold
           mt-3
         "
@@ -506,7 +481,7 @@ const SummaryCard = ({
 
       <Text
         className="
-          text-[10px]
+          text-caption
           font-extrabold
           mt-0.5
         "
@@ -519,9 +494,9 @@ const SummaryCard = ({
 
       <Text
         className="
-          text-[8.5px]
+          text-caption
           mt-1
-          text-[#71807C]
+          text-counselor-textSecondary
         "
       >
         {subtitle}
@@ -553,9 +528,9 @@ const NextSessionCard = ({
         280
       )}
       className="
-        bg-[#E7F0EE]
+        bg-counselor-primarySoft
         border
-        border-[#D4E4E1]
+        border-counselor-primarySoft
         rounded-[24px]
         p-4
         mb-6
@@ -571,7 +546,7 @@ const NextSessionCard = ({
           w-24
           h-24
           rounded-full
-          bg-white/25
+          bg-counselor-surface/25
         "
       />
 
@@ -587,7 +562,7 @@ const NextSessionCard = ({
               w-9
               h-9
               rounded-[13px]
-              bg-white
+              bg-counselor-surface
               items-center
               justify-center
               mr-2.5
@@ -597,18 +572,21 @@ const NextSessionCard = ({
               name="calendar-outline"
               size={17}
               color={
-                COLORS.teal
+                counselorColors.primary
               }
             />
           </View>
 
           <View>
             <Text
+              style={{
+                letterSpacing:
+                  typography.letterSpacing.label,
+              }}
               className="
-                text-[9px]
+                text-caption
                 font-extrabold
-                tracking-[0.8px]
-                text-[#4F7C78]
+                text-counselor-primary
               "
             >
               NEXT SESSION
@@ -616,9 +594,9 @@ const NextSessionCard = ({
 
             <Text
               className="
-                text-[12px]
+                text-caption
                 font-extrabold
-                text-[#25312F]
+                text-counselor-textPrimary
                 mt-0.5
               "
             >
@@ -638,7 +616,7 @@ const NextSessionCard = ({
 
       <View
         className="
-          bg-white
+          bg-counselor-surface
           rounded-[17px]
           p-3
           mt-3
@@ -649,16 +627,16 @@ const NextSessionCard = ({
             name="calendar-clear-outline"
             size={14}
             color={
-              COLORS.teal
+              counselorColors.primary
             }
           />
 
           <Text
             className="
               ml-2
-              text-[10.5px]
+              text-caption
               font-semibold
-              text-[#25312F]
+              text-counselor-textPrimary
             "
           >
             {fullDate}
@@ -670,15 +648,15 @@ const NextSessionCard = ({
             name="time-outline"
             size={14}
             color={
-              COLORS.teal
+              counselorColors.primary
             }
           />
 
           <Text
             className="
               ml-2
-              text-[10.5px]
-              text-[#71807C]
+              text-caption
+              text-counselor-textSecondary
             "
           >
             {time} ·{" "}
@@ -699,15 +677,15 @@ const NextSessionCard = ({
             }
             size={14}
             color={
-              COLORS.teal
+              counselorColors.primary
             }
           />
 
           <Text
             className="
               ml-2
-              text-[10.5px]
-              text-[#71807C]
+              text-caption
+              text-counselor-textSecondary
               capitalize
             "
           >
@@ -808,7 +786,7 @@ const AppointmentRow = ({
     >
       <View
         className={`
-          bg-white
+          bg-counselor-surface
           rounded-[22px]
           p-4
           mb-3
@@ -816,10 +794,10 @@ const AppointmentRow = ({
 
           ${
             canApprove
-              ? "border-[#E8C99F]"
+              ? "border-counselor-accent"
               : needsOutcome
-              ? "border-[#C9DCE5]"
-              : "border-[#E2E9E6]"
+              ? "border-counselor-info"
+              : "border-counselor-border"
           }
         `}
       >
@@ -833,7 +811,7 @@ const AppointmentRow = ({
               w-12
               h-12
               rounded-[16px]
-              bg-[#FAEEE2]
+              bg-counselor-accentSoft
               items-center
               justify-center
             "
@@ -850,9 +828,9 @@ const AppointmentRow = ({
                 <Text
                   numberOfLines={1}
                   className="
-                    text-[14px]
+                    text-body
                     font-extrabold
-                    text-[#25312F]
+                    text-counselor-textPrimary
                   "
                 >
                   {
@@ -862,9 +840,9 @@ const AppointmentRow = ({
 
                 <Text
                   className="
-                    text-[10px]
+                    text-caption
                     font-semibold
-                    text-[#4F7C78]
+                    text-counselor-primary
                     mt-1
                   "
                 >
@@ -888,15 +866,15 @@ const AppointmentRow = ({
                   name="calendar-outline"
                   size={13}
                   color={
-                    COLORS.secondaryText
+                    counselorColors.textSecondary
                   }
                 />
 
                 <Text
                   className="
                     ml-1.5
-                    text-[10px]
-                    text-[#71807C]
+                    text-caption
+                    text-counselor-textSecondary
                   "
                 >
                   {fullDate}
@@ -913,15 +891,15 @@ const AppointmentRow = ({
                   }
                   size={13}
                   color={
-                    COLORS.secondaryText
+                    counselorColors.textSecondary
                   }
                 />
 
                 <Text
                   className="
                     ml-1.5
-                    text-[10px]
-                    text-[#71807C]
+                    text-caption
+                    text-counselor-textSecondary
                     capitalize
                   "
                 >
@@ -952,14 +930,14 @@ const AppointmentRow = ({
               px-3
               py-2.5
               rounded-[14px]
-              bg-[#FAEEE2]
+              bg-counselor-accentSoft
             "
           >
             <Ionicons
               name="alert-circle-outline"
               size={14}
               color={
-                COLORS.amber
+                counselorColors.accent
               }
             />
 
@@ -967,9 +945,9 @@ const AppointmentRow = ({
               className="
                 ml-2
                 flex-1
-                text-[9.5px]
-                leading-[14px]
-                text-[#9B6C3F]
+                text-caption
+                
+                text-counselor-accent
               "
             >
               Student is waiting
@@ -987,14 +965,14 @@ const AppointmentRow = ({
               px-3
               py-2.5
               rounded-[14px]
-              bg-[#E8F0F4]
+              bg-counselor-infoSoft
             "
           >
             <Ionicons
               name="information-circle-outline"
               size={14}
               color={
-                COLORS.blue
+                counselorColors.info
               }
             />
 
@@ -1002,9 +980,9 @@ const AppointmentRow = ({
               className="
                 ml-2
                 flex-1
-                text-[9.5px]
-                leading-[14px]
-                text-[#557487]
+                text-caption
+                
+                text-counselor-info
               "
             >
               This session time
@@ -1023,14 +1001,14 @@ const AppointmentRow = ({
               px-3
               py-2.5
               rounded-[14px]
-              bg-[#E5F0E9]
+              bg-counselor-successSoft
             "
           >
             <Ionicons
               name="checkmark-circle-outline"
               size={14}
               color={
-                COLORS.success
+                counselorColors.success
               }
             />
 
@@ -1038,8 +1016,8 @@ const AppointmentRow = ({
               className="
                 ml-2
                 flex-1
-                text-[9.5px]
-                text-[#56836C]
+                text-caption
+                text-counselor-success
               "
             >
               Confirmed and
@@ -1058,7 +1036,7 @@ const AppointmentRow = ({
               mt-4
               h-11
               rounded-[15px]
-              bg-[#F1F6F5]
+              bg-counselor-surfaceMuted
               items-center
               justify-center
             "
@@ -1066,7 +1044,7 @@ const AppointmentRow = ({
             <ActivityIndicator
               size="small"
               color={
-                COLORS.teal
+                counselorColors.primary
               }
             />
           </View>
@@ -1087,7 +1065,7 @@ const AppointmentRow = ({
                     flex-1
                     h-11
                     rounded-[15px]
-                    bg-[#4F7C78]
+                    bg-counselor-primary
                     flex-row
                     items-center
                     justify-center
@@ -1097,13 +1075,13 @@ const AppointmentRow = ({
                   <Ionicons
                     name="checkmark"
                     size={16}
-                    color="#FFFFFF"
+                    color={commonColors.white}
                   />
 
                   <Text
                     className="
                       ml-1.5
-                      text-[11px]
+                      text-caption
                       font-bold
                       text-white
                     "
@@ -1123,9 +1101,9 @@ const AppointmentRow = ({
                     flex-1
                     h-11
                     rounded-[15px]
-                    bg-[#F8E8E9]
+                    bg-counselor-errorSoft
                     border
-                    border-[#EFCFD2]
+                    border-counselor-errorSoft
                     flex-row
                     items-center
                     justify-center
@@ -1136,16 +1114,16 @@ const AppointmentRow = ({
                     name="close"
                     size={15}
                     color={
-                      COLORS.danger
+                      counselorColors.error
                     }
                   />
 
                   <Text
                     className="
                       ml-1.5
-                      text-[11px]
+                      text-caption
                       font-bold
-                      text-[#B85C62]
+                      text-counselor-error
                     "
                   >
                     Decline
@@ -1169,7 +1147,7 @@ const AppointmentRow = ({
                     flex-1
                     h-11
                     rounded-[15px]
-                    bg-[#64869B]
+                    bg-counselor-info
                     flex-row
                     items-center
                     justify-center
@@ -1179,13 +1157,13 @@ const AppointmentRow = ({
                   <Ionicons
                     name="checkmark-done"
                     size={15}
-                    color="#FFFFFF"
+                    color={commonColors.white}
                   />
 
                   <Text
                     className="
                       ml-1.5
-                      text-[10.5px]
+                      text-caption
                       font-bold
                       text-white
                     "
@@ -1205,7 +1183,7 @@ const AppointmentRow = ({
                     flex-1
                     h-11
                     rounded-[15px]
-                    bg-[#EEF1F0]
+                    bg-counselor-surfaceMuted
                     flex-row
                     items-center
                     justify-center
@@ -1216,16 +1194,16 @@ const AppointmentRow = ({
                     name="close-circle-outline"
                     size={15}
                     color={
-                      COLORS.secondaryText
+                      counselorColors.textSecondary
                     }
                   />
 
                   <Text
                     className="
                       ml-1.5
-                      text-[10.5px]
+                      text-caption
                       font-bold
-                      text-[#71807C]
+                      text-counselor-textSecondary
                     "
                   >
                     Missed
@@ -1293,9 +1271,9 @@ const SectionHeader = ({
         <View className="flex-1">
           <Text
             className="
-              text-[13px]
+              text-body-sm
               font-extrabold
-              text-[#25312F]
+              text-counselor-textPrimary
             "
           >
             {title}
@@ -1303,8 +1281,8 @@ const SectionHeader = ({
 
           <Text
             className="
-              text-[9.5px]
-              text-[#71807C]
+              text-caption
+              text-counselor-textSecondary
               mt-0.5
             "
           >
@@ -1329,7 +1307,7 @@ const SectionHeader = ({
       >
         <Text
           className="
-            text-[9px]
+            text-caption
             font-extrabold
           "
           style={{
@@ -1365,10 +1343,10 @@ const EmptyState = ({
         "You have reviewed all current appointment requests.",
 
       bg:
-        COLORS.successSoft,
+        counselorColors.successSoft,
 
       color:
-        COLORS.success,
+        counselorColors.success,
     },
 
     outcome: {
@@ -1382,10 +1360,10 @@ const EmptyState = ({
         "There are no completed-time sessions waiting for an outcome.",
 
       bg:
-        COLORS.blueSoft,
+        counselorColors.infoSoft,
 
       color:
-        COLORS.blue,
+        counselorColors.info,
     },
 
     upcoming: {
@@ -1399,10 +1377,10 @@ const EmptyState = ({
         "Confirmed future appointments will appear here.",
 
       bg:
-        COLORS.tealSoft,
+        counselorColors.primarySoft,
 
       color:
-        COLORS.teal,
+        counselorColors.primary,
     },
 
     history: {
@@ -1416,10 +1394,10 @@ const EmptyState = ({
         "Completed, missed and cancelled sessions will appear here.",
 
       bg:
-        "#EEF1F0",
+        counselorColors.surfaceMuted,
 
       color:
-        COLORS.secondaryText,
+        counselorColors.textSecondary,
     },
 
     all: {
@@ -1433,10 +1411,10 @@ const EmptyState = ({
         "New student appointment requests will appear here.",
 
       bg:
-        COLORS.tealSoft,
+        counselorColors.primarySoft,
 
       color:
-        COLORS.teal,
+        counselorColors.primary,
     },
   }[filter];
 
@@ -1446,9 +1424,9 @@ const EmptyState = ({
         220
       )}
       className="
-        bg-white
+        bg-counselor-surface
         border
-        border-[#E2E9E6]
+        border-counselor-border
         rounded-[22px]
         py-10
         px-6
@@ -1482,9 +1460,9 @@ const EmptyState = ({
 
       <Text
         className="
-          text-[13px]
+          text-body-sm
           font-extrabold
-          text-[#25312F]
+          text-counselor-textPrimary
           text-center
         "
       >
@@ -1493,9 +1471,9 @@ const EmptyState = ({
 
       <Text
         className="
-          text-[10px]
-          leading-[15px]
-          text-[#71807C]
+          text-caption
+          
+          text-counselor-textSecondary
           text-center
           mt-1.5
           max-w-[260px]
@@ -2135,7 +2113,7 @@ export default function AppointmentsScreen({
       <View
         className="
           flex-1
-          bg-[#F5F7F6]
+          bg-counselor-background
           items-center
           justify-center
         "
@@ -2145,7 +2123,7 @@ export default function AppointmentsScreen({
             w-16
             h-16
             rounded-[22px]
-            bg-[#E7F0EE]
+            bg-counselor-primarySoft
             items-center
             justify-center
             mb-4
@@ -2153,16 +2131,16 @@ export default function AppointmentsScreen({
         >
           <ActivityIndicator
             color={
-              COLORS.teal
+              counselorColors.primary
             }
           />
         </View>
 
         <Text
           className="
-            text-[12px]
+            text-caption
             font-semibold
-            text-[#71807C]
+            text-counselor-textSecondary
           "
         >
           Loading appointments…
@@ -2179,7 +2157,7 @@ export default function AppointmentsScreen({
     <View
       className="
         flex-1
-        bg-[#F5F7F6]
+        bg-counselor-background
       "
     >
       <ScrollView
@@ -2188,10 +2166,10 @@ export default function AppointmentsScreen({
         }
         contentContainerStyle={{
           paddingHorizontal:
-            18,
+            spacing.screen,
 
           paddingTop:
-            12,
+            spacing.sm,
 
           /*
             Keep room for
@@ -2212,6 +2190,8 @@ export default function AppointmentsScreen({
               onPress={
                 onBack
               }
+              accessibilityRole="button"
+              accessibilityLabel="Back to dashboard"
               activeOpacity={
                 0.7
               }
@@ -2219,9 +2199,9 @@ export default function AppointmentsScreen({
                 w-10
                 h-10
                 rounded-[14px]
-                bg-white
+                bg-counselor-surface
                 border
-                border-[#E2E9E6]
+                border-counselor-border
                 items-center
                 justify-center
                 mr-3
@@ -2231,7 +2211,7 @@ export default function AppointmentsScreen({
                 name="chevron-back"
                 size={18}
                 color={
-                  COLORS.teal
+                  counselorColors.primary
                 }
               />
             </TouchableOpacity>
@@ -2240,9 +2220,9 @@ export default function AppointmentsScreen({
           <View className="flex-1">
             <Text
               className="
-                text-[17px]
+                text-body-lg
                 font-extrabold
-                text-[#25312F]
+                text-counselor-textPrimary
               "
             >
               Manage sessions
@@ -2250,8 +2230,8 @@ export default function AppointmentsScreen({
 
             <Text
               className="
-                text-[10.5px]
-                text-[#71807C]
+                text-caption
+                text-counselor-textSecondary
                 mt-0.5
               "
             >
@@ -2265,7 +2245,7 @@ export default function AppointmentsScreen({
             0 && (
             <View
               className="
-                bg-[#E7F0EE]
+                bg-counselor-primarySoft
                 px-2.5
                 py-1.5
                 rounded-full
@@ -2273,9 +2253,9 @@ export default function AppointmentsScreen({
             >
               <Text
                 className="
-                  text-[9px]
+                  text-caption
                   font-bold
-                  text-[#4F7C78]
+                  text-counselor-primary
                 "
               >
                 {todayCount} today
@@ -2301,9 +2281,9 @@ export default function AppointmentsScreen({
             className="
               flex-row
               items-center
-              bg-[#FAEEE2]
+              bg-counselor-accentSoft
               border
-              border-[#F0DDC6]
+              border-counselor-accentSoft
               rounded-[20px]
               p-3.5
               mb-5
@@ -2314,7 +2294,7 @@ export default function AppointmentsScreen({
                 w-10
                 h-10
                 rounded-[14px]
-                bg-white
+                bg-counselor-surface
                 items-center
                 justify-center
               "
@@ -2323,7 +2303,7 @@ export default function AppointmentsScreen({
                 name="notifications-outline"
                 size={18}
                 color={
-                  COLORS.amber
+                  counselorColors.accent
                 }
               />
             </View>
@@ -2331,9 +2311,9 @@ export default function AppointmentsScreen({
             <View className="flex-1 ml-3">
               <Text
                 className="
-                  text-[11.5px]
+                  text-caption
                   font-extrabold
-                  text-[#9B6C3F]
+                  text-counselor-accent
                 "
               >
                 Action needed
@@ -2341,9 +2321,9 @@ export default function AppointmentsScreen({
 
               <Text
                 className="
-                  text-[9.5px]
-                  leading-[14px]
-                  text-[#9B7A58]
+                  text-caption
+                  
+                  text-counselor-accent
                   mt-0.5
                 "
               >
@@ -2395,10 +2375,10 @@ export default function AppointmentsScreen({
               subtitle="Student requests"
               icon="time-outline"
               bg={
-                COLORS.amberSoft
+                counselorColors.accentSoft
               }
               color={
-                COLORS.amber
+                counselorColors.accent
               }
             />
           </View>
@@ -2414,10 +2394,10 @@ export default function AppointmentsScreen({
               subtitle="Confirmed sessions"
               icon="calendar-outline"
               bg={
-                COLORS.tealSoft
+                counselorColors.primarySoft
               }
               color={
-                COLORS.teal
+                counselorColors.primary
               }
             />
           </View>
@@ -2431,9 +2411,9 @@ export default function AppointmentsScreen({
           <>
             <Text
               className="
-                text-[13px]
+                text-body-sm
                 font-extrabold
-                text-[#25312F]
+                text-counselor-textPrimary
                 mb-3
               "
             >
@@ -2456,9 +2436,9 @@ export default function AppointmentsScreen({
           <View>
             <Text
               className="
-                text-[14px]
+                text-body
                 font-extrabold
-                text-[#25312F]
+                text-counselor-textPrimary
               "
             >
               Appointments
@@ -2466,8 +2446,8 @@ export default function AppointmentsScreen({
 
             <Text
               className="
-                text-[9.5px]
-                text-[#71807C]
+                text-caption
+                text-counselor-textSecondary
                 mt-0.5
               "
             >
@@ -2478,9 +2458,9 @@ export default function AppointmentsScreen({
 
           <Text
             className="
-              text-[10px]
+              text-caption
               font-semibold
-              text-[#71807C]
+              text-counselor-textSecondary
             "
           >
             {
@@ -2607,10 +2587,10 @@ export default function AppointmentsScreen({
             }
             icon="time-outline"
             color={
-              COLORS.amber
+              counselorColors.accent
             }
             bg={
-              COLORS.amberSoft
+              counselorColors.accentSoft
             }
           />
         )}
@@ -2627,10 +2607,10 @@ export default function AppointmentsScreen({
             }
             icon="clipboard-outline"
             color={
-              COLORS.blue
+              counselorColors.info
             }
             bg={
-              COLORS.blueSoft
+              counselorColors.infoSoft
             }
           />
         )}
@@ -2647,10 +2627,10 @@ export default function AppointmentsScreen({
             }
             icon="calendar-outline"
             color={
-              COLORS.teal
+              counselorColors.primary
             }
             bg={
-              COLORS.tealSoft
+              counselorColors.primarySoft
             }
           />
         )}
@@ -2667,9 +2647,9 @@ export default function AppointmentsScreen({
             }
             icon="time-outline"
             color={
-              COLORS.secondaryText
+              counselorColors.textSecondary
             }
-            bg="#EEF1F0"
+            bg={counselorColors.surfaceMuted}
           />
         )}
 
@@ -2708,10 +2688,10 @@ export default function AppointmentsScreen({
                       }
                       icon="time-outline"
                       color={
-                        COLORS.amber
+                        counselorColors.accent
                       }
                       bg={
-                        COLORS.amberSoft
+                        counselorColors.accentSoft
                       }
                     />
 
@@ -2769,10 +2749,10 @@ export default function AppointmentsScreen({
                       }
                       icon="clipboard-outline"
                       color={
-                        COLORS.blue
+                        counselorColors.info
                       }
                       bg={
-                        COLORS.blueSoft
+                        counselorColors.infoSoft
                       }
                     />
 
@@ -2830,10 +2810,10 @@ export default function AppointmentsScreen({
                       }
                       icon="calendar-outline"
                       color={
-                        COLORS.teal
+                        counselorColors.primary
                       }
                       bg={
-                        COLORS.tealSoft
+                        counselorColors.primarySoft
                       }
                     />
 
@@ -2891,9 +2871,9 @@ export default function AppointmentsScreen({
                       }
                       icon="time-outline"
                       color={
-                        COLORS.secondaryText
+                        counselorColors.textSecondary
                       }
-                      bg="#EEF1F0"
+                      bg={counselorColors.surfaceMuted}
                     />
 
                     {organized.history.map(

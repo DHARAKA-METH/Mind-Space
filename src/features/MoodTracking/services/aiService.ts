@@ -277,7 +277,7 @@ function safeJSONParse(content: string) {
     const jsonString = cleaned.slice(start, end + 1);
 
     return JSON.parse(jsonString);
-  } catch (err) {
+  } catch {
     console.log(" RAW MODEL OUTPUT:\n", content);
     throw new Error("Failed to parse AI response");
   }

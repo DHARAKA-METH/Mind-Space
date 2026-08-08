@@ -62,38 +62,14 @@ import {
   timeSlotToISO,
 } from "../hooks/dateHelpers";
 
+import {
+  commonColors,
+  spacing,
+  studentColors,
+  typography,
+} from "@/src/theme";
+
 dayjs.extend(utc);
-
-/* -------------------------------------------------------------------------- */
-/*                                COLOR SYSTEM                                */
-/* -------------------------------------------------------------------------- */
-
-const colors = {
-  background: "#F9F5F1",
-
-  lavender: "#CCC5E8",
-  lavenderSoft: "#F2EEF9",
-
-  purple: "#6D5AB5",
-  purpleDark: "#574493",
-
-  peach: "#F47F63",
-  peachSoft: "#FDE8E2",
-
-  text: "#1F1F2E",
-  secondaryText: "#8C8992",
-  lightText: "#AAA4AE",
-
-  white: "#FFFFFF",
-
-  border: "#ECE6E2",
-
-  success: "#679A6D",
-  successSoft: "#EAF4E8",
-
-  danger: "#C45B65",
-  dangerSoft: "#FBE8E9",
-};
 
 /* -------------------------------------------------------------------------- */
 /*                                  HEADER                                    */
@@ -107,7 +83,7 @@ const AppointmentHeader = () => {
           w-10
           h-10
           rounded-2xl
-          bg-[#F2EEF9]
+          bg-app-primarySoft
           items-center
           justify-center
           mr-3
@@ -116,16 +92,16 @@ const AppointmentHeader = () => {
         <Ionicons
           name="calendar-outline"
           size={20}
-          color={colors.purple}
+          color={studentColors.primary}
         />
       </View>
 
       <View>
         <Text
           className="
-            text-[18px]
+            text-subtitle
             font-extrabold
-            text-[#1F1F2E]
+            text-app-textPrimary
           "
         >
           Book a Session
@@ -133,9 +109,9 @@ const AppointmentHeader = () => {
 
         <Text
           className="
-            text-[10.5px]
+            text-caption
             mt-0.5
-            text-[#8C8992]
+            text-app-textSecondary
           "
         >
           Find support at a time that works for you
@@ -174,9 +150,9 @@ const ToggleSwitch = ({
         flex-row
         p-1
         rounded-[20px]
-        bg-white
+        bg-app-surface
         border
-        border-[#ECE6E2]
+        border-app-border
         shadow-sm
       "
     >
@@ -206,7 +182,7 @@ const ToggleSwitch = ({
 
               ${
                 isActive
-                  ? "bg-[#6D5AB5]"
+                  ? "bg-app-primary"
                   : "bg-transparent"
               }
             `}
@@ -222,8 +198,8 @@ const ToggleSwitch = ({
 
                 ${
                   isActive
-                    ? "bg-white/15"
-                    : "bg-[#F2EEF9]"
+                    ? "bg-app-surface/15"
+                    : "bg-app-primarySoft"
                 }
               `}
             >
@@ -236,8 +212,8 @@ const ToggleSwitch = ({
                 size={13}
                 color={
                   isActive
-                    ? "#FFFFFF"
-                    : colors.purple
+                    ? commonColors.white
+                    : studentColors.primary
                 }
               />
             </View>
@@ -245,13 +221,13 @@ const ToggleSwitch = ({
             <Text
               numberOfLines={1}
               className={`
-                text-[10.5px]
+                text-caption
                 font-bold
 
                 ${
                   isActive
-                    ? "text-white"
-                    : "text-[#706A76]"
+                    ? "text-app-surface"
+                    : "text-app-textSecondary"
                 }
               `}
             >
@@ -291,32 +267,32 @@ const AppointmentCard = ({
 
   const statusConfig = {
     confirmed: {
-      bg: colors.successSoft,
-      color: colors.success,
+      bg: studentColors.successSoft,
+      color: studentColors.success,
       label: "Confirmed",
     },
 
     pending: {
-      bg: colors.peachSoft,
-      color: colors.peach,
+      bg: studentColors.accentSoft,
+      color: studentColors.accent,
       label: "Pending",
     },
 
     cancelled: {
-      bg: colors.dangerSoft,
-      color: colors.danger,
+      bg: studentColors.errorSoft,
+      color: studentColors.error,
       label: "Cancelled",
     },
 
     completed: {
-      bg: "#EAF0F8",
-      color: "#5F7EA7",
+      bg: studentColors.primarySoft,
+      color: studentColors.primaryMuted,
       label: "Completed",
     },
 
     missed: {
-      bg: "#F1EFED",
-      color: colors.secondaryText,
+      bg: studentColors.borderSoft,
+      color: studentColors.textSecondary,
       label: "Missed",
     },
   };
@@ -348,7 +324,7 @@ const AppointmentCard = ({
         .springify()}
       layout={Layout}
       className={`
-        bg-white
+        bg-app-surface
         rounded-[22px]
         overflow-hidden
         mb-3
@@ -356,8 +332,8 @@ const AppointmentCard = ({
 
         ${
           isNext
-            ? "border-[#CFC5E8]"
-            : "border-[#ECE6E2]"
+            ? "border-app-primaryLight"
+            : "border-app-border"
         }
       `}
       style={{
@@ -375,26 +351,28 @@ const AppointmentCard = ({
             items-center
             px-4
             py-2.5
-            bg-[#F2EEF9]
+            bg-app-primarySoft
             border-b
-            border-[#E5DDEF]
+            border-app-primaryLight
           "
         >
           <Ionicons
             name="sparkles-outline"
             size={13}
-            color={colors.purple}
+            color={studentColors.primary}
           />
 
           <Text
             className="
               ml-1.5
-              text-[9.5px]
+              text-caption
               font-extrabold
-              tracking-[0.7px]
               uppercase
-              text-[#6D5AB5]
+              text-app-primary
             "
+            style={{
+              letterSpacing: typography.letterSpacing.label,
+            }}
           >
             Next session
           </Text>
@@ -415,10 +393,10 @@ const AppointmentCard = ({
             style={{
               backgroundColor:
                 counselor?.bgColor ||
-                colors.lavenderSoft,
+                studentColors.primarySoft,
             }}
           >
-            <Text className="text-[22px]">
+            <Text className="text-title">
               {counselor?.avatar || "🧑‍⚕️"}
             </Text>
           </View>
@@ -429,9 +407,9 @@ const AppointmentCard = ({
                 <Text
                   numberOfLines={1}
                   className="
-                    text-[14px]
+                    text-body
                     font-extrabold
-                    text-[#1F1F2E]
+                    text-app-textPrimary
                   "
                 >
                   {counselor?.name || "Counselor"}
@@ -441,9 +419,8 @@ const AppointmentCard = ({
                   numberOfLines={2}
                   className="
                     mt-1
-                    text-[11px]
-                    leading-4
-                    text-[#8C8992]
+                    text-caption
+                    text-app-textSecondary
                   "
                 >
                   {counselor?.specialties?.join(
@@ -464,7 +441,7 @@ const AppointmentCard = ({
               >
                 <Text
                   className="
-                    text-[9.5px]
+                    text-caption
                     font-extrabold
                   "
                   style={{
@@ -483,7 +460,7 @@ const AppointmentCard = ({
             mt-4
             pt-3
             border-t
-            border-[#F0EAE6]
+            border-app-borderSoft
           "
         >
           <View className="flex-row flex-wrap gap-x-4 gap-y-2">
@@ -491,15 +468,15 @@ const AppointmentCard = ({
               <Ionicons
                 name="calendar-outline"
                 size={14}
-                color={colors.purple}
+                color={studentColors.primary}
               />
 
               <Text
                 className="
                   ml-1.5
-                  text-[11px]
+                  text-caption
                   font-semibold
-                  text-[#1F1F2E]
+                  text-app-textPrimary
                 "
               >
                 {displayDate}
@@ -510,15 +487,15 @@ const AppointmentCard = ({
               <Ionicons
                 name="time-outline"
                 size={14}
-                color={colors.purple}
+                color={studentColors.primary}
               />
 
               <Text
                 className="
                   ml-1.5
-                  text-[11px]
+                  text-caption
                   font-semibold
-                  text-[#1F1F2E]
+                  text-app-textPrimary
                 "
               >
                 {displayTime}
@@ -533,16 +510,16 @@ const AppointmentCard = ({
                     : "location-outline"
                 }
                 size={14}
-                color={colors.purple}
+                color={studentColors.primary}
               />
 
               <Text
                 className="
                   ml-1.5
-                  text-[11px]
+                  text-caption
                   font-semibold
                   capitalize
-                  text-[#1F1F2E]
+                  text-app-textPrimary
                 "
               >
                 {appointment.type}
@@ -560,9 +537,9 @@ const AppointmentCard = ({
               mt-4
               h-10
               rounded-[13px]
-              bg-[#FBE8E9]
+              bg-app-errorSoft
               border
-              border-[#F2D3D6]
+              border-app-error/20
               flex-row
               items-center
               justify-center
@@ -571,22 +548,22 @@ const AppointmentCard = ({
             {actionLoading ? (
               <ActivityIndicator
                 size="small"
-                color={colors.danger}
+                color={studentColors.error}
               />
             ) : (
               <>
                 <Ionicons
                   name="close-circle-outline"
                   size={15}
-                  color={colors.danger}
+                  color={studentColors.error}
                 />
 
                 <Text
                   className="
                     ml-1.5
-                    text-[11px]
+                    text-caption
                     font-bold
-                    text-[#C45B65]
+                    text-app-error
                   "
                 >
                   Cancel session
@@ -613,22 +590,22 @@ const AppointmentCard = ({
             {actionLoading ? (
               <ActivityIndicator
                 size="small"
-                color={colors.secondaryText}
+                color={studentColors.textSecondary}
               />
             ) : (
               <>
                 <Ionicons
                   name="trash-outline"
                   size={13}
-                  color={colors.secondaryText}
+                  color={studentColors.textSecondary}
                 />
 
                 <Text
                   className="
                     ml-1
-                    text-[10px]
+                    text-caption
                     font-semibold
-                    text-[#8C8992]
+                    text-app-textSecondary
                   "
                 >
                   Remove
@@ -786,7 +763,7 @@ const BookedDetailsView = ({
             w-[70px]
             h-[70px]
             rounded-[24px]
-            bg-[#F2EEF9]
+            bg-app-primarySoft
             items-center
             justify-center
             mb-4
@@ -795,15 +772,15 @@ const BookedDetailsView = ({
           <Ionicons
             name="calendar-outline"
             size={28}
-            color={colors.purple}
+            color={studentColors.primary}
           />
         </View>
 
         <Text
           className="
-            text-[15px]
+            text-body
             font-extrabold
-            text-[#1F1F2E]
+            text-app-textPrimary
           "
         >
           No sessions yet
@@ -811,15 +788,14 @@ const BookedDetailsView = ({
 
         <Text
           className="
-            text-[11px]
-            leading-[17px]
+            text-caption
             mt-1.5
             text-center
-            text-[#8C8992]
+            text-app-textSecondary
             max-w-[250px]
           "
         >
-          When you're ready, choose a
+          When you&apos;re ready, choose a
           counselor and schedule your
           first session.
         </Text>
@@ -860,20 +836,20 @@ const BookedDetailsView = ({
 
                 ${
                   selected
-                    ? "bg-[#F2EEF9] border-[#CCC5E8]"
-                    : "bg-white border-[#ECE6E2]"
+                    ? "bg-app-primarySoft border-app-primaryLight"
+                    : "bg-app-surface border-app-border"
                 }
               `}
             >
               <Text
                 className={`
-                  text-[10.5px]
+                  text-caption
                   font-bold
 
                   ${
                     selected
-                      ? "text-[#6D5AB5]"
-                      : "text-[#8C8992]"
+                      ? "text-app-primary"
+                      : "text-app-textSecondary"
                   }
                 `}
               >
@@ -895,7 +871,7 @@ const BookedDetailsView = ({
                     w-8
                     h-8
                     rounded-xl
-                    bg-[#F2EEF9]
+                    bg-app-primarySoft
                     items-center
                     justify-center
                     mr-2.5
@@ -904,16 +880,16 @@ const BookedDetailsView = ({
                   <Ionicons
                     name="sparkles-outline"
                     size={15}
-                    color={colors.purple}
+                    color={studentColors.primary}
                   />
                 </View>
 
                 <View>
                   <Text
                     className="
-                      text-[14px]
+                      text-body
                       font-extrabold
-                      text-[#1F1F2E]
+                      text-app-textPrimary
                     "
                   >
                     Next session
@@ -921,8 +897,8 @@ const BookedDetailsView = ({
 
                   <Text
                     className="
-                      text-[10px]
-                      text-[#8C8992]
+                      text-caption
+                      text-app-textSecondary
                     "
                   >
                     Your nearest upcoming appointment
@@ -938,9 +914,9 @@ const BookedDetailsView = ({
           ) : (
             <View
               className="
-                bg-white
+                bg-app-surface
                 border
-                border-[#ECE6E2]
+                border-app-border
                 rounded-[20px]
                 py-6
                 items-center
@@ -950,15 +926,15 @@ const BookedDetailsView = ({
               <Ionicons
                 name="calendar-clear-outline"
                 size={22}
-                color={colors.lightText}
+                color={studentColors.textMuted}
               />
 
               <Text
                 className="
                   mt-2
-                  text-[11px]
+                  text-caption
                   font-semibold
-                  text-[#8C8992]
+                  text-app-textSecondary
                 "
               >
                 No upcoming sessions
@@ -974,7 +950,7 @@ const BookedDetailsView = ({
                     w-8
                     h-8
                     rounded-xl
-                    bg-[#EEE9F7]
+                    bg-app-primarySoft
                     items-center
                     justify-center
                     mr-2.5
@@ -983,16 +959,16 @@ const BookedDetailsView = ({
                   <Ionicons
                     name="calendar-outline"
                     size={15}
-                    color={colors.purple}
+                    color={studentColors.primary}
                   />
                 </View>
 
                 <View>
                   <Text
                     className="
-                      text-[14px]
+                      text-body
                       font-extrabold
-                      text-[#1F1F2E]
+                      text-app-textPrimary
                     "
                   >
                     Upcoming
@@ -1000,8 +976,8 @@ const BookedDetailsView = ({
 
                   <Text
                     className="
-                      text-[10px]
-                      text-[#8C8992]
+                      text-caption
+                      text-app-textSecondary
                     "
                   >
                     {sessionData.remainingUpcoming.length}{" "}
@@ -1026,7 +1002,7 @@ const BookedDetailsView = ({
                       w-8
                       h-8
                       rounded-xl
-                      bg-[#FDE8E2]
+                      bg-app-accentSoft
                       items-center
                       justify-center
                       mr-2.5
@@ -1035,16 +1011,16 @@ const BookedDetailsView = ({
                     <Ionicons
                       name="time-outline"
                       size={15}
-                      color={colors.peach}
+                      color={studentColors.accent}
                     />
                   </View>
 
                   <View>
                     <Text
                       className="
-                        text-[14px]
+                        text-body
                         font-extrabold
-                        text-[#1F1F2E]
+                        text-app-textPrimary
                       "
                     >
                       History
@@ -1052,8 +1028,8 @@ const BookedDetailsView = ({
 
                     <Text
                       className="
-                        text-[10px]
-                        text-[#8C8992]
+                        text-caption
+                        text-app-textSecondary
                       "
                     >
                       {sessionData.history.length}{" "}
@@ -1078,9 +1054,9 @@ const BookedDetailsView = ({
           <View className="flex-row items-center justify-between mb-3">
             <Text
               className="
-                text-[14px]
+                text-body
                 font-extrabold
-                text-[#1F1F2E]
+                text-app-textPrimary
               "
             >
               {filter === "pending"
@@ -1092,8 +1068,8 @@ const BookedDetailsView = ({
 
             <Text
               className="
-                text-[10px]
-                text-[#8C8992]
+                text-caption
+                text-app-textSecondary
               "
             >
               {filteredList.length}
@@ -1107,9 +1083,9 @@ const BookedDetailsView = ({
           ) : (
             <View
               className="
-                bg-white
+                bg-app-surface
                 border
-                border-[#ECE6E2]
+                border-app-border
                 rounded-[20px]
                 py-7
                 items-center
@@ -1118,15 +1094,15 @@ const BookedDetailsView = ({
               <Ionicons
                 name="filter-outline"
                 size={22}
-                color={colors.lightText}
+                color={studentColors.textMuted}
               />
 
               <Text
                 className="
                   mt-2
-                  text-[11px]
+                  text-caption
                   font-semibold
-                  text-[#8C8992]
+                  text-app-textSecondary
                 "
               >
                 No sessions in this filter
@@ -1840,11 +1816,11 @@ export default function BookSessionScreen() {
 
             headerStyle: {
               backgroundColor:
-                colors.background,
+                studentColors.background,
             },
 
             headerTintColor:
-              colors.purple,
+              studentColors.primary,
 
             headerTitleAlign:
               "left",
@@ -1859,7 +1835,7 @@ export default function BookSessionScreen() {
           ]}
           className="
             flex-1
-            bg-[#F9F5F1]
+            bg-app-background
             items-center
             justify-center
           "
@@ -1869,7 +1845,7 @@ export default function BookSessionScreen() {
               w-[72px]
               h-[72px]
               rounded-[24px]
-              bg-[#F2EEF9]
+              bg-app-primarySoft
               items-center
               justify-center
               mb-4
@@ -1878,16 +1854,16 @@ export default function BookSessionScreen() {
             <ActivityIndicator
               size="small"
               color={
-                colors.purple
+                studentColors.primary
               }
             />
           </View>
 
           <Text
             className="
-              text-[14px]
+              text-body
               font-bold
-              text-[#1F1F2E]
+              text-app-textPrimary
             "
           >
             Finding available
@@ -1897,8 +1873,8 @@ export default function BookSessionScreen() {
           <Text
             className="
               mt-1.5
-              text-[11px]
-              text-[#8C8992]
+              text-caption
+              text-app-textSecondary
             "
           >
             Preparing your
@@ -1926,11 +1902,11 @@ export default function BookSessionScreen() {
 
           headerStyle: {
             backgroundColor:
-              colors.background,
+              studentColors.background,
           },
 
           headerTintColor:
-            colors.purple,
+            studentColors.primary,
 
           headerTitleAlign:
             "left",
@@ -1945,7 +1921,7 @@ export default function BookSessionScreen() {
         ]}
         className="
           flex-1
-          bg-[#F9F5F1]
+          bg-app-background
         "
       >
         <KeyboardAvoidingView
@@ -1966,8 +1942,10 @@ export default function BookSessionScreen() {
               false
             }
             keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{
+              paddingHorizontal: spacing.screen,
+            }}
             contentContainerClassName="
-              px-[18px]
               pt-4
               pb-10
             "
@@ -1999,12 +1977,14 @@ export default function BookSessionScreen() {
                 <View className="mt-6 mb-5">
                   <Text
                     className="
-                      text-[11px]
-                      tracking-[1px]
+                      text-caption
                       font-extrabold
-                      text-[#6D5AB5]
+                      text-app-primary
                       uppercase
                     "
+                    style={{
+                      letterSpacing: typography.letterSpacing.wide,
+                    }}
                   >
                     Personal support
                   </Text>
@@ -2012,10 +1992,9 @@ export default function BookSessionScreen() {
                   <Text
                     className="
                       mt-1.5
-                      text-[16px]
-                      leading-7
+                      text-body-lg
                       font-extrabold
-                      text-[#1F1F2E]
+                      text-app-textPrimary
                     "
                   >
                     Choose someone
@@ -2027,9 +2006,8 @@ export default function BookSessionScreen() {
                   <Text
                     className="
                       mt-1.5
-                      text-[12px]
-                      leading-[18px]
-                      text-[#8C8992]
+                      text-caption
+                      text-app-textSecondary
                     "
                   >
                     Select a counselor,
@@ -2050,9 +2028,9 @@ export default function BookSessionScreen() {
                     className="
                       flex-row
                       items-center
-                      bg-[#EAF4E8]
+                      bg-app-successSoft
                       border
-                      border-[#D5E8D3]
+                      border-app-success/20
                       rounded-[20px]
                       px-4
                       py-3.5
@@ -2064,7 +2042,7 @@ export default function BookSessionScreen() {
                         w-9
                         h-9
                         rounded-full
-                        bg-white
+                        bg-app-surface
                         items-center
                         justify-center
                         mr-3
@@ -2074,7 +2052,7 @@ export default function BookSessionScreen() {
                         name="checkmark"
                         size={18}
                         color={
-                          colors.success
+                          studentColors.success
                         }
                       />
                     </View>
@@ -2082,9 +2060,9 @@ export default function BookSessionScreen() {
                     <View className="flex-1">
                       <Text
                         className="
-                          text-[12px]
+                          text-caption
                           font-bold
-                          text-[#4F8056]
+                          text-app-success
                         "
                       >
                         Appointment
@@ -2094,12 +2072,11 @@ export default function BookSessionScreen() {
                       <Text
                         className="
                           mt-0.5
-                          text-[10.5px]
-                          leading-[15px]
-                          text-[#6D8A71]
+                          text-caption
+                          text-app-success
                         "
                       >
-                        We'll let you
+                        We&apos;ll let you
                         know once your
                         counselor
                         confirms it.
@@ -2125,17 +2102,17 @@ export default function BookSessionScreen() {
                     px-4
                     flex-row
                     items-center
-                    bg-white
+                    bg-app-surface
                     rounded-2xl
                     border
-                    border-[#ECE6E2]
+                    border-app-border
                   "
                 >
                   <Ionicons
                     name="search-outline"
                     size={17}
                     color={
-                      colors.secondaryText
+                      studentColors.textSecondary
                     }
                   />
 
@@ -2147,19 +2124,20 @@ export default function BookSessionScreen() {
                       setSearchQuery
                     }
                     placeholder="Search name or specialty"
-                    placeholderTextColor="#AAA4AE"
+                    placeholderTextColor={studentColors.textMuted}
                     className="
                       flex-1
                       ml-2.5
                       p-0
-                      text-[13px]
-                      text-[#1F1F2E]
+                      text-body-sm
+                      text-app-textPrimary
                     "
                   />
 
                   {searchQuery !==
                     "" && (
                     <TouchableOpacity
+                      accessibilityLabel="Clear counselor search"
                       onPress={() =>
                         setSearchQuery(
                           ""
@@ -2169,7 +2147,7 @@ export default function BookSessionScreen() {
                       <Ionicons
                         name="close-circle"
                         size={17}
-                        color="#AAA4AE"
+                        color={studentColors.textMuted}
                       />
                     </TouchableOpacity>
                   )}
@@ -2186,7 +2164,7 @@ export default function BookSessionScreen() {
                           w-12
                           h-12
                           rounded-2xl
-                          bg-[#F2EEF9]
+                          bg-app-primarySoft
                           items-center
                           justify-center
                           mb-3
@@ -2196,16 +2174,16 @@ export default function BookSessionScreen() {
                           name="search-outline"
                           size={21}
                           color={
-                            colors.purple
+                            studentColors.primary
                           }
                         />
                       </View>
 
                       <Text
                         className="
-                          text-[12px]
+                          text-caption
                           font-semibold
-                          text-[#8C8992]
+                          text-app-textSecondary
                         "
                       >
                         No counselors
@@ -2287,8 +2265,8 @@ export default function BookSessionScreen() {
 
                               ${
                                 chosen
-                                  ? "bg-[#F2EEF9] border-[#6D5AB5]"
-                                  : "bg-white border-[#ECE6E2]"
+                                  ? "bg-app-primarySoft border-app-primary"
+                                  : "bg-app-surface border-app-border"
                               }
                             `}
                           >
@@ -2306,7 +2284,7 @@ export default function BookSessionScreen() {
                               style={{
                                 backgroundColor:
                                   counselor.bgColor ||
-                                  colors.lavenderSoft,
+                                  studentColors.primarySoft,
                               }}
                             >
                               <Text className="text-[23px]">
@@ -2324,13 +2302,13 @@ export default function BookSessionScreen() {
                                   1
                                 }
                                 className={`
-                                  text-[14px]
+                                  text-body
                                   font-extrabold
 
                                   ${
                                     chosen
-                                      ? "text-[#6D5AB5]"
-                                      : "text-[#1F1F2E]"
+                                      ? "text-app-primary"
+                                      : "text-app-textPrimary"
                                   }
                                 `}
                               >
@@ -2345,9 +2323,8 @@ export default function BookSessionScreen() {
                                 }
                                 className="
                                   mt-1
-                                  text-[11px]
-                                  leading-[15px]
-                                  text-[#8C8992]
+                                  text-caption
+                                  text-app-textSecondary
                                 "
                               >
                                 {counselor.specialties.join(
@@ -2363,15 +2340,15 @@ export default function BookSessionScreen() {
                                     mt-2
                                     px-2.5
                                     py-1
-                                    bg-white
+                                    bg-app-surface
                                     rounded-full
                                   "
                                 >
                                   <Text
                                     className="
-                                      text-[9px]
+                                      text-caption
                                       font-bold
-                                      text-[#6D5AB5]
+                                      text-app-primary
                                     "
                                   >
                                     {
@@ -2397,20 +2374,20 @@ export default function BookSessionScreen() {
 
                                 ${
                                   chosen
-                                    ? "bg-[#6D5AB5]"
-                                    : "bg-[#F9F5F1]"
+                                    ? "bg-app-primary"
+                                    : "bg-app-background"
                                 }
                               `}
                             >
                               <Text
                                 className={`
-                                  text-[10.5px]
+                                  text-caption
                                   font-bold
 
                                   ${
                                     chosen
-                                      ? "text-white"
-                                      : "text-[#8C8992]"
+                                      ? "text-app-surface"
+                                      : "text-app-textSecondary"
                                   }
                                 `}
                               >
@@ -2449,14 +2426,14 @@ export default function BookSessionScreen() {
                         px-4
                         py-2
                         rounded-full
-                        bg-[#F2EEF9]
+                        bg-app-primarySoft
                       "
                     >
                       <Text
                         className="
-                          text-[11px]
+                          text-caption
                           font-bold
-                          text-[#6D5AB5]
+                          text-app-primary
                         "
                       >
                         {showAll
@@ -2480,19 +2457,19 @@ export default function BookSessionScreen() {
                         220
                       )}
                       className="
-                        bg-[#F2EEF9]
+                        bg-app-primarySoft
                         rounded-[20px]
                         p-4
                         mb-5
                         border
-                        border-[#E4DCEF]
+                        border-app-primaryLight
                       "
                     >
                       <Text
                         className="
-                          text-[12px]
+                          text-caption
                           font-bold
-                          text-[#6D5AB5]
+                          text-app-primary
                           mb-3
                         "
                       >
@@ -2524,7 +2501,7 @@ export default function BookSessionScreen() {
                                 appointment.appointmentId
                               }
                               className="
-                                bg-white
+                                bg-app-surface
                                 rounded-xl
                                 px-3
                                 py-2.5
@@ -2538,7 +2515,7 @@ export default function BookSessionScreen() {
                                     13
                                   }
                                   color={
-                                    colors.purple
+                                    studentColors.primary
                                   }
                                 />
 
@@ -2546,8 +2523,8 @@ export default function BookSessionScreen() {
                                   className="
                                     ml-1.5
                                     flex-1
-                                    text-[10.5px]
-                                    text-[#1F1F2E]
+                                    text-caption
+                                    text-app-textPrimary
                                   "
                                 >
                                   {
@@ -2557,10 +2534,10 @@ export default function BookSessionScreen() {
 
                                 <Text
                                   className="
-                                    text-[9px]
+                                    text-caption
                                     font-bold
                                     capitalize
-                                    text-[#8C8992]
+                                    text-app-textSecondary
                                   "
                                 >
                                   {
@@ -2587,12 +2564,12 @@ export default function BookSessionScreen() {
 
                 <View
                   className="
-                    bg-white
+                    bg-app-surface
                     rounded-[26px]
                     p-4
                     mb-5
                     border
-                    border-[#ECE6E2]
+                    border-app-border
                     shadow-sm
                   "
                 >
@@ -2600,6 +2577,7 @@ export default function BookSessionScreen() {
 
                   <View className="flex-row items-center justify-between mb-4">
                     <TouchableOpacity
+                      accessibilityLabel="Previous month"
                       disabled={
                         !canGoPrevMonth()
                       }
@@ -2610,7 +2588,7 @@ export default function BookSessionScreen() {
                         w-10
                         h-10
                         rounded-2xl
-                        bg-[#F2EEF9]
+                        bg-app-primarySoft
                         items-center
                         justify-center
                       "
@@ -2625,16 +2603,16 @@ export default function BookSessionScreen() {
                         name="chevron-back"
                         size={18}
                         color={
-                          colors.purple
+                          studentColors.primary
                         }
                       />
                     </TouchableOpacity>
 
                     <Text
                       className="
-                        text-[16px]
+                        text-body-lg
                         font-extrabold
-                        text-[#1F1F2E]
+                        text-app-textPrimary
                       "
                     >
                       {
@@ -2646,6 +2624,7 @@ export default function BookSessionScreen() {
                     </Text>
 
                     <TouchableOpacity
+                      accessibilityLabel="Next month"
                       onPress={
                         nextMonth
                       }
@@ -2653,7 +2632,7 @@ export default function BookSessionScreen() {
                         w-10
                         h-10
                         rounded-2xl
-                        bg-[#F2EEF9]
+                        bg-app-primarySoft
                         items-center
                         justify-center
                       "
@@ -2662,7 +2641,7 @@ export default function BookSessionScreen() {
                         name="chevron-forward"
                         size={18}
                         color={
-                          colors.purple
+                          studentColors.primary
                         }
                       />
                     </TouchableOpacity>
@@ -2679,9 +2658,9 @@ export default function BookSessionScreen() {
                           }
                           className="
                             text-center
-                            text-[10px]
+                            text-caption
                             font-extrabold
-                            text-[#AAA4AE]
+                            text-app-textMuted
                           "
                           style={{
                             width:
@@ -2818,9 +2797,9 @@ export default function BookSessionScreen() {
 
                                 ${
                                   selected
-                                    ? "bg-[#6D5AB5]"
+                                    ? "bg-app-primary"
                                     : isToday
-                                    ? "bg-[#F2EEF9]"
+                                    ? "bg-app-primarySoft"
                                     : "bg-transparent"
                                 }
                               `}
@@ -2837,12 +2816,12 @@ export default function BookSessionScreen() {
                                     : 0,
 
                                 borderColor:
-                                  colors.purple,
+                                  studentColors.primary,
                               }}
                             >
                               <Text
                                 className={`
-                                  text-[14px]
+                                  text-body
 
                                   ${
                                     selected ||
@@ -2853,12 +2832,12 @@ export default function BookSessionScreen() {
 
                                   ${
                                     selected
-                                      ? "text-white"
+                                      ? "text-app-surface"
                                       : full
-                                      ? "text-[#C45B65]"
+                                      ? "text-app-error"
                                       : isToday
-                                      ? "text-[#6D5AB5]"
-                                      : "text-[#1F1F2E]"
+                                      ? "text-app-primary"
+                                      : "text-app-textPrimary"
                                   }
                                 `}
                               >
@@ -2877,8 +2856,8 @@ export default function BookSessionScreen() {
 
                                     ${
                                       selected
-                                        ? "bg-white"
-                                        : "bg-[#6D5AB5]"
+                                        ? "bg-app-surface"
+                                        : "bg-app-primary"
                                     }
                                   `}
                                 />
@@ -2898,8 +2877,8 @@ export default function BookSessionScreen() {
                                   style={{
                                     backgroundColor:
                                       full
-                                        ? colors.danger
-                                        : colors.peach,
+                                        ? studentColors.error
+                                        : studentColors.accent,
                                   }}
                                 />
                               )}
@@ -2919,26 +2898,26 @@ export default function BookSessionScreen() {
                       mt-4
                       pt-3
                       border-t
-                      border-[#F0EAE6]
+                      border-app-borderSoft
                     "
                   >
                     <LegendDot
                       color={
-                        colors.purple
+                        studentColors.primary
                       }
                       label="Selected"
                     />
 
                     <LegendDot
                       color={
-                        colors.peach
+                        studentColors.accent
                       }
                       label="Bookings"
                     />
 
                     <LegendDot
                       color={
-                        colors.danger
+                        studentColors.error
                       }
                       label="Full"
                     />
@@ -2965,8 +2944,8 @@ export default function BookSessionScreen() {
                       ${
                         myExistingOnDate ||
                         isSelectedDayFull
-                          ? "bg-[#FBE8E9] border-[#F3D2D5]"
-                          : "bg-[#F2EEF9] border-[#E5DDEF]"
+                          ? "bg-app-errorSoft border-app-error/20"
+                          : "bg-app-primarySoft border-app-primaryLight"
                       }
                     `}
                   >
@@ -2977,22 +2956,22 @@ export default function BookSessionScreen() {
                         color={
                           myExistingOnDate ||
                           isSelectedDayFull
-                            ? colors.danger
-                            : colors.purple
+                            ? studentColors.error
+                            : studentColors.primary
                         }
                       />
 
                       <Text
                         className={`
                           ml-2
-                          text-[12px]
+                          text-caption
                           font-bold
 
                           ${
                             myExistingOnDate ||
                             isSelectedDayFull
-                              ? "text-[#C45B65]"
-                              : "text-[#6D5AB5]"
+                              ? "text-app-error"
+                              : "text-app-primary"
                           }
                         `}
                       >
@@ -3007,9 +2986,9 @@ export default function BookSessionScreen() {
                     {myExistingOnDate && (
                       <Text
                         className="
-                          text-[10px]
+                          text-caption
                           font-bold
-                          text-[#C45B65]
+                          text-app-error
                         "
                       >
                         Already booked
@@ -3020,9 +2999,9 @@ export default function BookSessionScreen() {
                       isSelectedDayFull && (
                         <Text
                           className="
-                            text-[10px]
+                            text-caption
                             font-bold
-                            text-[#C45B65]
+                            text-app-error
                           "
                         >
                           Fully booked
@@ -3097,10 +3076,10 @@ export default function BookSessionScreen() {
 
                             ${
                               selected
-                                ? "bg-[#6D5AB5] border-[#6D5AB5]"
+                                ? "bg-app-primary border-app-primary"
                                 : taken
-                                ? "bg-[#FBE8E9] border-[#F0D1D4]"
-                                : "bg-white border-[#ECE6E2]"
+                                ? "bg-app-errorSoft border-app-error/20"
+                                : "bg-app-surface border-app-border"
                             }
                           `}
                           style={{
@@ -3123,8 +3102,8 @@ export default function BookSessionScreen() {
 
                                 ${
                                   selected
-                                    ? "bg-white/15"
-                                    : "bg-[#F2EEF9]"
+                                    ? "bg-app-surface/15"
+                                    : "bg-app-primarySoft"
                                 }
                               `}
                             >
@@ -3141,23 +3120,23 @@ export default function BookSessionScreen() {
                                 }
                                 color={
                                   selected
-                                    ? "#FFFFFF"
-                                    : colors.purple
+                                    ? commonColors.white
+                                    : studentColors.primary
                                 }
                               />
                             </View>
 
                             <Text
                               className={`
-                                text-[14px]
+                                text-body
                                 font-bold
 
                                 ${
                                   selected
-                                    ? "text-white"
+                                    ? "text-app-surface"
                                     : taken
-                                    ? "text-[#C45B65]"
-                                    : "text-[#1F1F2E]"
+                                    ? "text-app-error"
+                                    : "text-app-textPrimary"
                                 }
                               `}
                             >
@@ -3175,24 +3154,24 @@ export default function BookSessionScreen() {
 
                               ${
                                 selected
-                                  ? "bg-white/15"
+                                  ? "bg-app-surface/15"
                                   : taken
-                                  ? "bg-[#F4D6D8]"
-                                  : "bg-[#F9F5F1]"
+                                  ? "bg-app-errorSoft"
+                                  : "bg-app-background"
                               }
                             `}
                           >
                             <Text
                               className={`
-                                text-[9.5px]
+                                text-caption
                                 font-bold
 
                                 ${
                                   selected
-                                    ? "text-white"
+                                    ? "text-app-surface"
                                     : taken
-                                    ? "text-[#C45B65]"
-                                    : "text-[#8C8992]"
+                                    ? "text-app-error"
+                                    : "text-app-textSecondary"
                                 }
                               `}
                             >
@@ -3260,8 +3239,8 @@ export default function BookSessionScreen() {
 
                             ${
                               selected
-                                ? "bg-[#6D5AB5] border-[#6D5AB5]"
-                                : "bg-white border-[#ECE6E2]"
+                                ? "bg-app-primary border-app-primary"
+                                : "bg-app-surface border-app-border"
                             }
                           `}
                         >
@@ -3277,22 +3256,22 @@ export default function BookSessionScreen() {
                             }
                             color={
                               selected
-                                ? "#FFFFFF"
-                                : colors.purple
+                                ? commonColors.white
+                                : studentColors.primary
                             }
                           />
 
                           <Text
                             className={`
                               ml-2
-                              text-[12px]
+                              text-caption
                               font-bold
                               capitalize
 
                               ${
                                 selected
-                                  ? "text-white"
-                                  : "text-[#1F1F2E]"
+                                ? "text-app-surface"
+                                : "text-app-textPrimary"
                               }
                             `}
                           >
@@ -3322,22 +3301,21 @@ export default function BookSessionScreen() {
                     setNote
                   }
                   placeholder="Briefly describe what you'd like to discuss..."
-                  placeholderTextColor="#AAA4AE"
+                  placeholderTextColor={studentColors.textMuted}
                   multiline
                   numberOfLines={4}
                   textAlignVertical="top"
                   maxLength={500}
                   className="
                     min-h-[105px]
-                    bg-white
+                    bg-app-surface
                     border
-                    border-[#ECE6E2]
+                    border-app-border
                     rounded-[20px]
                     px-4
                     py-3.5
-                    text-[13px]
-                    leading-5
-                    text-[#1F1F2E]
+                    text-body-sm
+                    text-app-textPrimary
                   "
                 />
 
@@ -3346,8 +3324,8 @@ export default function BookSessionScreen() {
                     text-right
                     mt-1.5
                     mb-6
-                    text-[9.5px]
-                    text-[#AAA4AE]
+                    text-caption
+                    text-app-textMuted
                   "
                 >
                   {note.length}/500
@@ -3367,9 +3345,9 @@ export default function BookSessionScreen() {
                         220
                       )}
                       className="
-                        bg-[#F2EEF9]
+                        bg-app-primarySoft
                         border
-                        border-[#E4DCEF]
+                        border-app-primaryLight
                         rounded-[22px]
                         p-4
                         mb-5
@@ -3381,7 +3359,7 @@ export default function BookSessionScreen() {
                             w-8
                             h-8
                             rounded-xl
-                            bg-white
+                            bg-app-surface
                             items-center
                             justify-center
                             mr-2.5
@@ -3393,16 +3371,16 @@ export default function BookSessionScreen() {
                               17
                             }
                             color={
-                              colors.purple
+                              studentColors.primary
                             }
                           />
                         </View>
 
                         <Text
                           className="
-                            text-[13px]
+                            text-body-sm
                             font-extrabold
-                            text-[#6D5AB5]
+                            text-app-primary
                           "
                         >
                           Booking
@@ -3461,13 +3439,13 @@ export default function BookSessionScreen() {
                               items-start
                               py-2
                               border-b
-                              border-[#E5DEEE]
+                              border-app-primaryLight
                             "
                           >
                             <Text
                               className="
-                                text-[11px]
-                                text-[#8C8992]
+                                text-caption
+                                text-app-textSecondary
                               "
                             >
                               {
@@ -3482,9 +3460,9 @@ export default function BookSessionScreen() {
                               className="
                                 max-w-[60%]
                                 text-right
-                                text-[11px]
+                                text-caption
                                 font-bold
-                                text-[#1F1F2E]
+                                text-app-textPrimary
                               "
                             >
                               {
@@ -3522,30 +3500,30 @@ export default function BookSessionScreen() {
                     ${
                       canBook &&
                       !bookLoading
-                        ? "bg-[#6D5AB5]"
-                        : "bg-[#C6C0C9]"
+                        ? "bg-app-primary"
+                        : "bg-app-textMuted"
                     }
                   `}
                 >
                   {bookLoading ? (
                     <ActivityIndicator
                       size="small"
-                      color="#FFFFFF"
+                      color={commonColors.white}
                     />
                   ) : (
                     <Ionicons
                       name="calendar-outline"
                       size={17}
-                      color="#FFFFFF"
+                      color={commonColors.white}
                     />
                   )}
 
                   <Text
                     className="
                       ml-2
-                      text-[14px]
+                      text-body
                       font-extrabold
-                      text-white
+                      text-app-surface
                     "
                   >
                     {bookLoading
@@ -3558,9 +3536,8 @@ export default function BookSessionScreen() {
                   className="
                     mt-2
                     text-center
-                    text-[9.5px]
-                    leading-[14px]
-                    text-[#8C8992]
+                    text-caption
+                    text-app-textSecondary
                   "
                 >
                   Your appointment
@@ -3585,12 +3562,14 @@ export default function BookSessionScreen() {
                 <View className="mt-6">
                   <Text
                     className="
-                      text-[11px]
-                      tracking-[1px]
+                      text-caption
                       font-extrabold
-                      text-[#6D5AB5]
+                      text-app-primary
                       uppercase
                     "
+                    style={{
+                      letterSpacing: typography.letterSpacing.wide,
+                    }}
                   >
                     Your support
                   journey
@@ -3599,10 +3578,9 @@ export default function BookSessionScreen() {
                   <Text
                     className="
                       mt-1.5
-                      text-[22px]
-                      leading-7
+                      text-title
                       font-extrabold
-                      text-[#1F1F2E]
+                      text-app-textPrimary
                     "
                   >
                     Your counseling
@@ -3612,9 +3590,8 @@ export default function BookSessionScreen() {
                   <Text
                     className="
                       mt-1.5
-                      text-[12px]
-                      leading-[18px]
-                      text-[#8C8992]
+                      text-caption
+                      text-app-textSecondary
                     "
                   >
                     See your next session,
@@ -3665,7 +3642,7 @@ function SectionTitle({
           w-7
           h-7
           rounded-lg
-          bg-[#F2EEF9]
+          bg-app-primarySoft
           items-center
           justify-center
           mr-2
@@ -3674,16 +3651,16 @@ function SectionTitle({
         <Ionicons
           name={icon}
           size={14}
-          color="#6D5AB5"
+          color={studentColors.primary}
         />
       </View>
 
       <View className="flex-1">
         <Text
           className="
-            text-[11px]
+            text-caption
             font-extrabold
-            text-[#1F1F2E]
+            text-app-textPrimary
           "
         >
           {title}
@@ -3693,9 +3670,8 @@ function SectionTitle({
           <Text
             className="
               mt-0.5
-              text-[9px]
-              leading-[13px]
-              text-[#8C8992]
+              text-caption
+              text-app-textSecondary
             "
           >
             {subtitle}
@@ -3730,8 +3706,8 @@ function LegendDot({
 
       <Text
         className="
-          text-[9px]
-          text-[#8C8992]
+          text-caption
+          text-app-textSecondary
         "
       >
         {label}

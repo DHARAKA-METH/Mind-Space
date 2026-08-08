@@ -10,16 +10,7 @@ import Animated, {
   withSequence,
   Easing,
 } from "react-native-reanimated";
-
-const ceylon = {
-  ink: "#3D2E1F",
-  muted: "#8A7A63",
-  mutedLight: "#B8A78C",
-  teaGreen: "#4A7856",
-  sage: "#7C9885",
-  terracotta: "#C97B4A",
-  sand: "#F0E4D3",
-};
+import { commonColors, moodColors, spacing, studentColors, typography } from "@/src/theme";
 
 export interface CapturedFace {
   uri: string;
@@ -85,7 +76,6 @@ export const FaceCaptureCard: React.FC<FaceCaptureCardProps> = ({ onCapture, onR
         timestamp: new Date().toISOString(),
       };
 
-      // eslint-disable-next-line no-console
       console.log("Face captured:", captured);
 
       setPhoto(captured);
@@ -117,33 +107,36 @@ export const FaceCaptureCard: React.FC<FaceCaptureCardProps> = ({ onCapture, onR
   };
 
   return (
-    <View className="rounded-3xl bg-white p-4 mb-4">
+    <View className="rounded-3xl bg-app-surface p-4 mb-4">
       {/* Header row — always visible, toggles the card */}
       <TouchableOpacity
         onPress={handleToggleExpand}
         activeOpacity={0.7}
         className="flex-row items-center justify-between"
+        accessibilityRole="button"
+        accessibilityLabel={expanded ? "Collapse facial expression capture" : "Expand facial expression capture"}
+        accessibilityState={{ expanded }}
       >
         <View className="flex-row items-center" style={{ gap: 10 }}>
           <View
             className="w-9 h-9 rounded-full items-center justify-center"
-            style={{ backgroundColor: `${ceylon.sage}18` }}
+            style={{ backgroundColor: studentColors.successSoft }}
           >
-            <Ionicons name="camera-outline" size={18} color={ceylon.sage} />
+            <Ionicons name="camera-outline" size={18} color={studentColors.success} />
           </View>
           <View>
-            <Text className="text-sm font-bold" style={{ color: ceylon.ink }}>
+            <Text className="text-body font-bold text-app-textPrimary">
               Capture a moment
             </Text>
-            <Text className="text-xs" style={{ color: ceylon.muted }}>
-              Optional — pairs your expression with today&apos s check-in
+            <Text className="text-caption text-app-textSecondary">
+              {"Optional — pairs your expression with today's check-in"}
             </Text>
           </View>
         </View>
         <Ionicons
           name={expanded ? "chevron-up" : "chevron-down"}
           size={18}
-          color={ceylon.mutedLight}
+          color={studentColors.textMuted}
         />
       </TouchableOpacity>
 
@@ -151,9 +144,9 @@ export const FaceCaptureCard: React.FC<FaceCaptureCardProps> = ({ onCapture, onR
         <View className="mt-4">
           {/* Permission denied state */}
           {permission && !permission.granted && !permission.canAskAgain && (
-            <View className="items-center py-6 rounded-2xl" style={{ backgroundColor: ceylon.sand }}>
-              <Ionicons name="lock-closed-outline" size={22} color={ceylon.muted} />
-              <Text className="text-xs text-center mt-2 px-6" style={{ color: ceylon.muted }}>
+            <View className="items-center py-6 rounded-2xl bg-app-surfaceMuted">
+              <Ionicons name="lock-closed-outline" size={22} color={studentColors.textSecondary} />
+              <Text className="text-caption text-center mt-2 px-6 text-app-textSecondary">
                 Camera access is off. Enable it in your device settings to use this feature.
               </Text>
             </View>
@@ -168,7 +161,7 @@ export const FaceCaptureCard: React.FC<FaceCaptureCardProps> = ({ onCapture, onR
               <Animated.View
                 pointerEvents="none"
                 style={[
-                  { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "#fff" },
+                  { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: commonColors.white },
                   flashStyle,
                 ]}
               />
@@ -182,7 +175,7 @@ export const FaceCaptureCard: React.FC<FaceCaptureCardProps> = ({ onCapture, onR
                   width: 200,
                   height: 240,
                   borderWidth: 2,
-                  borderColor: "rgba(255,255,255,0.6)",
+                  borderColor: commonColors.whiteOverlayBorder,
                   borderStyle: "dashed",
                   borderRadius: 120,
                 }}
@@ -193,9 +186,11 @@ export const FaceCaptureCard: React.FC<FaceCaptureCardProps> = ({ onCapture, onR
                   <TouchableOpacity
                     onPress={() => setCameraOpen(false)}
                     className="w-11 h-11 rounded-full items-center justify-center"
-                    style={{ backgroundColor: "rgba(0,0,0,0.35)" }}
+                    style={{ backgroundColor: commonColors.scrim }}
+                    accessibilityRole="button"
+                    accessibilityLabel="Close camera"
                   >
-                    <Ionicons name="close" size={20} color="#fff" />
+                    <Ionicons name="close" size={20} color={commonColors.white} />
                   </TouchableOpacity>
 
                   <Animated.View style={shutterStyle}>
@@ -203,14 +198,17 @@ export const FaceCaptureCard: React.FC<FaceCaptureCardProps> = ({ onCapture, onR
                       onPress={handleCapture}
                       disabled={capturing}
                       className="w-16 h-16 rounded-full items-center justify-center"
-                      style={{ backgroundColor: "#fff", borderWidth: 3, borderColor: ceylon.sage }}
+                      style={{ backgroundColor: commonColors.white, borderWidth: 3, borderColor: studentColors.success }}
+                      accessibilityRole="button"
+                      accessibilityLabel="Take photo"
+                      accessibilityState={{ disabled: capturing }}
                     >
                       {capturing ? (
-                        <Ionicons name="hourglass-outline" size={22} color={ceylon.sage} />
+                        <Ionicons name="hourglass-outline" size={22} color={studentColors.success} />
                       ) : (
                         <View
                           className="rounded-full"
-                          style={{ width: 48, height: 48, backgroundColor: ceylon.sage }}
+                          style={{ width: 48, height: 48, backgroundColor: studentColors.success }}
                         />
                       )}
                     </TouchableOpacity>
@@ -228,10 +226,11 @@ export const FaceCaptureCard: React.FC<FaceCaptureCardProps> = ({ onCapture, onR
               onPress={handleOpenCamera}
               activeOpacity={0.8}
               className="items-center justify-center rounded-2xl py-8"
-              style={{ backgroundColor: ceylon.sand, borderWidth: 1.5, borderColor: ceylon.sage, borderStyle: "dashed" }}
+              style={{ backgroundColor: studentColors.surfaceMuted, borderWidth: 1.5, borderColor: studentColors.success, borderStyle: "dashed" }}
+              accessibilityRole="button"
             >
-              <Ionicons name="camera" size={26} color={ceylon.sage} />
-              <Text className="text-xs font-semibold mt-2" style={{ color: ceylon.ink }}>
+              <Ionicons name="camera" size={26} color={studentColors.success} />
+              <Text className="text-caption font-semibold mt-2 text-app-textPrimary">
                 Tap to open camera
               </Text>
             </TouchableOpacity>
@@ -248,11 +247,11 @@ export const FaceCaptureCard: React.FC<FaceCaptureCardProps> = ({ onCapture, onR
                 />
                 <Animated.View
                   style={[
-                    { position: "absolute", top: 8, right: 8, width: 28, height: 28, borderRadius: 14, backgroundColor: ceylon.teaGreen, alignItems: "center", justifyContent: "center" },
+                    { position: "absolute", top: spacing.xs, right: spacing.xs, width: 28, height: 28, borderRadius: 14, backgroundColor: studentColors.success, alignItems: "center", justifyContent: "center" },
                     checkStyle,
                   ]}
                 >
-                  <Ionicons name="checkmark" size={16} color="#fff" />
+                  <Ionicons name="checkmark" size={16} color={commonColors.white} />
                 </Animated.View>
               </View>
 
@@ -260,26 +259,28 @@ export const FaceCaptureCard: React.FC<FaceCaptureCardProps> = ({ onCapture, onR
                 <TouchableOpacity
                   onPress={handleRetake}
                   className="flex-row items-center rounded-xl px-4 py-2"
-                  style={{ backgroundColor: ceylon.sand, gap: 6 }}
+                   style={{ backgroundColor: studentColors.surfaceMuted, gap: 6 }}
+                   accessibilityRole="button"
                 >
-                  <Ionicons name="refresh" size={14} color={ceylon.ink} />
-                  <Text className="text-xs font-semibold" style={{ color: ceylon.ink }}>
+                  <Ionicons name="refresh" size={14} color={studentColors.textPrimary} />
+                  <Text className="text-caption font-semibold text-app-textPrimary">
                     Retake
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={handleRemove}
                   className="flex-row items-center rounded-xl px-4 py-2"
-                  style={{ backgroundColor: "#F7DDD6", gap: 6 }}
+                  style={{ backgroundColor: moodColors.awfulSoft, gap: 6 }}
+                  accessibilityRole="button"
                 >
-                  <Ionicons name="trash-outline" size={14} color="#B5555C" />
-                  <Text className="text-xs font-semibold" style={{ color: "#B5555C" }}>
+                  <Ionicons name="trash-outline" size={14} color={studentColors.error} />
+                  <Text className="text-caption font-semibold text-app-error">
                     Remove
                   </Text>
                 </TouchableOpacity>
               </View>
 
-              <Text className="text-[10px] mt-3 text-center px-4" style={{ color: ceylon.mutedLight }}>
+              <Text className="text-caption mt-3 text-center px-4 text-app-textMuted" style={{ lineHeight: typography.lineHeight.caption }}>
                 Only used to enrich your own check-in — never shared publicly.
               </Text>
             </View>

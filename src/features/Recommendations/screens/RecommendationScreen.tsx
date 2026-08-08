@@ -27,22 +27,14 @@ import {
 import { Stack } from "expo-router";
 import { getAuth } from "firebase/auth";
 
+import {
+  commonColors,
+  spacing,
+  studentColors,
+  typography,
+} from "@/src/theme";
+
 import { getUserRecommendations } from "../services/recommendationsPool";
-
-/* -------------------------------------------------------------------------- */
-/*                                  COLORS                                    */
-/* -------------------------------------------------------------------------- */
-
-const COLORS = {
-  background: "#F9F5F1",
-  lavender: "#CCC5E8",
-  purple: "#6D5AB5",
-  peach: "#F47F63",
-  peachSoft: "#FDE8E2",
-  text: "#1F1F2E",
-  secondaryText: "#8C8992",
-  white: "#FFFFFF",
-};
 
 /* -------------------------------------------------------------------------- */
 /*                               CATEGORY DATA                                */
@@ -53,15 +45,15 @@ const CATEGORY_TAGS = [
     id: "music",
     label: "Music",
     icon: "music",
-    color: COLORS.purple,
-    bg: COLORS.lavender,
+    color: studentColors.primary,
+    bg: studentColors.primaryLight,
   },
   {
     id: "activity",
     label: "Tips & Tricks",
     icon: "wind",
-    color: COLORS.peach,
-    bg: COLORS.lavender,
+    color: studentColors.accent,
+    bg: studentColors.primaryLight,
   },
 ];
 
@@ -72,7 +64,7 @@ const CATEGORY_TAGS = [
 function TagIcon({
   id,
   size = 24,
-  color = COLORS.text,
+  color = studentColors.textPrimary,
 }: {
   id: string;
   size?: number;
@@ -243,14 +235,14 @@ export default function WellnessScreen() {
             <View className="flex-row items-start justify-between px-6 pt-2.5 pb-4">
               <View className="flex-1 pr-5">
                 <Text
-                  className="text-[28px] leading-[34px] font-extrabold"
-                  style={{ color: COLORS.text, letterSpacing: -0.5 }}
+                  className="text-heading font-extrabold text-app-textPrimary"
+                  style={{ letterSpacing: typography.letterSpacing.tight }}
                 >
                   Wellness Hub
                 </Text>
                 <Text
-                  className="text-[13px] leading-[19px] mt-1.5"
-                  style={{ color: COLORS.secondaryText, maxWidth: 265 }}
+                  className="mt-1.5 text-body-sm text-app-textSecondary"
+                  style={{ maxWidth: 265 }}
                 >
                   Discover resources to relax, learn, and improve your well-being.
                 </Text>
@@ -260,55 +252,53 @@ export default function WellnessScreen() {
                 <TouchableOpacity
                   activeOpacity={0.7}
                   onPress={() => setSearchOpen((prev) => !prev)}
-                  className="w-[42px] h-[42px] rounded-full items-center justify-center"
-                  style={{ backgroundColor: COLORS.white }}
+                  className="h-[42px] w-[42px] items-center justify-center rounded-full bg-app-surface"
+                  accessibilityLabel={searchOpen ? "Close resource search" : "Search resources"}
                 >
-                  <Search size={19} strokeWidth={2} color={COLORS.secondaryText} />
+                  <Search size={19} strokeWidth={2} color={studentColors.textSecondary} />
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   activeOpacity={0.7}
-                  className="w-[42px] h-[42px] rounded-full items-center justify-center"
-                  style={{ backgroundColor: COLORS.white }}
+                  className="h-[42px] w-[42px] items-center justify-center rounded-full bg-app-surface"
+                  accessibilityLabel="Saved resources"
                 >
-                  <Bookmark size={19} strokeWidth={2} color={COLORS.secondaryText} />
+                  <Bookmark size={19} strokeWidth={2} color={studentColors.textSecondary} />
                 </TouchableOpacity>
               </View>
             </View>
           ),
-          headerStyle: { backgroundColor: COLORS.background },
+          headerStyle: { backgroundColor: studentColors.background },
           headerShadowVisible: false,
         }}
       />
 
       <SafeAreaView
         edges={["top"]}
-        className="flex-1 mt-[-40px]"
-        style={{ backgroundColor: COLORS.background }}
+        className="mt-[-40px] flex-1 bg-app-background"
       >
         <ScrollView
           showsVerticalScrollIndicator={false}
           className="flex-1"
-          style={{ backgroundColor: COLORS.background }}
-          contentContainerStyle={{ paddingBottom: 35 }}
+          contentContainerStyle={{ paddingBottom: spacing.xxxl }}
         >
           {/* Search */}
           {searchOpen && (
             <View className="px-6 mb-4">
-              <View className="flex-row items-center h-12 px-4 rounded-2xl border" style={{ backgroundColor: COLORS.white, borderColor: "#E5E0DB" }}>
-                <Search size={18} color={COLORS.secondaryText} />
+              <View className="h-12 flex-row items-center rounded-2xl border border-app-border bg-app-surface px-4">
+                <Search size={18} color={studentColors.textSecondary} />
                 <TextInput
                   placeholder="Search resources..."
-                  placeholderTextColor={COLORS.secondaryText}
+                  placeholderTextColor={studentColors.textSecondary}
                   value={searchQuery}
                   onChangeText={setSearchQuery}
                   autoFocus
-                  className="flex-1 ml-2.5 text-[14px]"
-                  style={{ color: COLORS.text, paddingVertical: 0 }}
+                  className="ml-2.5 flex-1 text-body text-app-textPrimary"
+                  style={{ paddingVertical: 0 }}
                 />
                 {searchQuery.length > 0 && (
-                  <TouchableOpacity onPress={() => setSearchQuery("")}>
-                    <X size={17} color={COLORS.secondaryText} />
+                  <TouchableOpacity accessibilityLabel="Clear resource search" onPress={() => setSearchQuery("")}>
+                    <X size={17} color={studentColors.textSecondary} />
                   </TouchableOpacity>
                 )}
               </View>
@@ -323,8 +313,8 @@ export default function WellnessScreen() {
                 onPress={() => handleMediaRedirect(dailyItem.link)}
                 className="rounded-[27px] p-[18px] mb-7 overflow-hidden"
                 style={{
-                  backgroundColor: COLORS.lavender,
-                  shadowColor: COLORS.purple,
+                  backgroundColor: studentColors.primaryLight,
+                  shadowColor: studentColors.primary,
                   shadowOpacity: 0.12,
                   shadowRadius: 14,
                   shadowOffset: { width: 0, height: 6 },
@@ -335,19 +325,19 @@ export default function WellnessScreen() {
                 <View
                   pointerEvents="none"
                   className="absolute w-[135px] h-[135px] rounded-full -right-9 -top-9"
-                  style={{ backgroundColor: "rgba(255,255,255,0.15)" }}
+                  style={{ backgroundColor: commonColors.whiteOverlay }}
                 />
                 <View
                   pointerEvents="none"
                   className="absolute w-20 h-20 rounded-full -left-6 -bottom-5"
-                  style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
+                  style={{ backgroundColor: commonColors.whiteOverlaySubtle }}
                 />
 
                 {/* Top row */}
                 <View className="flex-row justify-between items-center mb-4">
                   <View className="flex-row items-center bg-white/48 px-3 py-1.5 rounded-[18px]">
-                    <Sparkles size={13} color={COLORS.purple} />
-                    <Text className="text-[10px] font-extrabold ml-1.5" style={{ color: COLORS.purple, letterSpacing: 0.3 }}>
+                    <Sparkles size={13} color={studentColors.primary} />
+                    <Text className="ml-1.5 text-caption font-extrabold text-app-primary" style={{ letterSpacing: typography.letterSpacing.label }}>
                       DAILY RECOMMENDATION
                     </Text>
                   </View>
@@ -359,16 +349,17 @@ export default function WellnessScreen() {
                       setDismissedHeroId(dailyItem.id);
                     }}
                     className="w-7 h-7 rounded-full items-center justify-center"
-                    style={{ backgroundColor: "rgba(255,255,255,0.35)" }}
+                    style={{ backgroundColor: commonColors.whiteOverlayHeavy }}
+                    accessibilityLabel="Dismiss daily recommendation"
                   >
-                    <X size={15} color={COLORS.purple} />
+                    <X size={15} color={studentColors.primary} />
                   </TouchableOpacity>
                 </View>
 
                 {/* Video area */}
                 <View
                   className="h-[176px] rounded-2xl overflow-hidden items-center justify-center mb-4"
-                  style={{ backgroundColor: "rgba(80,70,100,0.22)" }}
+                  style={{ backgroundColor: commonColors.coolOverlay }}
                 >
                   {heroThumbnail && (
                     <Image
@@ -378,20 +369,20 @@ export default function WellnessScreen() {
                     />
                   )}
                   {heroThumbnail && (
-                    <View className="absolute inset-0" style={{ backgroundColor: "rgba(47,39,69,0.12)" }} />
+                    <View className="absolute inset-0" style={{ backgroundColor: commonColors.purpleOverlay }} />
                   )}
-                  <View className="w-[58px] h-[58px] rounded-full items-center justify-center" style={{ backgroundColor: "rgba(255,255,255,0.22)" }}>
-                    <Play size={36} color="#FFFFFF" fill="#FFFFFF" strokeWidth={1.5} />
+                  <View className="w-[58px] h-[58px] rounded-full items-center justify-center" style={{ backgroundColor: commonColors.whiteOverlayStrong }}>
+                    <Play size={36} color={commonColors.white} fill={commonColors.white} strokeWidth={1.5} />
                   </View>
                 </View>
 
                 {/* Title */}
-                <Text numberOfLines={2} className="text-[20px] leading-[25px] font-extrabold" style={{ color: COLORS.text, letterSpacing: -0.3 }}>
+                <Text numberOfLines={2} className="text-title font-extrabold text-app-textPrimary" style={{ letterSpacing: typography.letterSpacing.tight }}>
                   {dailyItem.title}
                 </Text>
 
                 {/* Description */}
-                <Text numberOfLines={2} className="text-[13px] leading-[19px] mt-1.5 mb-4" style={{ color: "#625D6B" }}>
+                <Text numberOfLines={2} className="mb-4 mt-1.5 text-body-sm text-app-textSecondary">
                   {dailyItem.description}
                 </Text>
 
@@ -403,10 +394,10 @@ export default function WellnessScreen() {
                     handleMediaRedirect(dailyItem.link);
                   }}
                   className="flex-row items-center self-end px-4 py-2 rounded-[20px]"
-                  style={{ backgroundColor: COLORS.white }}
+                  style={{ backgroundColor: studentColors.surface }}
                 >
-                  <Play size={13} color={COLORS.purple} fill={COLORS.purple} />
-                  <Text className="text-[12px] font-bold ml-1.5" style={{ color: COLORS.text }}>
+                  <Play size={13} color={studentColors.primary} fill={studentColors.primary} />
+                  <Text className="ml-1.5 text-caption font-bold text-app-textPrimary">
                     Watch now
                   </Text>
                 </TouchableOpacity>
@@ -430,19 +421,19 @@ export default function WellnessScreen() {
                       onPress={() => setSelectedTag(tag.id)}
                       className="flex-row items-center px-4 py-2.5 mr-2.5 rounded-[22px]"
                       style={{
-                        backgroundColor: isSelected ? COLORS.peach : COLORS.white,
+                        backgroundColor: isSelected ? studentColors.accent : studentColors.surface,
                         borderWidth: isSelected ? 0 : 1,
-                        borderColor: "#E5E0DB",
+                        borderColor: studentColors.border,
                       }}
                     >
                       <TagIcon
                         id={tag.id}
                         size={15}
-                        color={isSelected ? "#FFFFFF" : COLORS.purple}
+                        color={isSelected ? commonColors.white : studentColors.primary}
                       />
                       <Text
-                        className="text-[13px] font-bold ml-2"
-                        style={{ color: isSelected ? "#FFFFFF" : COLORS.text }}
+                        className="ml-2 text-body-sm font-bold"
+                        style={{ color: isSelected ? commonColors.white : studentColors.textPrimary }}
                       >
                         {tag.label}
                       </Text>
@@ -500,10 +491,10 @@ export default function WellnessScreen() {
 function SectionHeading({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <View className="mb-4">
-      <Text className="text-[18px] font-extrabold" style={{ color: COLORS.text, letterSpacing: -0.2 }}>
+      <Text className="text-subtitle font-extrabold text-app-textPrimary" style={{ letterSpacing: typography.letterSpacing.tight }}>
         {title}
       </Text>
-      <Text className="text-[12px] mt-1" style={{ color: COLORS.secondaryText }}>
+      <Text className="mt-1 text-caption text-app-textSecondary">
         {subtitle}
       </Text>
     </View>
@@ -517,10 +508,9 @@ function SectionHeading({ title, subtitle }: { title: string; subtitle: string }
 function EmptyRow({ label }: { label: string }) {
   return (
     <View
-      className="py-8 items-center justify-center rounded-[22px] border mb-6"
-      style={{ backgroundColor: COLORS.white, borderColor: "#E5E0DB" }}
+      className="mb-6 items-center justify-center rounded-[22px] border border-app-border bg-app-surface py-8"
     >
-      <Text className="text-[12px] font-medium" style={{ color: COLORS.secondaryText }}>
+      <Text className="text-caption font-medium text-app-textSecondary">
         {label}
       </Text>
     </View>
@@ -546,19 +536,19 @@ function MediaCard({
       onPress={() => onPress(item.link)}
       className="w-[175px] mr-3.5 rounded-[22px] overflow-hidden"
       style={{
-        backgroundColor: COLORS.white,
-        shadowColor: "#000",
+        backgroundColor: studentColors.surface,
+        shadowColor: commonColors.black,
         shadowOpacity: 0.045,
         shadowRadius: 10,
         shadowOffset: { width: 0, height: 3 },
         elevation: 1,
       }}
     >
-      <View className="h-[115px] items-center justify-center" style={{ backgroundColor: COLORS.lavender }}>
-        <Music2 size={31} color={COLORS.purple} />
+      <View className="h-[115px] items-center justify-center bg-app-primaryLight">
+        <Music2 size={31} color={studentColors.primary} />
 
-        <View className="absolute bottom-2.5 right-2.5 w-7 h-7 rounded-full items-center justify-center" style={{ backgroundColor: COLORS.white }}>
-          <Play size={12} color={COLORS.purple} fill={COLORS.purple} />
+        <View className="absolute bottom-2.5 right-2.5 h-7 w-7 items-center justify-center rounded-full bg-app-surface">
+          <Play size={12} color={studentColors.primary} fill={studentColors.primary} />
         </View>
 
         <TouchableOpacity
@@ -567,17 +557,18 @@ function MediaCard({
             onDismiss(item.id);
           }}
           className="absolute top-2.5 left-2.5 w-6 h-6 rounded-full items-center justify-center"
-          style={{ backgroundColor: "rgba(0,0,0,0.08)" }}
+          style={{ backgroundColor: commonColors.shadow }}
+          accessibilityLabel={`Dismiss ${item.title}`}
         >
-          <X size={12} color="#FFFFFF" />
+          <X size={12} color={commonColors.white} />
         </TouchableOpacity>
       </View>
 
       <View className="p-3.5">
-        <Text numberOfLines={1} className="text-[13px] font-extrabold mb-1.5" style={{ color: COLORS.text }}>
+        <Text numberOfLines={1} className="mb-1.5 text-body-sm font-extrabold text-app-textPrimary">
           {item.title}
         </Text>
-        <Text numberOfLines={2} className="text-[11px] leading-4" style={{ color: COLORS.secondaryText }}>
+        <Text numberOfLines={2} className="text-caption text-app-textSecondary">
           {item.description}
         </Text>
       </View>
@@ -594,23 +585,23 @@ function TipCard({ item, onPress }: { item: any; onPress: () => void }) {
     <View
       className="flex-row items-center rounded-[22px] p-3.5 mb-3 min-h-[92px]"
       style={{
-        backgroundColor: COLORS.white,
-        shadowColor: COLORS.peach,
+        backgroundColor: studentColors.surface,
+        shadowColor: studentColors.accent,
         shadowOpacity: 0.035,
         shadowRadius: 9,
         shadowOffset: { width: 0, height: 3 },
         elevation: 1,
       }}
     >
-      <View className="w-[50px] h-[50px] rounded-[15px] items-center justify-center mr-3.5" style={{ backgroundColor: COLORS.peachSoft }}>
-        <Wind size={21} color={COLORS.peach} />
+      <View className="mr-3.5 h-[50px] w-[50px] items-center justify-center rounded-[15px] bg-app-accentSoft">
+        <Wind size={21} color={studentColors.accent} />
       </View>
 
       <View className="flex-1">
-        <Text numberOfLines={1} className="text-[14px] font-extrabold" style={{ color: COLORS.text }}>
+        <Text numberOfLines={1} className="text-body font-extrabold text-app-textPrimary">
           {item.title}
         </Text>
-        <Text numberOfLines={2} className="text-[11.5px] leading-4 mt-1" style={{ color: COLORS.secondaryText }}>
+        <Text numberOfLines={2} className="mt-1 text-caption text-app-textSecondary">
           {item.description}
         </Text>
 
@@ -620,10 +611,10 @@ function TipCard({ item, onPress }: { item: any; onPress: () => void }) {
             onPress={onPress}
             className="flex-row items-center self-start mt-2"
           >
-            <Text className="text-[11.5px] font-bold mr-0.5" style={{ color: COLORS.peach }}>
+            <Text className="mr-0.5 text-caption font-bold text-app-accent">
               Open
             </Text>
-            <ChevronRight size={13} color={COLORS.peach} />
+            <ChevronRight size={13} color={studentColors.accent} />
           </TouchableOpacity>
         ) : null}
       </View>

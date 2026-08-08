@@ -97,40 +97,7 @@ import {
 import {
   detectFaceEmotion,
 } from "../services/detectFaceEmotion";
-
-/* -------------------------------------------------------------------------- */
-/*                                COLOR SYSTEM                                */
-/* -------------------------------------------------------------------------- */
-
-const colors = {
-  background: "#F9F5F1",
-
-  lavender: "#CCC5E8",
-  lavenderSoft: "#F2EEF9",
-  lavenderVerySoft: "#F7F4FB",
-
-  purple: "#6D5AB5",
-  purpleDark: "#574493",
-
-  peach: "#F47F63",
-  peachSoft: "#FDE8E2",
-
-  green: "#68A765",
-  greenSoft: "#EAF4E8",
-
-  text: "#1F1F2E",
-  secondaryText: "#8C8992",
-  lightText: "#AAA4AE",
-
-  white: "#FFFFFF",
-
-  border: "#ECE6E2",
-
-  warning: "#C99A45",
-
-  danger: "#C45B65",
-  dangerSoft: "#FBE8E9",
-};
+import { commonColors, moodColors, studentColors } from "@/src/theme";
 
 /* -------------------------------------------------------------------------- */
 /*                               STRESS LEVELS                                */
@@ -148,36 +115,36 @@ const STRESS_LABELS = [
   {
     max: 2,
     label: "Calm",
-    color: "#68A765",
-    bg: "#EAF4E8",
+    color: studentColors.success,
+    bg: studentColors.successSoft,
   },
 
   {
     max: 4,
     label: "Mild",
-    color: "#839C79",
-    bg: "#EEF4E9",
+    color: moodColors.stressMild,
+    bg: moodColors.stressMildSoft,
   },
 
   {
     max: 6,
     label: "Moderate",
-    color: "#C99A45",
-    bg: "#FBF2DD",
+    color: studentColors.warning,
+    bg: moodColors.stressModerateSoft,
   },
 
   {
     max: 8,
     label: "High",
-    color: "#F47F63",
-    bg: "#FDE8E2",
+    color: studentColors.accent,
+    bg: studentColors.accentSoft,
   },
 
   {
     max: 10,
     label: "Overwhelmed",
-    color: "#C45B65",
-    bg: "#FBE8E9",
+    color: studentColors.error,
+    bg: studentColors.errorSoft,
   },
 ];
 
@@ -205,7 +172,7 @@ function MoodCheckInHeader() {
           w-10
           h-10
           rounded-2xl
-          bg-[#F2EEF9]
+          bg-app-primarySoft
           items-center
           justify-center
           mr-3
@@ -214,16 +181,16 @@ function MoodCheckInHeader() {
         <Ionicons
           name="heart-outline"
           size={20}
-          color={colors.purple}
+          color={studentColors.primary}
         />
       </View>
 
       <View>
         <Text
           className="
-            text-[18px]
+            text-subtitle
             font-extrabold
-            text-[#1F1F2E]
+            text-app-textPrimary
           "
         >
           Mood Check-in
@@ -232,8 +199,8 @@ function MoodCheckInHeader() {
         <Text
           className="
             mt-0.5
-            text-[10.5px]
-            text-[#8C8992]
+            text-caption
+            text-app-textSecondary
           "
         >
           A moment to notice how you feel
@@ -408,9 +375,9 @@ const BreathingBubble = () => {
       className="
         items-center
         justify-center
-        bg-[#F2EEF9]
+        bg-app-primarySoft
         border
-        border-[#E3DAEF]
+        border-app-primaryLight
         rounded-[26px]
         py-7
         px-5
@@ -423,7 +390,7 @@ const BreathingBubble = () => {
         className="
           flex-row
           items-center
-          bg-white
+          bg-app-surface
           px-3
           py-1.5
           rounded-full
@@ -433,17 +400,17 @@ const BreathingBubble = () => {
         <Ionicons
           name="sparkles-outline"
           size={12}
-          color={colors.purple}
+          color={studentColors.primary}
         />
 
         <Text
           className="
             ml-1.5
-            text-[9px]
+            text-caption
             tracking-[1px]
             uppercase
             font-extrabold
-            text-[#6D5AB5]
+            text-app-primary
           "
         >
           Take a moment
@@ -473,7 +440,7 @@ const BreathingBubble = () => {
                 70,
 
               backgroundColor:
-                colors.lavender,
+                studentColors.primaryLight,
             },
 
             glowStyle,
@@ -490,7 +457,7 @@ const BreathingBubble = () => {
                 44,
 
               backgroundColor:
-                colors.purple,
+                studentColors.primary,
 
               alignItems:
                 "center",
@@ -505,7 +472,7 @@ const BreathingBubble = () => {
           <Ionicons
             name="leaf-outline"
             size={25}
-            color="#FFFFFF"
+            color={commonColors.white}
           />
         </Animated.View>
       </View>
@@ -513,9 +480,9 @@ const BreathingBubble = () => {
       <Text
         className="
           mt-4
-          text-[16px]
+          text-body-lg
           font-extrabold
-          text-[#1F1F2E]
+          text-app-textPrimary
         "
       >
         {phase}
@@ -525,10 +492,10 @@ const BreathingBubble = () => {
         className="
           max-w-[250px]
           mt-1.5
-          text-[11px]
+          text-caption
           leading-[16px]
           text-center
-          text-[#8C8992]
+          text-app-textSecondary
         "
       >
         Follow the circle while
@@ -555,7 +522,7 @@ function SectionTitle({
           w-9
           h-9
           rounded-xl
-          bg-[#F2EEF9]
+          bg-app-primarySoft
           items-center
           justify-center
           mr-3
@@ -564,16 +531,16 @@ function SectionTitle({
         <Ionicons
           name={icon}
           size={17}
-          color={colors.purple}
+          color={studentColors.primary}
         />
       </View>
 
       <View className="flex-1">
         <Text
           className="
-            text-[13px]
+            text-body-sm
             font-extrabold
-            text-[#1F1F2E]
+            text-app-textPrimary
           "
         >
           {title}
@@ -583,9 +550,9 @@ function SectionTitle({
           <Text
             className="
               mt-0.5
-              text-[10.5px]
+              text-caption
               leading-[15px]
-              text-[#8C8992]
+              text-app-textSecondary
             "
           >
             {subtitle}
@@ -1012,11 +979,11 @@ export default function MoodCheckInScreen() {
 
           headerStyle: {
             backgroundColor:
-              colors.background,
+              studentColors.background,
           },
 
           headerTintColor:
-            colors.purple,
+            studentColors.primary,
 
           headerTitleAlign:
             "left",
@@ -1035,7 +1002,7 @@ export default function MoodCheckInScreen() {
         ]}
         className="
           flex-1
-          bg-[#F9F5F1]
+          bg-app-background
         "
       >
         <KeyboardAvoidingView
@@ -1053,7 +1020,7 @@ export default function MoodCheckInScreen() {
           }
           className="
             flex-1
-            bg-[#F9F5F1]
+            bg-app-background
           "
         >
           <ScrollView
@@ -1062,7 +1029,7 @@ export default function MoodCheckInScreen() {
             }
             keyboardShouldPersistTaps="handled"
             contentContainerClassName="
-              px-[18px]
+              px-screen
               pt-4
               pb-10
             "
@@ -1076,14 +1043,14 @@ export default function MoodCheckInScreen() {
                 220
               )}
               className="
-                bg-[#F2EEF9]
+                bg-app-primarySoft
                 rounded-[26px]
                 px-5
                 py-5
                 mb-6
                 overflow-hidden
                 border
-                border-[#E4DDEF]
+                border-app-primaryLight
               "
             >
               {/* decoration */}
@@ -1097,7 +1064,7 @@ export default function MoodCheckInScreen() {
                   w-28
                   h-28
                   rounded-full
-                  bg-[#CCC5E8]/40
+                  bg-app-primaryLight/40
                 "
               />
 
@@ -1110,7 +1077,7 @@ export default function MoodCheckInScreen() {
                   w-20
                   h-20
                   rounded-full
-                  bg-white/40
+                  bg-app-surface/40
                 "
               />
 
@@ -1120,18 +1087,18 @@ export default function MoodCheckInScreen() {
                     name="sparkles-outline"
                     size={13}
                     color={
-                      colors.purple
+                      studentColors.primary
                     }
                   />
 
                   <Text
                     className="
                       ml-1.5
-                      text-[10px]
+                      text-caption
                       tracking-[1px]
                       font-extrabold
                       uppercase
-                      text-[#6D5AB5]
+                      text-app-primary
                     "
                   >
                     Your reflection
@@ -1140,10 +1107,10 @@ export default function MoodCheckInScreen() {
 
                 <Text
                   className="
-                    text-[22px]
+                    text-title
                     leading-7
                     font-extrabold
-                    text-[#1F1F2E]
+                    text-app-textPrimary
                   "
                 >
                   Check in with
@@ -1153,16 +1120,12 @@ export default function MoodCheckInScreen() {
                 <Text
                   className="
                     mt-1.5
-                    text-[11.5px]
+                    text-caption
                     leading-[17px]
-                    text-[#8C8992]
+                    text-app-textSecondary
                   "
                 >
-                  There are no
-                  right or wrong
-                  answers. Just
-                  notice what you're
-                  feeling right now.
+                  {"There are no right or wrong answers. Just notice what you're feeling right now."}
                 </Text>
               </View>
             </Animated.View>
@@ -1181,9 +1144,9 @@ export default function MoodCheckInScreen() {
               className="
                 flex-row
                 justify-between
-                bg-white
+                bg-app-surface
                 border
-                border-[#ECE6E2]
+                border-app-border
                 rounded-[24px]
                 px-3
                 py-4
@@ -1209,6 +1172,9 @@ export default function MoodCheckInScreen() {
                           mood.id
                         )
                       }
+                      accessibilityRole="button"
+                      accessibilityLabel={`Select ${mood.label} mood`}
+                      accessibilityState={{ selected: active }}
                       className="
                         items-center
                         flex-1
@@ -1226,7 +1192,7 @@ export default function MoodCheckInScreen() {
                           backgroundColor:
                             active
                               ? mood.bg
-                              : "#FAF8F6",
+                              : studentColors.background,
 
                           borderWidth:
                             active
@@ -1236,8 +1202,8 @@ export default function MoodCheckInScreen() {
                           borderColor:
                             active
                               ? mood.color ||
-                                colors.purple
-                              : colors.border,
+                                studentColors.primary
+                              : studentColors.border,
                         }}
                       >
                         <Image
@@ -1260,12 +1226,12 @@ export default function MoodCheckInScreen() {
                         }
                         className={`
                           mt-2
-                          text-[9.5px]
+                          text-caption
 
                           ${
                             active
-                              ? "font-extrabold text-[#1F1F2E]"
-                              : "font-medium text-[#8C8992]"
+                              ? "font-extrabold text-app-textPrimary"
+                              : "font-medium text-app-textSecondary"
                           }
                         `}
                       >
@@ -1285,7 +1251,7 @@ export default function MoodCheckInScreen() {
                           style={{
                             backgroundColor:
                               mood.color ||
-                              colors.purple,
+                              studentColors.primary,
                           }}
                         />
                       )}
@@ -1306,9 +1272,9 @@ export default function MoodCheckInScreen() {
                   py-3
                   mb-5
                   rounded-[18px]
-                  bg-[#F7F4FB]
+                  bg-app-surfaceMuted
                   border
-                  border-[#E8E1F0]
+                  border-app-primaryLight
                 "
               >
                 <Image
@@ -1325,8 +1291,8 @@ export default function MoodCheckInScreen() {
                 <View className="flex-1 ml-3">
                   <Text
                     className="
-                      text-[11px]
-                      text-[#8C8992]
+                      text-caption
+                      text-app-textSecondary
                     "
                   >
                     Current mood
@@ -1334,12 +1300,12 @@ export default function MoodCheckInScreen() {
 
                   <Text
                     className="
-                      text-[13px]
+                      text-body-sm
                       font-extrabold
-                      text-[#1F1F2E]
+                      text-app-textPrimary
                     "
                   >
-                    You're feeling{" "}
+                    {"You're feeling "}
                     {activeMood.label}
                   </Text>
                 </View>
@@ -1348,7 +1314,7 @@ export default function MoodCheckInScreen() {
                   name="checkmark-circle"
                   size={19}
                   color={
-                    colors.purple
+                    studentColors.primary
                   }
                 />
               </View>
@@ -1366,9 +1332,9 @@ export default function MoodCheckInScreen() {
 
             <View
               className="
-                bg-white
+                bg-app-surface
                 border
-                border-[#ECE6E2]
+                border-app-border
                 rounded-[26px]
                 p-5
                 mb-5
@@ -1380,8 +1346,8 @@ export default function MoodCheckInScreen() {
                 <View>
                   <Text
                     className="
-                      text-[12px]
-                      text-[#8C8992]
+                      text-caption
+                      text-app-textSecondary
                     "
                   >
                     Stress level
@@ -1407,9 +1373,9 @@ export default function MoodCheckInScreen() {
                       className="
                         ml-1
                         mb-1.5
-                        text-[13px]
+                        text-body-sm
                         font-semibold
-                        text-[#AAA4AE]
+                        text-app-textMuted
                       "
                     >
                       / 10
@@ -1430,7 +1396,7 @@ export default function MoodCheckInScreen() {
                 >
                   <Text
                     className="
-                      text-[11px]
+                      text-caption
                       font-extrabold
                     "
                     style={{
@@ -1464,7 +1430,7 @@ export default function MoodCheckInScreen() {
                   minimumTrackTintColor={
                     stressMeta.color
                   }
-                  maximumTrackTintColor="#ECE6E2"
+                  maximumTrackTintColor={studentColors.border}
                   thumbTintColor={
                     stressMeta.color
                   }
@@ -1473,6 +1439,8 @@ export default function MoodCheckInScreen() {
                       "100%",
                     height: 42,
                   }}
+                  accessibilityLabel="Stress level"
+                  accessibilityValue={{ min: 0, max: 10, now: stressLevel, text: stressMeta.label }}
                 />
               </View>
 
@@ -1485,7 +1453,7 @@ export default function MoodCheckInScreen() {
                       w-7
                       h-7
                       rounded-full
-                      bg-[#EAF4E8]
+                      bg-app-successSoft
                       items-center
                       justify-center
                       mr-1.5
@@ -1495,16 +1463,16 @@ export default function MoodCheckInScreen() {
                       name="leaf-outline"
                       size={13}
                       color={
-                        colors.green
+                        studentColors.success
                       }
                     />
                   </View>
 
                   <Text
                     className="
-                      text-[10px]
+                      text-caption
                       font-semibold
-                      text-[#8C8992]
+                      text-app-textSecondary
                     "
                   >
                     Calm
@@ -1515,9 +1483,9 @@ export default function MoodCheckInScreen() {
                   <Text
                     className="
                       mr-1.5
-                      text-[10px]
+                      text-caption
                       font-semibold
-                      text-[#8C8992]
+                      text-app-textSecondary
                     "
                   >
                     Overwhelmed
@@ -1528,7 +1496,7 @@ export default function MoodCheckInScreen() {
                       w-7
                       h-7
                       rounded-full
-                      bg-[#FBE8E9]
+                      bg-app-errorSoft
                       items-center
                       justify-center
                     "
@@ -1537,7 +1505,7 @@ export default function MoodCheckInScreen() {
                       name="thunderstorm-outline"
                       size={13}
                       color={
-                        colors.danger
+                        studentColors.error
                       }
                     />
                   </View>
@@ -1560,7 +1528,7 @@ export default function MoodCheckInScreen() {
               >
                 <Text
                   className="
-                    text-[10.5px]
+                    text-caption
                     leading-[15px]
                   "
                   style={{
@@ -1597,9 +1565,9 @@ export default function MoodCheckInScreen() {
 
             <View
               className="
-                bg-white
+                bg-app-surface
                 border
-                border-[#ECE6E2]
+                border-app-border
                 rounded-[24px]
                 p-4
                 mb-5
@@ -1611,15 +1579,15 @@ export default function MoodCheckInScreen() {
                   setNote
                 }
                 placeholder="What's been on your mind today?"
-                placeholderTextColor="#AAA4AE"
+                placeholderTextColor={studentColors.textMuted}
                 multiline
                 maxLength={500}
                 textAlignVertical="top"
                 className="
                   min-h-[115px]
-                  text-[13px]
+                  text-body-sm
                   leading-5
-                  text-[#1F1F2E]
+                  text-app-textPrimary
                 "
               />
 
@@ -1631,7 +1599,7 @@ export default function MoodCheckInScreen() {
                   pt-3
                   mt-2
                   border-t
-                  border-[#F0EAE6]
+                  border-app-borderSoft
                 "
               >
                 <View className="flex-row items-center">
@@ -1639,15 +1607,15 @@ export default function MoodCheckInScreen() {
                     name="lock-closed-outline"
                     size={12}
                     color={
-                      colors.secondaryText
+                      studentColors.textSecondary
                     }
                   />
 
                   <Text
                     className="
                       ml-1
-                      text-[9.5px]
-                      text-[#8C8992]
+                      text-caption
+                      text-app-textSecondary
                     "
                   >
                     Your reflection
@@ -1656,8 +1624,8 @@ export default function MoodCheckInScreen() {
 
                 <Text
                   className="
-                    text-[9.5px]
-                    text-[#AAA4AE]
+                    text-caption
+                    text-app-textMuted
                   "
                 >
                   {note.length}/500
@@ -1703,7 +1671,7 @@ export default function MoodCheckInScreen() {
                   name="information-circle-outline"
                   size={13}
                   color={
-                    colors.secondaryText
+                    studentColors.textSecondary
                   }
                 />
 
@@ -1711,9 +1679,9 @@ export default function MoodCheckInScreen() {
                   className="
                     flex-1
                     ml-1.5
-                    text-[9.5px]
+                    text-caption
                     leading-[14px]
-                    text-[#8C8992]
+                    text-app-textSecondary
                   "
                 >
                   Facial analysis is
@@ -1745,6 +1713,8 @@ export default function MoodCheckInScreen() {
               disabled={
                 loading
               }
+              accessibilityRole="button"
+              accessibilityState={{ disabled: loading, busy: loading }}
               activeOpacity={
                 0.85
               }
@@ -1757,30 +1727,30 @@ export default function MoodCheckInScreen() {
 
                 ${
                   loading
-                    ? "bg-[#AFA8B5]"
-                    : "bg-[#6D5AB5]"
+                    ? "bg-app-textMuted"
+                    : "bg-app-primary"
                 }
               `}
             >
               {loading ? (
                 <ActivityIndicator
-                  color="#FFFFFF"
+                  color={commonColors.white}
                   size="small"
                 />
               ) : (
                 <Ionicons
                   name="checkmark-circle-outline"
                   size={19}
-                  color="#FFFFFF"
+                  color={commonColors.white}
                 />
               )}
 
               <Text
                 className="
                   ml-2
-                  text-[14px]
+                  text-body
                   font-extrabold
-                  text-white
+                  text-app-surface
                 "
               >
                 {loading
@@ -1796,9 +1766,9 @@ export default function MoodCheckInScreen() {
                 className="
                   mt-2
                   text-center
-                  text-[9.5px]
+                  text-caption
                   leading-[14px]
-                  text-[#8C8992]
+                  text-app-textSecondary
                 "
               >
                 Your check-in will

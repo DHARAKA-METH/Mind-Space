@@ -48,37 +48,12 @@ import {
   MessageData,
 } from "../services/counselorService";
 
-/* -------------------------------------------------------------------------- */
-/*                             COUNSELOR PALETTE                              */
-/* -------------------------------------------------------------------------- */
-
-const COLORS = {
-  background: "#F5F7F6",
-
-  teal: "#4F7C78",
-  tealDark: "#3F6864",
-  tealSoft: "#E7F0EE",
-  tealVerySoft: "#F1F6F5",
-
-  amber: "#D79A5B",
-  amberSoft: "#FAEEE2",
-
-  blue: "#64869B",
-  blueSoft: "#E8F0F4",
-
-  text: "#25312F",
-  secondaryText: "#71807C",
-  lightText: "#9BA6A3",
-
-  white: "#FFFFFF",
-  border: "#E2E9E6",
-
-  danger: "#B85C62",
-  dangerSoft: "#F8E8E9",
-
-  success: "#56836C",
-  successSoft: "#E5F0E9",
-};
+import {
+  commonColors,
+  counselorColors,
+  spacing,
+  typography,
+} from "@/src/theme";
 
 /* -------------------------------------------------------------------------- */
 /*                            MESSAGE TIME                                    */
@@ -118,29 +93,29 @@ const getStressStyle = (
   if (stress >= 8) {
     return {
       color:
-        COLORS.danger,
+        counselorColors.error,
 
       bg:
-        COLORS.dangerSoft,
+        counselorColors.errorSoft,
     };
   }
 
   if (stress >= 5) {
     return {
       color:
-        COLORS.amber,
+        counselorColors.warning,
 
       bg:
-        COLORS.amberSoft,
+        counselorColors.warningSoft,
     };
   }
 
   return {
     color:
-      COLORS.teal,
+      counselorColors.primary,
 
     bg:
-      COLORS.tealSoft,
+      counselorColors.primarySoft,
   };
 };
 
@@ -197,13 +172,13 @@ const StudentCard =
               );
             }}
             className="
-              bg-white
+              bg-counselor-surface
               rounded-[22px]
               p-4
-              mx-[18px]
+              mx-screen
               my-1.5
               border
-              border-[#E2E9E6]
+              border-counselor-border
             "
           >
             <View className="flex-row items-start">
@@ -217,7 +192,7 @@ const StudentCard =
                     w-[52px]
                     h-[52px]
                     rounded-[18px]
-                    bg-[#FAEEE2]
+                    bg-counselor-accentSoft
                     items-center
                     justify-center
                     border-2
@@ -247,8 +222,8 @@ const StudentCard =
                     style={{
                       backgroundColor:
                         student.online
-                          ? COLORS.success
-                          : COLORS.lightText,
+                          ? counselorColors.success
+                          : counselorColors.textMuted,
                     }}
                   />
                 )}
@@ -266,9 +241,9 @@ const StudentCard =
                         1
                       }
                       className="
-                        text-[13.5px]
+                        text-body-sm
                         font-extrabold
-                        text-[#25312F]
+                        text-counselor-textPrimary
                       "
                     >
                       {
@@ -282,9 +257,9 @@ const StudentCard =
                       }
                       className="
                         mt-0.5
-                        text-[10.5px]
+                        text-caption
                         font-semibold
-                        text-[#4F7C78]
+                        text-counselor-primary
                       "
                     >
                       {
@@ -301,20 +276,20 @@ const StudentCard =
 
                       ${
                         student.online
-                          ? "bg-[#E5F0E9]"
-                          : "bg-[#EEF1F0]"
+                          ? "bg-counselor-successSoft"
+                          : "bg-counselor-surfaceMuted"
                       }
                     `}
                   >
                     <Text
                       className={`
-                        text-[8.5px]
+                        text-caption
                         font-bold
 
                         ${
                           student.online
-                            ? "text-[#56836C]"
-                            : "text-[#9BA6A3]"
+                            ? "text-counselor-success"
+                            : "text-counselor-textMuted"
                         }
                       `}
                     >
@@ -330,10 +305,10 @@ const StudentCard =
                     2
                   }
                   className="
-                    text-[11px]
-                    leading-[16px]
+                    text-caption
+                    
                     mt-2
-                    text-[#71807C]
+                    text-counselor-textSecondary
                   "
                 >
                   {student.lastMessage ||
@@ -358,7 +333,7 @@ const StudentCard =
                   >
                     <Text
                       className="
-                        text-[9px]
+                        text-caption
                         font-bold
                       "
                       style={{
@@ -379,13 +354,13 @@ const StudentCard =
                       px-2.5
                       py-1
                       rounded-full
-                      bg-[#F1F6F5]
+                      bg-counselor-surfaceMuted
                     "
                   >
                     <Text
                       className="
-                        text-[9px]
-                        text-[#71807C]
+                        text-caption
+                        text-counselor-textSecondary
                       "
                     >
                       {
@@ -401,14 +376,14 @@ const StudentCard =
                         px-2.5
                         py-1
                         rounded-full
-                        bg-[#F8E8E9]
+                        bg-counselor-errorSoft
                       "
                     >
                       <Text
                         className="
-                          text-[9px]
+                          text-caption
                           font-extrabold
-                          text-[#B85C62]
+                          text-counselor-error
                         "
                       >
                         {
@@ -431,7 +406,7 @@ const StudentCard =
                 mt-3
                 h-10
                 rounded-[14px]
-                bg-[#E7F0EE]
+                bg-counselor-primarySoft
                 flex-row
                 items-center
                 justify-center
@@ -441,16 +416,16 @@ const StudentCard =
                 name="chatbubble-outline"
                 size={14}
                 color={
-                  COLORS.teal
+                  counselorColors.primary
                 }
               />
 
               <Text
                 className="
                   ml-1.5
-                  text-[10.5px]
+                  text-caption
                   font-bold
-                  text-[#4F7C78]
+                  text-counselor-primary
                 "
               >
                 Open conversation
@@ -514,7 +489,7 @@ const ChatWallpaper = () => {
                   name="chatbubble-ellipses-outline"
                   size={14}
                   color={
-                    COLORS.teal
+                    counselorColors.primary
                   }
                   style={{
                     opacity:
@@ -601,7 +576,7 @@ const MessageBubble =
                 w-8
                 h-8
                 rounded-[12px]
-                bg-[#FAEEE2]
+                bg-counselor-accentSoft
                 items-center
                 justify-center
               "
@@ -634,20 +609,20 @@ const MessageBubble =
 
                 ${
                   fromCounselor
-                    ? "bg-[#4F7C78] border-[#4F7C78] rounded-[19px] rounded-br-[6px]"
-                    : "bg-white border-[#E2E9E6] rounded-[19px] rounded-bl-[6px]"
+                    ? "bg-counselor-primary border-counselor-primary rounded-[19px] rounded-br-[6px]"
+                    : "bg-counselor-surface border-counselor-border rounded-[19px] rounded-bl-[6px]"
                 }
               `}
             >
               <Text
                 className={`
-                  text-[13px]
-                  leading-[19px]
+                  text-body-sm
+                  
 
                   ${
                     fromCounselor
                       ? "text-white"
-                      : "text-[#25312F]"
+                      : "text-counselor-textPrimary"
                   }
                 `}
               >
@@ -659,8 +634,8 @@ const MessageBubble =
 
             <Text
               className="
-                text-[9px]
-                text-[#9BA6A3]
+                text-caption
+                text-counselor-textMuted
                 mt-1
               "
             >
@@ -814,7 +789,7 @@ const CounselorStudentChatRoom =
       <View
         className="
           flex-1
-          bg-[#F5F7F6]
+          bg-counselor-background
         "
       >
         {/* ============================================================ */}
@@ -823,9 +798,9 @@ const CounselorStudentChatRoom =
 
         <View
           className="
-            bg-white
+            bg-counselor-surface
             border-b
-            border-[#E2E9E6]
+            border-counselor-border
             px-4
             pb-3
           "
@@ -840,6 +815,8 @@ const CounselorStudentChatRoom =
               activeOpacity={
                 0.7
               }
+              accessibilityRole="button"
+              accessibilityLabel="Back to conversations"
               onPress={
                 onBack
               }
@@ -847,7 +824,7 @@ const CounselorStudentChatRoom =
                 w-10
                 h-10
                 rounded-[14px]
-                bg-[#F1F6F5]
+                bg-counselor-surfaceMuted
                 items-center
                 justify-center
                 mr-3
@@ -857,7 +834,7 @@ const CounselorStudentChatRoom =
                 name="chevron-back"
                 size={18}
                 color={
-                  COLORS.teal
+                  counselorColors.primary
                 }
               />
             </TouchableOpacity>
@@ -867,7 +844,7 @@ const CounselorStudentChatRoom =
                 w-10
                 h-10
                 rounded-[14px]
-                bg-[#FAEEE2]
+                bg-counselor-accentSoft
                 items-center
                 justify-center
               "
@@ -882,9 +859,9 @@ const CounselorStudentChatRoom =
             <View className="flex-1 ml-3">
               <Text
                 className="
-                  text-[13.5px]
+                  text-body-sm
                   font-extrabold
-                  text-[#25312F]
+                  text-counselor-textPrimary
                 "
               >
                 {
@@ -894,7 +871,7 @@ const CounselorStudentChatRoom =
 
               <Text
                 className="
-                  text-[9.5px]
+                  text-caption
                   font-semibold
                   mt-0.5
                 "
@@ -919,14 +896,14 @@ const CounselorStudentChatRoom =
                 px-2.5
                 py-1.5
                 rounded-full
-                bg-[#E7F0EE]
+                bg-counselor-primarySoft
               "
             >
               <Text
                 className="
-                  text-[8.5px]
+                  text-caption
                   font-bold
-                  text-[#4F7C78]
+                  text-counselor-primary
                 "
               >
                 Anonymous
@@ -983,7 +960,7 @@ const CounselorStudentChatRoom =
               keyboardShouldPersistTaps="handled"
               contentContainerStyle={{
                 paddingBottom:
-                  16,
+                  spacing.md,
               }}
               ListHeaderComponent={() => (
                 <>
@@ -1001,9 +978,9 @@ const CounselorStudentChatRoom =
                         items-center
                         p-3.5
                         rounded-[18px]
-                        bg-[#E7F0EE]
+                        bg-counselor-primarySoft
                         border
-                        border-[#D5E5E2]
+                        border-counselor-primarySoft
                         mb-3
                       "
                     >
@@ -1012,7 +989,7 @@ const CounselorStudentChatRoom =
                           w-9
                           h-9
                           rounded-[13px]
-                          bg-white
+                          bg-counselor-surface
                           items-center
                           justify-center
                           mr-3
@@ -1024,7 +1001,7 @@ const CounselorStudentChatRoom =
                             16
                           }
                           color={
-                            COLORS.teal
+                            counselorColors.primary
                           }
                         />
                       </View>
@@ -1032,9 +1009,9 @@ const CounselorStudentChatRoom =
                       <View className="flex-1">
                         <Text
                           className="
-                            text-[10px]
+                            text-caption
                             font-extrabold
-                            text-[#3F6864]
+                            text-counselor-primaryDark
                           "
                         >
                           IDENTITY
@@ -1043,10 +1020,10 @@ const CounselorStudentChatRoom =
 
                         <Text
                           className="
-                            text-[10px]
-                            leading-[14px]
+                            text-caption
+                            
                             mt-0.5
-                            text-[#71807C]
+                            text-counselor-textSecondary
                           "
                         >
                           This
@@ -1072,15 +1049,15 @@ const CounselorStudentChatRoom =
                       className="
                         flex-1
                         rounded-[16px]
-                        bg-[#E7F0EE]
+                        bg-counselor-primarySoft
                         p-3
                       "
                     >
                       <Text
                         className="
-                          text-[8.5px]
+                          text-caption
                           font-bold
-                          text-[#71807C]
+                          text-counselor-textSecondary
                           uppercase
                         "
                       >
@@ -1089,9 +1066,9 @@ const CounselorStudentChatRoom =
 
                       <Text
                         className="
-                          text-[11px]
+                          text-caption
                           font-extrabold
-                          text-[#4F7C78]
+                          text-counselor-primary
                           mt-0.5
                         "
                       >
@@ -1100,8 +1077,8 @@ const CounselorStudentChatRoom =
 
                       <Text
                         className="
-                          text-[8.5px]
-                          text-[#56836C]
+                          text-caption
+                          text-counselor-success
                           mt-0.5
                         "
                       >
@@ -1114,15 +1091,15 @@ const CounselorStudentChatRoom =
                       className="
                         flex-1
                         rounded-[16px]
-                        bg-[#FAEEE2]
+                        bg-counselor-accentSoft
                         p-3
                       "
                     >
                       <Text
                         className="
-                          text-[8.5px]
+                          text-caption
                           font-bold
-                          text-[#71807C]
+                          text-counselor-textSecondary
                           uppercase
                         "
                       >
@@ -1134,9 +1111,9 @@ const CounselorStudentChatRoom =
                           1
                         }
                         className="
-                          text-[11px]
+                          text-caption
                           font-extrabold
-                          text-[#B77C43]
+                          text-counselor-accent
                           mt-0.5
                         "
                       >
@@ -1147,8 +1124,8 @@ const CounselorStudentChatRoom =
 
                       <Text
                         className="
-                          text-[8.5px]
-                          text-[#B77C43]
+                          text-caption
+                          text-counselor-accent
                           mt-0.5
                         "
                       >
@@ -1173,7 +1150,7 @@ const CounselorStudentChatRoom =
                       w-14
                       h-14
                       rounded-[20px]
-                      bg-[#E7F0EE]
+                      bg-counselor-primarySoft
                       items-center
                       justify-center
                     "
@@ -1184,16 +1161,16 @@ const CounselorStudentChatRoom =
                         24
                       }
                       color={
-                        COLORS.teal
+                        counselorColors.primary
                       }
                     />
                   </View>
 
                   <Text
                     className="
-                      text-[12px]
+                      text-caption
                       font-semibold
-                      text-[#71807C]
+                      text-counselor-textSecondary
                       text-center
                       mt-3
                     "
@@ -1236,7 +1213,7 @@ const CounselorStudentChatRoom =
 
           <View
             className="
-              bg-[#F5F7F6]
+              bg-counselor-background
               px-3
               pt-2
             "
@@ -1252,15 +1229,15 @@ const CounselorStudentChatRoom =
               className="
                 flex-row
                 items-end
-                bg-white
+                bg-counselor-surface
                 border
-                border-[#E2E9E6]
+                border-counselor-border
                 rounded-[24px]
                 p-1.5
               "
               style={{
                 shadowColor:
-                  "#25312F",
+                  counselorColors.textPrimary,
 
                 shadowOpacity:
                   0.05,
@@ -1289,7 +1266,7 @@ const CounselorStudentChatRoom =
                 }
                 placeholder={`Message ${student.anonymousId}...`}
                 placeholderTextColor={
-                  COLORS.lightText
+                  counselorColors.textMuted
                 }
                 multiline
                 className="
@@ -1297,13 +1274,15 @@ const CounselorStudentChatRoom =
                   px-3
                   py-2.5
                   rounded-[18px]
-                  bg-[#F1F6F5]
-                  text-[13px]
-                  text-[#25312F]
+                  bg-counselor-surfaceMuted
+                  text-body-sm
+                  text-counselor-textPrimary
                 "
                 style={{
                   maxHeight:
                     100,
+                  lineHeight:
+                    typography.lineHeight.bodySmall,
                 }}
               />
 
@@ -1320,6 +1299,8 @@ const CounselorStudentChatRoom =
                   activeOpacity={
                     0.8
                   }
+                  accessibilityRole="button"
+                  accessibilityLabel="Send message"
                   onPress={
                     handleSend
                   }
@@ -1335,15 +1316,15 @@ const CounselorStudentChatRoom =
 
                     ${
                       text.trim()
-                        ? "bg-[#4F7C78]"
-                        : "bg-[#D6DDDB]"
+                        ? "bg-counselor-primary"
+                        : "bg-counselor-border"
                     }
                   `}
                 >
                   <Ionicons
                     name="arrow-up"
                     size={17}
-                    color="#FFFFFF"
+                    color={commonColors.white}
                   />
                 </TouchableOpacity>
               </Animated.View>
@@ -1555,7 +1536,7 @@ export default function ChatScreen({
     <View
       className="
         flex-1
-        bg-[#F5F7F6]
+        bg-counselor-background
       "
     >
       {/* ================================================================ */}
@@ -1564,7 +1545,7 @@ export default function ChatScreen({
 
       <View
         className="
-          px-[18px]
+          px-screen
           pt-3
           pb-4
         "
@@ -1575,6 +1556,8 @@ export default function ChatScreen({
               activeOpacity={
                 0.7
               }
+              accessibilityRole="button"
+              accessibilityLabel="Back to dashboard"
               onPress={
                 onBackToBoard
               }
@@ -1582,9 +1565,9 @@ export default function ChatScreen({
                 w-10
                 h-10
                 rounded-[14px]
-                bg-white
+                bg-counselor-surface
                 border
-                border-[#E2E9E6]
+                border-counselor-border
                 items-center
                 justify-center
                 mr-3
@@ -1594,7 +1577,7 @@ export default function ChatScreen({
                 name="chevron-back"
                 size={18}
                 color={
-                  COLORS.teal
+                  counselorColors.primary
                 }
               />
             </TouchableOpacity>
@@ -1605,7 +1588,7 @@ export default function ChatScreen({
               w-11
               h-11
               rounded-[16px]
-              bg-[#E7F0EE]
+              bg-counselor-primarySoft
               items-center
               justify-center
             "
@@ -1614,7 +1597,7 @@ export default function ChatScreen({
               name="chatbubbles-outline"
               size={20}
               color={
-                COLORS.teal
+                counselorColors.primary
               }
             />
           </View>
@@ -1622,9 +1605,9 @@ export default function ChatScreen({
           <View className="ml-3 flex-1">
             <Text
               className="
-                text-[15px]
+                text-body
                 font-extrabold
-                text-[#25312F]
+                text-counselor-textPrimary
               "
             >
               Student
@@ -1633,8 +1616,8 @@ export default function ChatScreen({
 
             <Text
               className="
-                text-[10px]
-                text-[#71807C]
+                text-caption
+                text-counselor-textSecondary
                 mt-0.5
               "
             >
@@ -1655,7 +1638,7 @@ export default function ChatScreen({
               flex-1
               flex-row
               items-center
-              bg-[#E5F0E9]
+              bg-counselor-successSoft
               rounded-[15px]
               px-3
               py-2.5
@@ -1666,16 +1649,16 @@ export default function ChatScreen({
                 w-2
                 h-2
                 rounded-full
-                bg-[#56836C]
+                bg-counselor-success
                 mr-2
               "
             />
 
             <Text
               className="
-                text-[10px]
+                text-caption
                 font-semibold
-                text-[#56836C]
+                text-counselor-success
               "
             >
               {
@@ -1690,7 +1673,7 @@ export default function ChatScreen({
               flex-1
               flex-row
               items-center
-              bg-[#FAEEE2]
+              bg-counselor-accentSoft
               rounded-[15px]
               px-3
               py-2.5
@@ -1700,16 +1683,16 @@ export default function ChatScreen({
               name="mail-unread-outline"
               size={13}
               color={
-                COLORS.amber
+                counselorColors.accent
               }
             />
 
             <Text
               className="
                 ml-1.5
-                text-[10px]
+                text-caption
                 font-semibold
-                text-[#B77C43]
+                text-counselor-accent
               "
             >
               {
@@ -1729,9 +1712,9 @@ export default function ChatScreen({
             h-12
             flex-row
             items-center
-            bg-white
+            bg-counselor-surface
             border
-            border-[#E2E9E6]
+            border-counselor-border
             rounded-[17px]
             px-4
             mt-3
@@ -1741,7 +1724,7 @@ export default function ChatScreen({
             name="search-outline"
             size={16}
             color={
-              COLORS.lightText
+              counselorColors.textMuted
             }
           />
 
@@ -1754,20 +1737,22 @@ export default function ChatScreen({
             }
             placeholder="Search student or concern"
             placeholderTextColor={
-              COLORS.lightText
+              counselorColors.textMuted
             }
             className="
               flex-1
               ml-2
               p-0
-              text-[12px]
-              text-[#25312F]
+              text-caption
+              text-counselor-textPrimary
             "
           />
 
           {searchQuery !==
             "" && (
             <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Clear search"
               onPress={() =>
                 setSearchQuery(
                   ""
@@ -1778,7 +1763,7 @@ export default function ChatScreen({
                 name="close-circle"
                 size={16}
                 color={
-                  COLORS.lightText
+                  counselorColors.textMuted
                 }
               />
             </TouchableOpacity>
@@ -1806,7 +1791,7 @@ export default function ChatScreen({
               w-16
               h-16
               rounded-[22px]
-              bg-[#E7F0EE]
+              bg-counselor-primarySoft
               items-center
               justify-center
             "
@@ -1815,16 +1800,16 @@ export default function ChatScreen({
               name="chatbubbles-outline"
               size={27}
               color={
-                COLORS.teal
+                counselorColors.primary
               }
             />
           </View>
 
           <Text
             className="
-              text-[13px]
+              text-body-sm
               font-bold
-              text-[#25312F]
+              text-counselor-textPrimary
               mt-3
             "
           >
@@ -1835,9 +1820,9 @@ export default function ChatScreen({
 
           <Text
             className="
-              text-[10.5px]
-              leading-[15px]
-              text-[#71807C]
+              text-caption
+              
+              text-counselor-textSecondary
               text-center
               mt-1
               max-w-[260px]

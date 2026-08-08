@@ -1,27 +1,40 @@
+const tokens = require("./src/theme/tokens.json");
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    "./src/app/**/*.{js,jsx,ts,tsx}",
-    "./src/features/**/*.{js,jsx,ts,tsx}",
-    "./src/shared/**/*.{js,jsx,ts,tsx}",
-  ],
+  content: ["./src/**/*.{js,jsx,ts,tsx}"],
   presets: [require("nativewind/preset")],
   theme: {
     extend: {
       colors: {
-        primary: "#C8E86A",
-        lavender: "#E8D5F5",
-        peach: "#FFD4B8",
-        skyBlue: "#C2E0FF",
-        softRed: "#FFCDD2",
-        yellow: "#FFF0B3",
-        dark: "#222222",
-        background: "#F9FAF5",
+        app: tokens.colors.student,
+        calm: tokens.colors.calm,
+        counselor: tokens.colors.counselor,
+        mood: tokens.colors.mood,
+        selected: tokens.colors.common.controlSelected,
       },
       fontFamily: {
-        poppins: ["Poppins_400Regular"],
-        poppinsBold: ["Poppins_600SemiBold"],
-        caveat: ["CaveatBrush_400Regular"],
+        sans: [tokens.typography.fontFamily.regular],
+        regular: [tokens.typography.fontFamily.regular],
+        semibold: [tokens.typography.fontFamily.semiBold],
+        display: [tokens.typography.fontFamily.display],
+      },
+      fontSize: {
+        caption: [tokens.typography.fontSize.caption, { lineHeight: `${tokens.typography.lineHeight.caption}px` }],
+        "body-sm": [tokens.typography.fontSize.bodySmall, { lineHeight: `${tokens.typography.lineHeight.bodySmall}px` }],
+        body: [tokens.typography.fontSize.body, { lineHeight: `${tokens.typography.lineHeight.body}px` }],
+        "body-lg": [tokens.typography.fontSize.bodyLarge, { lineHeight: `${tokens.typography.lineHeight.bodyLarge}px` }],
+        subtitle: [tokens.typography.fontSize.subtitle, { lineHeight: `${tokens.typography.lineHeight.subtitle}px` }],
+        title: [tokens.typography.fontSize.title, { lineHeight: `${tokens.typography.lineHeight.title}px` }],
+        heading: [tokens.typography.fontSize.heading, { lineHeight: `${tokens.typography.lineHeight.heading}px` }],
+        display: [tokens.typography.fontSize.display, { lineHeight: `${tokens.typography.lineHeight.display}px` }],
+      },
+      spacing: {
+        screen: tokens.spacing.screen,
+      },
+      borderRadius: {
+        card: tokens.radii.xl,
+        panel: tokens.radii.xxl,
       },
     },
   },

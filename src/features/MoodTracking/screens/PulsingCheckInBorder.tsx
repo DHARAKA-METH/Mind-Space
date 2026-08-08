@@ -10,18 +10,17 @@ import Animated, {
   interpolate,
   Easing,
 } from "react-native-reanimated";
+import { moodColors } from "@/src/theme";
 
 const BUTTON_SIZE = 92;
 const BUTTON_RADIUS = 46;
 
-// Fallback palette if a mood doesn't carry its own `color` field.
-// Swap these for your actual mood.config colors if they differ.
 const MOOD_COLORS: Record<string, string> = {
-  Awful: "#B5555C",
-  Bad: "#C97B4A",
-  Meh: "#B8A78C",
-  Good: "#7C9885",
-  Great: "#4A7856",
+  Awful: moodColors.awful,
+  Bad: moodColors.bad,
+  Meh: moodColors.neutral,
+  Good: moodColors.good,
+  Great: moodColors.great,
 };
 
 function hexToRgba(hex: string, alpha: number): string {
@@ -56,7 +55,7 @@ export const PulsingMoodButton: React.FC<PulsingMoodButtonProps> = ({
   const reduceMotion = useReducedMotion();
   const shouldAnimate = active && !reduceMotion;
 
-  const color = colorOverride ?? (moodId ? MOOD_COLORS[moodId] : undefined) ?? "#7C9885";
+  const color = colorOverride ?? (moodId ? MOOD_COLORS[moodId] : undefined) ?? moodColors.good;
 
   const glowColor = useMemo(() => hexToRgba(color, 0.35), [color]);
   const outerGlow = useMemo(() => hexToRgba(color, 0.18), [color]);

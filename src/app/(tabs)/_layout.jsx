@@ -55,8 +55,8 @@ export default function TabLayout() {
   }
 
   return (
-    <View style={{ flex: 1 }}>
-      <View style={{ flex: 1 }}>{renderScreen()}</View>
+    <View className="flex-1 bg-app-background">
+      <View className="flex-1">{renderScreen()}</View>
       <Footer activeTab={activeTab} setActiveTab={setActiveTab} />
     </View>
   );

@@ -52,38 +52,12 @@ import {
   findConversationByStudent,
 } from "./services/counselorService";
 
-/* -------------------------------------------------------------------------- */
-/*                             COUNSELOR PALETTE                              */
-/* -------------------------------------------------------------------------- */
-
-const COLORS = {
-  background: "#F5F7F6",
-
-  teal: "#4F7C78",
-  tealDark: "#3F6864",
-
-  tealSoft: "#E7F0EE",
-  tealVerySoft: "#F1F6F5",
-
-  amber: "#D79A5B",
-  amberSoft: "#FAEEE2",
-
-  blue: "#64869B",
-  blueSoft: "#E8F0F4",
-
-  text: "#25312F",
-  secondaryText: "#71807C",
-  lightText: "#9BA6A3",
-
-  white: "#FFFFFF",
-  border: "#E2E9E6",
-
-  danger: "#B85C62",
-  dangerSoft: "#F8E8E9",
-
-  success: "#56836C",
-  successSoft: "#E5F0E9",
-};
+import {
+  commonColors,
+  counselorColors,
+  spacing,
+  typography,
+} from "@/src/theme";
 
 /* -------------------------------------------------------------------------- */
 /*                               SCREEN TYPES                                 */
@@ -115,28 +89,28 @@ const STATUS_COLORS: Record<
   }
 > = {
   confirmed: {
-    color: COLORS.success,
-    bg: COLORS.successSoft,
+    color: counselorColors.success,
+    bg: counselorColors.successSoft,
   },
 
   pending: {
-    color: COLORS.amber,
-    bg: COLORS.amberSoft,
+    color: counselorColors.warning,
+    bg: counselorColors.warningSoft,
   },
 
   cancelled: {
-    color: COLORS.danger,
-    bg: COLORS.dangerSoft,
+    color: counselorColors.error,
+    bg: counselorColors.errorSoft,
   },
 
   completed: {
-    color: COLORS.blue,
-    bg: COLORS.blueSoft,
+    color: counselorColors.info,
+    bg: counselorColors.infoSoft,
   },
 
   missed: {
-    color: COLORS.secondaryText,
-    bg: "#EEF1F0",
+    color: counselorColors.textSecondary,
+    bg: counselorColors.surfaceMuted,
   },
 };
 
@@ -182,9 +156,9 @@ const HeaderActions = ({
           w-10
           h-10
           rounded-[14px]
-          bg-white
+          bg-counselor-surface
           border
-          border-[#E2E9E6]
+          border-counselor-border
           items-center
           justify-center
           mr-2
@@ -193,7 +167,7 @@ const HeaderActions = ({
         <Ionicons
           name="notifications-outline"
           size={19}
-          color={COLORS.teal}
+          color={counselorColors.primary}
         />
 
         {notificationCount > 0 && (
@@ -206,16 +180,16 @@ const HeaderActions = ({
               h-[17px]
               px-1
               rounded-full
-              bg-[#B85C62]
+              bg-counselor-error
               border-2
-              border-[#F5F7F6]
+              border-counselor-background
               items-center
               justify-center
             "
           >
             <Text
               className="
-                text-[7.5px]
+                text-caption
                 font-extrabold
                 text-white
               "
@@ -247,9 +221,9 @@ const HeaderActions = ({
           w-10
           h-10
           rounded-[14px]
-          bg-[#E7F0EE]
+          bg-counselor-primarySoft
           border
-          border-[#D6E5E2]
+          border-counselor-primarySoft
           items-center
           justify-center
         "
@@ -257,7 +231,7 @@ const HeaderActions = ({
         <Ionicons
           name="person-outline"
           size={19}
-          color={COLORS.tealDark}
+          color={counselorColors.primaryDark}
         />
       </TouchableOpacity>
     </View>
@@ -315,14 +289,14 @@ const ProfilePopup = ({
             top-[76px]
             right-4
             w-[270px]
-            bg-white
+            bg-counselor-surface
             rounded-[24px]
             border
-            border-[#E2E9E6]
+            border-counselor-border
             overflow-hidden
           "
           style={{
-            shadowColor: "#25312F",
+            shadowColor: counselorColors.textPrimary,
 
             shadowOpacity: 0.12,
 
@@ -343,9 +317,9 @@ const ProfilePopup = ({
           <View
             className="
               p-4
-              bg-[#F1F6F5]
+              bg-counselor-surfaceMuted
               border-b
-              border-[#E2E9E6]
+              border-counselor-border
             "
           >
             <View className="flex-row items-center">
@@ -354,14 +328,14 @@ const ProfilePopup = ({
                   w-12
                   h-12
                   rounded-[17px]
-                  bg-[#4F7C78]
+                  bg-counselor-primary
                   items-center
                   justify-center
                 "
               >
                 <Text
                   className="
-                    text-[18px]
+                    text-subtitle
                     font-extrabold
                     text-white
                   "
@@ -374,9 +348,9 @@ const ProfilePopup = ({
                 <Text
                   numberOfLines={1}
                   className="
-                    text-[13px]
+                    text-body-sm
                     font-extrabold
-                    text-[#25312F]
+                    text-counselor-textPrimary
                   "
                 >
                   {counselorName ||
@@ -386,8 +360,8 @@ const ProfilePopup = ({
                 <Text
                   numberOfLines={1}
                   className="
-                    text-[9.5px]
-                    text-[#71807C]
+                    text-caption
+                    text-counselor-textSecondary
                     mt-0.5
                   "
                 >
@@ -402,14 +376,14 @@ const ProfilePopup = ({
                     px-2
                     py-1
                     rounded-full
-                    bg-[#E7F0EE]
+                    bg-counselor-primarySoft
                   "
                 >
                   <Text
                     className="
-                      text-[8px]
+                      text-caption
                       font-bold
-                      text-[#4F7C78]
+                      text-counselor-primary
                     "
                   >
                     COUNSELOR
@@ -440,7 +414,7 @@ const ProfilePopup = ({
                   w-9
                   h-9
                   rounded-[13px]
-                  bg-[#F8E8E9]
+                  bg-counselor-errorSoft
                   items-center
                   justify-center
                 "
@@ -448,16 +422,16 @@ const ProfilePopup = ({
                 <Ionicons
                   name="log-out-outline"
                   size={18}
-                  color={COLORS.danger}
+                  color={counselorColors.error}
                 />
               </View>
 
               <View className="flex-1 ml-3">
                 <Text
                   className="
-                    text-[12px]
+                    text-caption
                     font-bold
-                    text-[#B85C62]
+                    text-counselor-error
                   "
                 >
                   Log out
@@ -465,8 +439,8 @@ const ProfilePopup = ({
 
                 <Text
                   className="
-                    text-[9px]
-                    text-[#9BA6A3]
+                    text-caption
+                    text-counselor-textMuted
                     mt-0.5
                   "
                 >
@@ -478,7 +452,7 @@ const ProfilePopup = ({
               <Ionicons
                 name="chevron-forward"
                 size={15}
-                color={COLORS.lightText}
+                color={counselorColors.textMuted}
               />
             </TouchableOpacity>
           </View>
@@ -528,14 +502,14 @@ const NotificationPopup = ({
             top-[76px]
             right-[58px]
             w-[275px]
-            bg-white
+            bg-counselor-surface
             rounded-[24px]
             border
-            border-[#E2E9E6]
+            border-counselor-border
             overflow-hidden
           "
           style={{
-            shadowColor: "#25312F",
+            shadowColor: counselorColors.textPrimary,
 
             shadowOpacity: 0.12,
 
@@ -558,7 +532,7 @@ const NotificationPopup = ({
               justify-between
               p-4
               border-b
-              border-[#E2E9E6]
+              border-counselor-border
             "
           >
             <View className="flex-row items-center">
@@ -567,7 +541,7 @@ const NotificationPopup = ({
                   w-9
                   h-9
                   rounded-[13px]
-                  bg-[#E7F0EE]
+                  bg-counselor-primarySoft
                   items-center
                   justify-center
                   mr-2.5
@@ -576,16 +550,16 @@ const NotificationPopup = ({
                 <Ionicons
                   name="notifications-outline"
                   size={17}
-                  color={COLORS.teal}
+                  color={counselorColors.primary}
                 />
               </View>
 
               <View>
                 <Text
                   className="
-                    text-[13px]
+                    text-body-sm
                     font-extrabold
-                    text-[#25312F]
+                    text-counselor-textPrimary
                   "
                 >
                   Notifications
@@ -593,8 +567,8 @@ const NotificationPopup = ({
 
                 <Text
                   className="
-                    text-[9px]
-                    text-[#71807C]
+                    text-caption
+                    text-counselor-textSecondary
                   "
                 >
                   Counselor attention
@@ -605,11 +579,13 @@ const NotificationPopup = ({
 
             <TouchableOpacity
               onPress={onClose}
+              accessibilityRole="button"
+              accessibilityLabel="Close notifications"
               className="
                 w-8
                 h-8
                 rounded-full
-                bg-[#F1F6F5]
+                bg-counselor-surfaceMuted
                 items-center
                 justify-center
               "
@@ -617,7 +593,7 @@ const NotificationPopup = ({
               <Ionicons
                 name="close"
                 size={15}
-                color={COLORS.secondaryText}
+                color={counselorColors.textSecondary}
               />
             </TouchableOpacity>
           </View>
@@ -633,9 +609,9 @@ const NotificationPopup = ({
                     items-center
                     p-3.5
                     rounded-[18px]
-                    bg-[#F8E8E9]
+                    bg-counselor-errorSoft
                     border
-                    border-[#F0D0D3]
+                    border-counselor-errorSoft
                   "
                 >
                   <View
@@ -643,7 +619,7 @@ const NotificationPopup = ({
                       w-10
                       h-10
                       rounded-[14px]
-                      bg-white
+                      bg-counselor-surface
                       items-center
                       justify-center
                     "
@@ -651,16 +627,16 @@ const NotificationPopup = ({
                     <Ionicons
                       name="warning-outline"
                       size={18}
-                      color={COLORS.danger}
+                      color={counselorColors.error}
                     />
                   </View>
 
                   <View className="flex-1 ml-3">
                     <Text
                       className="
-                        text-[11px]
+                        text-caption
                         font-extrabold
-                        text-[#B85C62]
+                        text-counselor-error
                       "
                     >
                       {count} stress{" "}
@@ -671,9 +647,9 @@ const NotificationPopup = ({
 
                     <Text
                       className="
-                        text-[9.5px]
-                        leading-[14px]
-                        text-[#8E6568]
+                        text-caption
+                        
+                        text-counselor-error
                         mt-0.5
                       "
                     >
@@ -690,7 +666,7 @@ const NotificationPopup = ({
                     h-11
                     mt-3
                     rounded-[15px]
-                    bg-[#4F7C78]
+                    bg-counselor-primary
                     flex-row
                     items-center
                     justify-center
@@ -698,7 +674,7 @@ const NotificationPopup = ({
                 >
                   <Text
                     className="
-                      text-[11px]
+                      text-caption
                       font-bold
                       text-white
                     "
@@ -709,7 +685,7 @@ const NotificationPopup = ({
                   <Ionicons
                     name="chevron-forward"
                     size={14}
-                    color="#FFFFFF"
+                    color={commonColors.white}
                     style={{
                       marginLeft: 4,
                     }}
@@ -723,7 +699,7 @@ const NotificationPopup = ({
                     w-12
                     h-12
                     rounded-[17px]
-                    bg-[#E5F0E9]
+                    bg-counselor-successSoft
                     items-center
                     justify-center
                     mb-3
@@ -732,24 +708,24 @@ const NotificationPopup = ({
                   <Ionicons
                     name="checkmark-circle-outline"
                     size={22}
-                    color={COLORS.success}
+                    color={counselorColors.success}
                   />
                 </View>
 
                 <Text
                   className="
-                    text-[12px]
+                    text-caption
                     font-bold
-                    text-[#25312F]
+                    text-counselor-textPrimary
                   "
                 >
-                  You're all caught up
+                  You&apos;re all caught up
                 </Text>
 
                 <Text
                   className="
-                    text-[9.5px]
-                    text-[#71807C]
+                    text-caption
+                    text-counselor-textSecondary
                     text-center
                     mt-1
                   "
@@ -788,7 +764,7 @@ const StatCard = ({
         rounded-[24px]
         p-4
         border
-        border-[#E2E9E6]
+        border-counselor-border
       "
       style={{
         backgroundColor: bg,
@@ -800,7 +776,7 @@ const StatCard = ({
             w-9
             h-9
             rounded-[13px]
-            bg-white
+            bg-counselor-surface
             items-center
             justify-center
           "
@@ -821,7 +797,7 @@ const StatCard = ({
 
       <Text
         className="
-          text-[30px]
+          text-heading
           font-extrabold
           mt-3
         "
@@ -834,14 +810,15 @@ const StatCard = ({
 
       <Text
         className="
-          text-[10px]
+          text-caption
           font-bold
-          tracking-[0.7px]
           uppercase
           mt-1
         "
         style={{
           color,
+          letterSpacing:
+            typography.letterSpacing.label,
         }}
       >
         {label}
@@ -877,7 +854,7 @@ const StatusBadge = ({
     >
       <Text
         className="
-          text-[9px]
+          text-caption
           font-bold
           capitalize
         "
@@ -923,8 +900,8 @@ const StressAlertRow = ({
 
           ${
             isHigh
-              ? "bg-[#F8E8E9] border-[#F0D0D3]"
-              : "bg-white border-[#E2E9E6]"
+              ? "bg-counselor-errorSoft border-counselor-errorSoft"
+              : "bg-counselor-surface border-counselor-border"
           }
         `}
       >
@@ -938,8 +915,8 @@ const StressAlertRow = ({
 
             ${
               isHigh
-                ? "bg-white"
-                : "bg-[#FAEEE2]"
+                ? "bg-counselor-surface"
+                : "bg-counselor-accentSoft"
             }
           `}
         >
@@ -954,13 +931,13 @@ const StressAlertRow = ({
               numberOfLines={1}
               className={`
                 flex-1
-                text-[13px]
+                text-body-sm
                 font-extrabold
 
                 ${
                   isHigh
-                    ? "text-[#B85C62]"
-                    : "text-[#25312F]"
+                    ? "text-counselor-error"
+                    : "text-counselor-textPrimary"
                 }
               `}
             >
@@ -970,7 +947,7 @@ const StressAlertRow = ({
             {isHigh && (
               <View
                 className="
-                  bg-white
+                  bg-counselor-surface
                   px-2
                   py-1
                   rounded-full
@@ -978,9 +955,9 @@ const StressAlertRow = ({
               >
                 <Text
                   className="
-                    text-[8.5px]
+                    text-caption
                     font-extrabold
-                    text-[#B85C62]
+                    text-counselor-error
                   "
                 >
                   HIGH
@@ -992,10 +969,10 @@ const StressAlertRow = ({
           <Text
             numberOfLines={2}
             className="
-              text-[11px]
+              text-caption
               leading-4
               mt-1
-              text-[#71807C]
+              text-counselor-textSecondary
             "
           >
             {alert.detail}
@@ -1005,7 +982,7 @@ const StressAlertRow = ({
         <Ionicons
           name="chevron-forward"
           size={16}
-          color={COLORS.lightText}
+          color={counselorColors.textMuted}
         />
       </TouchableOpacity>
     </Animated.View>
@@ -1030,9 +1007,9 @@ const AppointmentRow = ({
         className="
           flex-row
           items-center
-          bg-white
+          bg-counselor-surface
           border
-          border-[#E2E9E6]
+          border-counselor-border
           rounded-[20px]
           p-3.5
           mb-2.5
@@ -1043,7 +1020,7 @@ const AppointmentRow = ({
             w-11
             h-11
             rounded-[15px]
-            bg-[#FAEEE2]
+            bg-counselor-accentSoft
             items-center
             justify-center
           "
@@ -1051,7 +1028,7 @@ const AppointmentRow = ({
           <Ionicons
             name="time-outline"
             size={19}
-            color={COLORS.amber}
+            color={counselorColors.accent}
           />
         </View>
 
@@ -1059,9 +1036,9 @@ const AppointmentRow = ({
           <View className="flex-row items-center flex-wrap">
             <Text
               className="
-                text-[13px]
+                text-body-sm
                 font-extrabold
-                text-[#25312F]
+                text-counselor-textPrimary
                 mr-2
               "
             >
@@ -1076,9 +1053,9 @@ const AppointmentRow = ({
           <Text
             numberOfLines={1}
             className="
-              text-[11.5px]
+              text-caption
               font-semibold
-              text-[#25312F]
+              text-counselor-textPrimary
               mt-1
             "
           >
@@ -1094,15 +1071,15 @@ const AppointmentRow = ({
               }
               size={12}
               color={
-                COLORS.secondaryText
+                counselorColors.textSecondary
               }
             />
 
             <Text
               className="
                 ml-1
-                text-[10px]
-                text-[#71807C]
+                text-caption
+                text-counselor-textSecondary
               "
             >
               {appt.type}
@@ -1113,7 +1090,7 @@ const AppointmentRow = ({
         <Ionicons
           name="chevron-forward"
           size={16}
-          color={COLORS.lightText}
+          color={counselorColors.textMuted}
         />
       </View>
     </Animated.View>
@@ -1274,7 +1251,7 @@ const CounselorBoard = ({
       <View
         className="
           flex-1
-          bg-[#F5F7F6]
+          bg-counselor-background
           items-center
           justify-center
         "
@@ -1284,7 +1261,7 @@ const CounselorBoard = ({
             w-16
             h-16
             rounded-[22px]
-            bg-[#E7F0EE]
+            bg-counselor-primarySoft
             items-center
             justify-center
             mb-4
@@ -1292,16 +1269,16 @@ const CounselorBoard = ({
         >
           <ActivityIndicator
             color={
-              COLORS.teal
+              counselorColors.primary
             }
           />
         </View>
 
         <Text
           className="
-            text-[13px]
+            text-body-sm
             font-semibold
-            text-[#71807C]
+            text-counselor-textSecondary
           "
         >
           Preparing your
@@ -1323,7 +1300,7 @@ const CounselorBoard = ({
     <View
       className="
         flex-1
-        bg-[#F5F7F6]
+        bg-counselor-background
       "
     >
       <ScrollView
@@ -1332,10 +1309,10 @@ const CounselorBoard = ({
         }
         contentContainerStyle={{
           paddingHorizontal:
-            18,
+            spacing.screen,
 
           paddingTop:
-            16,
+            spacing.md,
 
           paddingBottom:
             110,
@@ -1350,9 +1327,9 @@ const CounselorBoard = ({
             250
           )}
           className="
-            bg-[#E7F0EE]
+            bg-counselor-primarySoft
             border
-            border-[#D8E5E2]
+            border-counselor-primarySoft
             rounded-[26px]
             p-5
             mb-5
@@ -1368,7 +1345,7 @@ const CounselorBoard = ({
               w-28
               h-28
               rounded-full
-              bg-white/30
+              bg-counselor-surface/30
             "
           />
 
@@ -1377,7 +1354,7 @@ const CounselorBoard = ({
               w-10
               h-10
               rounded-[14px]
-              bg-white
+              bg-counselor-surface
               items-center
               justify-center
               mb-3
@@ -1386,28 +1363,31 @@ const CounselorBoard = ({
             <Ionicons
               name="heart-outline"
               size={19}
-              color={COLORS.teal}
+              color={counselorColors.primary}
             />
           </View>
 
           <Text
+            style={{
+              letterSpacing:
+                typography.letterSpacing.label,
+            }}
             className="
-              text-[10px]
+              text-caption
               font-bold
-              tracking-[0.8px]
               uppercase
-              text-[#4F7C78]
+              text-counselor-primary
             "
           >
-            Today's overview
+            Today&apos;s overview
           </Text>
 
           <Text
             className="
-              text-[21px]
+              text-title
               leading-7
               font-extrabold
-              text-[#25312F]
+              text-counselor-textPrimary
               mt-1
             "
           >
@@ -1417,13 +1397,13 @@ const CounselorBoard = ({
 
           <Text
             className="
-              text-[11.5px]
-              leading-[17px]
-              text-[#71807C]
+              text-caption
+              
+              text-counselor-textSecondary
               mt-1
             "
           >
-            Here's what may need
+            Here&apos;s what may need
             your attention today.
           </Text>
         </Animated.View>
@@ -1441,10 +1421,10 @@ const CounselorBoard = ({
               }
               icon="chatbubbles-outline"
               color={
-                COLORS.teal
+                counselorColors.primary
               }
               bg={
-                COLORS.tealSoft
+                counselorColors.primarySoft
               }
               delay={50}
             />
@@ -1458,10 +1438,10 @@ const CounselorBoard = ({
               }
               icon="calendar-outline"
               color={
-                COLORS.amber
+                counselorColors.accent
               }
               bg={
-                COLORS.amberSoft
+                counselorColors.accentSoft
               }
               delay={100}
             />
@@ -1479,7 +1459,7 @@ const CounselorBoard = ({
                 w-8
                 h-8
                 rounded-xl
-                bg-[#F8E8E9]
+                bg-counselor-errorSoft
                 items-center
                 justify-center
                 mr-2.5
@@ -1489,7 +1469,7 @@ const CounselorBoard = ({
                 name="warning-outline"
                 size={15}
                 color={
-                  COLORS.danger
+                  counselorColors.error
                 }
               />
             </View>
@@ -1497,9 +1477,9 @@ const CounselorBoard = ({
             <View>
               <Text
                 className="
-                  text-[14px]
+                  text-body
                   font-extrabold
-                  text-[#25312F]
+                  text-counselor-textPrimary
                 "
               >
                 Stress alerts
@@ -1507,8 +1487,8 @@ const CounselorBoard = ({
 
               <Text
                 className="
-                  text-[10px]
-                  text-[#71807C]
+                  text-caption
+                  text-counselor-textSecondary
                 "
               >
                 Students who may
@@ -1524,16 +1504,16 @@ const CounselorBoard = ({
                 h-7
                 px-2
                 rounded-full
-                bg-[#F8E8E9]
+                bg-counselor-errorSoft
                 items-center
                 justify-center
               "
             >
               <Text
                 className="
-                  text-[10px]
+                  text-caption
                   font-extrabold
-                  text-[#B85C62]
+                  text-counselor-error
                 "
               >
                 {alerts.length}
@@ -1545,9 +1525,9 @@ const CounselorBoard = ({
         {alerts.length === 0 ? (
           <View
             className="
-              bg-white
+              bg-counselor-surface
               border
-              border-[#E2E9E6]
+              border-counselor-border
               rounded-[20px]
               items-center
               py-6
@@ -1559,7 +1539,7 @@ const CounselorBoard = ({
                 w-10
                 h-10
                 rounded-[14px]
-                bg-[#E5F0E9]
+                bg-counselor-successSoft
                 items-center
                 justify-center
                 mb-2.5
@@ -1569,16 +1549,16 @@ const CounselorBoard = ({
                 name="checkmark-circle-outline"
                 size={20}
                 color={
-                  COLORS.success
+                  counselorColors.success
                 }
               />
             </View>
 
             <Text
               className="
-                text-[12px]
+                text-caption
                 font-semibold
-                text-[#71807C]
+                text-counselor-textSecondary
               "
             >
               No urgent alerts
@@ -1621,7 +1601,7 @@ const CounselorBoard = ({
                 w-8
                 h-8
                 rounded-xl
-                bg-[#FAEEE2]
+                bg-counselor-accentSoft
                 items-center
                 justify-center
                 mr-2.5
@@ -1631,7 +1611,7 @@ const CounselorBoard = ({
                 name="calendar-outline"
                 size={15}
                 color={
-                  COLORS.amber
+                  counselorColors.accent
                 }
               />
             </View>
@@ -1639,18 +1619,18 @@ const CounselorBoard = ({
             <View>
               <Text
                 className="
-                  text-[14px]
+                  text-body
                   font-extrabold
-                  text-[#25312F]
+                  text-counselor-textPrimary
                 "
               >
-                Today's appointments
+                Today&apos;s appointments
               </Text>
 
               <Text
                 className="
-                  text-[10px]
-                  text-[#71807C]
+                  text-caption
+                  text-counselor-textSecondary
                 "
               >
                 Your scheduled
@@ -1668,14 +1648,14 @@ const CounselorBoard = ({
               px-3
               py-1.5
               rounded-full
-              bg-[#E7F0EE]
+              bg-counselor-primarySoft
             "
           >
             <Text
               className="
-                text-[10.5px]
+                text-caption
                 font-bold
-                text-[#4F7C78]
+                text-counselor-primary
               "
             >
               View all
@@ -1687,9 +1667,9 @@ const CounselorBoard = ({
         0 ? (
           <View
             className="
-              bg-white
+              bg-counselor-surface
               border
-              border-[#E2E9E6]
+              border-counselor-border
               rounded-[20px]
               py-6
               items-center
@@ -1699,15 +1679,15 @@ const CounselorBoard = ({
               name="calendar-clear-outline"
               size={23}
               color={
-                COLORS.lightText
+                counselorColors.textMuted
               }
             />
 
             <Text
               className="
                 mt-2
-                text-[11.5px]
-                text-[#71807C]
+                text-caption
+                text-counselor-textSecondary
               "
             >
               No sessions scheduled
@@ -1796,13 +1776,13 @@ const BottomNav = ({
           px-2
           py-1.5
           rounded-[24px]
-          bg-white
+          bg-counselor-surface
           border
-          border-[#E2E9E6]
+          border-counselor-border
         "
         style={{
           shadowColor:
-            "#25312F",
+            counselorColors.textPrimary,
 
           shadowOpacity:
             0.07,
@@ -1868,7 +1848,7 @@ const BottomNav = ({
 
                     ${
                       isActive
-                        ? "bg-[#E7F0EE]"
+                        ? "bg-counselor-primarySoft"
                         : "bg-transparent"
                     }
                   `}
@@ -1886,8 +1866,8 @@ const BottomNav = ({
                     }
                     color={
                       isActive
-                        ? COLORS.teal
-                        : COLORS.lightText
+                        ? counselorColors.primary
+                        : counselorColors.textMuted
                     }
                   />
 
@@ -1899,7 +1879,7 @@ const BottomNav = ({
                         w-1
                         h-1
                         rounded-full
-                        bg-[#4F7C78]
+                        bg-counselor-primary
                       "
                     />
                   )}
@@ -2017,21 +1997,22 @@ export default function CounselorDashboardScreen() {
 
       headerStyle: {
         backgroundColor:
-          COLORS.background,
+          counselorColors.background,
       },
 
       headerTitleStyle: {
         color:
-          COLORS.text,
+          counselorColors.textPrimary,
 
-        fontSize: 17,
+        fontSize:
+          typography.fontSize.bodyLarge,
 
         fontWeight:
-          "700",
+          typography.fontWeight.bold,
       },
 
       headerTintColor:
-        COLORS.teal,
+        counselorColors.primary,
 
       /* ============================================================ */
       /* NOTIFICATION + PROFILE                                      */
@@ -2250,7 +2231,7 @@ export default function CounselorDashboardScreen() {
     <View
       className="
         flex-1
-        bg-[#F5F7F6]
+        bg-counselor-background
       "
     >
       {/* ================================================================ */}
