@@ -1,71 +1,162 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, FlatList, Platform, TextInput } from 'react-native';
-import { getAuth } from 'firebase/auth';
-import { subscribeMessages, sendMessage, markConversationRead } from '../services/anonymousChatService';
+import React, { useState, useEffect, useRef } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  FlatList,
+  Platform,
+  TextInput,
+  KeyboardAvoidingView,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import { getAuth } from "firebase/auth";
+import {
+  subscribeMessages,
+  sendMessage,
+  markConversationRead,
+} from "../services/anonymousChatService";
+
+const ceylon = {
+  ink: "#3D2E1F",
+  muted: "#8A7A63",
+  mutedLight: "#B8A78C",
+  charcoal: "#2C2C2C",
+  accent: "#7C5CBF",
+  accentLight: "#EDE7F6",
+  terracotta: "#C97B4A",
+  sand: "#F0E4D3",
+  cream: "#FBF3EA",
+  background: "#ECE6E3",
+};
+
+const SPACE = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20 };
 
 const Avatar = React.memo(({ emoji, color, size = 36, online }) => (
   <View className="relative">
     <View
-      style={{ width: size, height: size, borderRadius: size / 2 }}
-      className={`items-center justify-center border-2 border-white ${color || 'bg-indigo-100'}`}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        backgroundColor: color || ceylon.accentLight,
+        alignItems: "center",
+        justifyContent: "center",
+        borderWidth: 2,
+        borderColor: "#fff",
+      }}
     >
       <Text style={{ fontSize: size * 0.5 }}>{emoji}</Text>
     </View>
     {online !== undefined && (
-      <View className={`absolute bottom-0.5 right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white ${online ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+      <View
+        style={{
+          position: "absolute",
+          bottom: 1,
+          right: 1,
+          width: 10,
+          height: 10,
+          borderRadius: 5,
+          borderWidth: 2,
+          borderColor: "#fff",
+          backgroundColor: online ? ceylon.charcoal : ceylon.mutedLight,
+        }}
+      />
     )}
   </View>
 ));
-Avatar.displayName = 'Avatar';
+Avatar.displayName = "Avatar";
 
 const formatMsgTime = (ts) => {
-  if (!ts) return '';
+  if (!ts) return "";
   const d = ts?.toDate ? ts.toDate() : new Date(ts);
-  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 };
 
-const PrivacyBanner = () => (
-  <View className="flex-row items-center p-3 bg-purple-50 rounded-2xl border border-purple-300 mb-3">
-    <Text className="text-lg mr-2">🔒</Text>
-    <View className="flex-1">
-      <Text className="text-[11px] font-bold text-purple-800">END-TO-END ENCRYPTED</Text>
-      <Text className="text-[11px] text-purple-700 mt-0.5">Your identity is fully hidden as <Text className="font-bold">Anonymous Student</Text></Text>
-    </View>
-  </View>
-);
-
-const MessageBubble = React.memo(({ msg, systemEmoji, isUser, bubbleColor = 'bg-purple-600' }) => (
-  <View className={`px-4 mb-3 items-end flex-row ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-    {!isUser && <Avatar emoji={systemEmoji} color="bg-indigo-100" size={32} />}
-    <View className={`max-w-[72%] mx-2 ${isUser ? 'items-end' : 'items-start'}`}>
-      <View className={`rounded-2xl p-3 shadow-sm ${isUser ? `${bubbleColor} rounded-br-sm` : 'bg-white rounded-bl-sm'}`}>
-        <Text className={`text-sm ${isUser ? 'text-white' : 'text-slate-900'}`}>{msg.text}</Text>
+const MessageBubble = React.memo(({ msg, systemEmoji, isUser }) => (
+  <View className={`px-4 mb-3 items-end flex-row ${isUser ? "flex-row-reverse" : "flex-row"}`}>
+    {!isUser && <Avatar emoji={systemEmoji} color={ceylon.accentLight} size={30} />}
+    <View className={`max-w-[75%] mx-2 ${isUser ? "items-end" : "items-start"}`}>
+      <View
+        style={{
+          borderRadius: 18,
+          padding: 12,
+          backgroundColor: isUser ? ceylon.charcoal : "#fff",
+          borderBottomRightRadius: isUser ? 4 : 18,
+          borderBottomLeftRadius: isUser ? 18 : 4,
+          shadowColor: "#000",
+          shadowOpacity: 0.04,
+          shadowRadius: 6,
+          shadowOffset: { width: 0, height: 2 },
+        }}
+      >
+        <Text style={{ fontSize: 13.5, color: isUser ? "#fff" : ceylon.ink, lineHeight: 19 }}>
+          {msg.text}
+        </Text>
       </View>
-      <Text className="text-[10px] text-slate-400 mt-1">{formatMsgTime(msg.createdAt)}</Text>
+      <Text style={{ fontSize: 10, color: ceylon.mutedLight, marginTop: 4 }}>
+        {formatMsgTime(msg.createdAt)}
+      </Text>
     </View>
   </View>
 ));
-MessageBubble.displayName = 'MessageBubble';
+MessageBubble.displayName = "MessageBubble";
 
-const MessageInput = ({ onSend, placeholder = 'Type a message...', showAttach = false }) => {
-  const [text, setText] = useState('');
-  const handle = () => { if (text.trim()) { onSend(text.trim()); setText(''); } };
+const MessageInput = ({ onSend, placeholder = "Type a message..." }) => {
+  const [text, setText] = useState("");
+
+  const handle = () => {
+    if (!text.trim()) return;
+    Haptics.selectionAsync().catch(() => {});
+    onSend(text.trim());
+    setText("");
+  };
+
   return (
-    <View className={`p-3 flex-row items-center bg-white ${Platform.OS === 'ios' ? 'pb-6' : 'pb-3'}`}>
-      {showAttach && (
-        <TouchableOpacity className="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 items-center justify-center mr-2.5">
-          <Text className="text-base">📎</Text>
-        </TouchableOpacity>
-      )}
+    <View
+      className="flex-row items-center"
+      style={{
+        backgroundColor: ceylon.cream,
+        padding: SPACE.md,
+        paddingBottom: Platform.OS === "ios" ? SPACE.xl : SPACE.md,
+        borderTopWidth: 1,
+        borderTopColor: ceylon.sand,
+      }}
+    >
       <TextInput
         value={text}
         onChangeText={setText}
         placeholder={placeholder}
-        placeholderTextColor="#94a3b8"
-        className="flex-1 px-4 py-2.5 rounded-full bg-slate-50 border border-slate-200 text-sm text-slate-900"
+        placeholderTextColor={ceylon.mutedLight}
+        multiline
+        style={{
+          flex: 1,
+          paddingHorizontal: SPACE.lg,
+          paddingVertical: 10,
+          borderRadius: 24,
+          backgroundColor: "#fff",
+          fontSize: 13.5,
+          color: ceylon.ink,
+          maxHeight: 100,
+          borderWidth: 1,
+          borderColor: ceylon.sand,
+        }}
       />
-      <TouchableOpacity onPress={handle} className="w-10 h-10 rounded-full bg-indigo-500 items-center justify-center ml-2.5">
-        <Text className="text-white text-base">▶</Text>
+      <TouchableOpacity
+        onPress={handle}
+        disabled={!text.trim()}
+        activeOpacity={0.7}
+        style={{
+          width: 42,
+          height: 42,
+          borderRadius: 21,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: text.trim() ? ceylon.charcoal : ceylon.mutedLight,
+          marginLeft: SPACE.sm,
+        }}
+      >
+        <Ionicons name="arrow-up" size={18} color="#fff" />
       </TouchableOpacity>
     </View>
   );
@@ -90,55 +181,92 @@ const CounselorChatRoom = ({ counselor, onBack }) => {
 
   return (
     <View className="flex-1">
-      <View className="p-3 bg-white border-b border-slate-200 flex-row items-center">
+      <View
+        className="flex-row items-center"
+        style={{
+          backgroundColor: ceylon.cream,
+          padding: SPACE.md,
+          paddingTop: Platform.OS === "ios" ? SPACE.xl : SPACE.md,
+          gap: SPACE.md,
+          borderBottomWidth: 1,
+          borderBottomColor: ceylon.sand,
+        }}
+      >
         <TouchableOpacity
-          onPress={onBack}
-          className="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 items-center justify-center mr-3"
+          onPress={() => {
+            Haptics.selectionAsync().catch(() => {});
+            onBack();
+          }}
+          className="w-9 h-9 rounded-full items-center justify-center"
+          style={{ backgroundColor: "#fff" }}
         >
-          <Text className="text-sm">←</Text>
+          <Ionicons name="chevron-back" size={20} color={ceylon.ink} />
         </TouchableOpacity>
         <Avatar emoji={counselor.emoji} color={counselor.color} size={38} online={counselor.online} />
-        <View className="flex-1 ml-3">
-          <Text className="font-bold text-xs text-slate-900">{counselor.name}</Text>
-          <Text className="text-[11px] text-slate-500">{counselor.specialty}</Text>
+        <View className="flex-1">
+          <Text numberOfLines={1} style={{ fontWeight: "700", fontSize: 14, color: ceylon.ink }}>
+            {counselor.name}
+          </Text>
+          <View className="flex-row items-center" style={{ marginTop: 2 }}>
+            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: ceylon.charcoal }} />
+            <Text style={{ fontSize: 11, color: ceylon.charcoal, fontWeight: "600", marginLeft: 5 }}>
+              {counselor.specialty}
+            </Text>
+          </View>
         </View>
-        <View className="px-2.5 py-1 rounded-xl bg-purple-100">
-          <Text className="text-[10px] text-purple-700 font-bold">🔒 Anon</Text>
+        <View className="px-2.5 py-1 rounded-xl" style={{ backgroundColor: ceylon.accentLight }}>
+          <View className="flex-row items-center" style={{ gap: 4 }}>
+            <Ionicons name="lock-closed" size={11} color={ceylon.accent} />
+            <Text style={{ fontSize: 10, fontWeight: "700", color: ceylon.accent }}>
+              Anon
+            </Text>
+          </View>
         </View>
       </View>
 
-      <FlatList
-        ref={flatListRef}
-        data={messages}
-        keyExtractor={(item) => item.id || Math.random().toString()}
-        onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
-        onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
+      <KeyboardAvoidingView
         className="flex-1"
-        ListHeaderComponent={() => (
-          <>
-            <View className="px-4 pt-2">
-              <PrivacyBanner />
-            </View>
-            <View className="flex-row px-4 pb-3">
-              <View className="flex-1 p-2.5 rounded-xl bg-white border border-slate-200 items-center">
-                <Text className="text-[10px] text-slate-400 font-semibold">COUNSELOR</Text>
-                <Text className="text-xs font-bold text-slate-900 my-0.5">{counselor.name}</Text>
-                <Text className="text-[10px] text-emerald-500">✓ Visible to you</Text>
+        style={{ backgroundColor: ceylon.background }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          keyExtractor={(item) => item.id || Math.random().toString()}
+          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+          onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
+          className="flex-1"
+          contentContainerStyle={{ paddingVertical: SPACE.md }}
+          ListHeaderComponent={() => (
+            <View className="px-4 pt-3 pb-3">
+              <View className="flex-row items-center justify-center gap-2 mb-3">
+                <Ionicons name="lock-closed" size={12} color={ceylon.accent} />
+                <Text className="text-[11px]" style={{ color: ceylon.muted }}>
+                  End-to-end encrypted. Your identity is hidden.
+                </Text>
               </View>
-              <View className="flex-1 p-2.5 rounded-xl bg-purple-50 border border-purple-200 items-center ml-2">
-                <Text className="text-[10px] text-slate-400 font-semibold">YOU</Text>
-                <Text className="text-xs font-bold text-purple-700 my-0.5">Anonymous Student</Text>
-                <Text className="text-[10px] text-purple-700">🔒 Hidden from counselor</Text>
+              <View className="flex-row px-4 pb-1">
+                <View className="flex-1 p-2.5 rounded-xl bg-white items-center" style={{ borderWidth: 1, borderColor: ceylon.sand }}>
+                  <Text className="text-[10px] font-semibold" style={{ color: ceylon.mutedLight }}>COUNSELOR</Text>
+                  <Text className="text-xs font-bold my-0.5" style={{ color: ceylon.ink }}>{counselor.name}</Text>
+                  <Text className="text-[10px]" style={{ color: ceylon.charcoal }}>Visible to you</Text>
+                </View>
+                <View className="flex-1 p-2.5 rounded-xl items-center ml-2" style={{ backgroundColor: ceylon.accentLight }}>
+                  <Text className="text-[10px] font-semibold" style={{ color: ceylon.mutedLight }}>YOU</Text>
+                  <Text className="text-xs font-bold my-0.5" style={{ color: ceylon.accent }}>Anonymous</Text>
+                  <Text className="text-[10px]" style={{ color: ceylon.muted }}>Hidden identity</Text>
+                </View>
               </View>
             </View>
-          </>
-        )}
-        renderItem={({ item }) => (
-          <MessageBubble msg={item} systemEmoji={counselor.emoji} isUser={item.senderRole === "student"} bubbleColor="bg-purple-600" />
-        )}
-      />
+          )}
+          renderItem={({ item }) => (
+            <MessageBubble msg={item} systemEmoji={counselor.emoji} isUser={item.senderRole === "student"} />
+          )}
+          showsVerticalScrollIndicator={false}
+        />
 
-      <MessageInput onSend={handleSend} placeholder="Message anonymously..." showAttach />
+        <MessageInput onSend={handleSend} placeholder="Message anonymously..." />
+      </KeyboardAvoidingView>
     </View>
   );
 };

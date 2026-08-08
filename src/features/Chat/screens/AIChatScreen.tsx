@@ -580,15 +580,6 @@ const ChatRoomsList = ({ rooms, onOpenRoom, onNewChat, onOpenActions }: any) => 
             <Text style={{ fontSize: 18, fontWeight: "700", color: ceylon.ink }}>AI Chat</Text>
             <Text style={{ fontSize: 12, color: ceylon.muted, marginTop: 2 }}>A calm space, whenever you need it</Text>
           </View>
-          <TouchableOpacity
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
-              onNewChat();
-            }}
-            style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: ceylon.teaGreen, alignItems: "center", justifyContent: "center" }}
-          >
-            <Ionicons name="add" size={22} color="#fff" />
-          </TouchableOpacity>
         </View>
 
         <View
