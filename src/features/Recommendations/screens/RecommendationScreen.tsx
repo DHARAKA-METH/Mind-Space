@@ -38,6 +38,7 @@ const COLORS = {
   lavender: "#CCC5E8",
   purple: "#6D5AB5",
   peach: "#F47F63",
+  peachSoft: "#FDE8E2",
   text: "#1F1F2E",
   secondaryText: "#8C8992",
   white: "#FFFFFF",
@@ -594,15 +595,15 @@ function TipCard({ item, onPress }: { item: any; onPress: () => void }) {
       className="flex-row items-center rounded-[22px] p-3.5 mb-3 min-h-[92px]"
       style={{
         backgroundColor: COLORS.white,
-        shadowColor: "#000",
+        shadowColor: COLORS.peach,
         shadowOpacity: 0.035,
         shadowRadius: 9,
         shadowOffset: { width: 0, height: 3 },
         elevation: 1,
       }}
     >
-      <View className="w-[50px] h-[50px] rounded-[15px] items-center justify-center mr-3.5" style={{ backgroundColor: COLORS.lavender }}>
-        <Wind size={21} color={COLORS.purple} />
+      <View className="w-[50px] h-[50px] rounded-[15px] items-center justify-center mr-3.5" style={{ backgroundColor: COLORS.peachSoft }}>
+        <Wind size={21} color={COLORS.peach} />
       </View>
 
       <View className="flex-1">
@@ -619,10 +620,10 @@ function TipCard({ item, onPress }: { item: any; onPress: () => void }) {
             onPress={onPress}
             className="flex-row items-center self-start mt-2"
           >
-            <Text className="text-[11.5px] font-bold mr-0.5" style={{ color: COLORS.purple }}>
+            <Text className="text-[11.5px] font-bold mr-0.5" style={{ color: COLORS.peach }}>
               Open
             </Text>
-            <ChevronRight size={13} color={COLORS.purple} />
+            <ChevronRight size={13} color={COLORS.peach} />
           </TouchableOpacity>
         ) : null}
       </View>

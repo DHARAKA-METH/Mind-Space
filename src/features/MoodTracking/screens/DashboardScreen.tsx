@@ -369,6 +369,7 @@ const DashboardScreen = () => {
         }}
       >
         <ScrollView
+        className="mt-[-20px]"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
             paddingBottom: 28,
