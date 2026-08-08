@@ -18,8 +18,8 @@ const PATH_TAB_MAP = {
   "/moodCalender": "Mood",
   "/moodCheckIn": "New",
   "/chat": "Assistant",
+  "/BookSession": "Sessions",
   "/Recommendations": "Wellness",
-  "/BookSession": "Wellness",
 };
 
 export default function TabLayout() {
@@ -41,6 +41,8 @@ export default function TabLayout() {
         return <MoodCheckIn />;
       case "Assistant":
         return <ChatScreen />;
+      case "Sessions":
+        return <BookSession />;
       case "Wellness":
         return <RecommendationScreen />;
       default:
@@ -54,12 +56,7 @@ export default function TabLayout() {
 
   return (
     <View style={{ flex: 1 }}>
-      {/* SCREEN */}
-      <View style={{ flex: 1 }}>
-        {renderScreen()}
-      </View>
-
-      {/* FOOTER */}
+      <View style={{ flex: 1 }}>{renderScreen()}</View>
       <Footer activeTab={activeTab} setActiveTab={setActiveTab} />
     </View>
   );

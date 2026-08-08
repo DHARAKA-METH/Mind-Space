@@ -10,7 +10,6 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import { Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown, FadeIn, Layout } from "react-native-reanimated";
@@ -43,7 +42,7 @@ const ceylon = {
   terracotta: "#C97B4A",
   sand: "#F0E4D3",
   cream: "#FBF3EA",
-  background: "#F4EFE9",
+  background: "#ECE6E3",
   danger: "#B5555C",
   dangerBg: "#F7DDD6",
   success: "#4A7856",
@@ -208,13 +207,6 @@ export default function BookSessionScreen() {
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center" style={{ backgroundColor: ceylon.background }}>
-        <Stack.Screen
-          options={{
-            headerTitle: "Book a session",
-            headerStyle: { backgroundColor: ceylon.cream },
-            headerShadowVisible: false,
-          }}
-        />
         <View
           style={{
             width: 64,
@@ -235,17 +227,23 @@ export default function BookSessionScreen() {
 
   return (
     <View className="flex-1" style={{ backgroundColor: ceylon.background }}>
-      <Stack.Screen
-        options={{
-          headerTitle: "Book a session",
-          headerTitleStyle: { fontWeight: "700", fontSize: 17, color: ceylon.ink },
-          headerStyle: { backgroundColor: ceylon.cream },
-          headerShadowVisible: false,
-          headerLeft: () => null,
-          headerBackVisible: false,
-          headerShown: true,
+      <View
+        style={{
+          backgroundColor: ceylon.cream,
+          paddingHorizontal: SPACE.lg,
+          paddingTop: 28,
+          paddingBottom: 18,
+          borderBottomLeftRadius: 28,
+          borderBottomRightRadius: 28,
         }}
-      />
+      >
+        <Text style={{ fontSize: 22, fontWeight: "700", color: ceylon.ink }}>
+          Book a Session
+        </Text>
+        <Text style={{ fontSize: 12, color: ceylon.muted, marginTop: 4 }}>
+          Schedule time with a counselor
+        </Text>
+      </View>
 
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} className="flex-1">
         <ScrollView
@@ -514,53 +512,58 @@ export default function BookSessionScreen() {
                 const selected = selectedDay === day;
 
                 return (
-                  <TouchableOpacity
+                  <View
                     key={day}
-                    disabled={isPast || full}
-                    onPress={() => {
-                      Haptics.selectionAsync().catch(() => {});
-                      setSelectedDay(day);
-                      setSelectedTime(null);
-                    }}
                     style={{
                       width: "14.28%",
-                      aspectRatio: 1,
                       alignItems: "center",
-                      justifyContent: "center",
-                      borderRadius: 14,
                       marginVertical: 3,
-                      backgroundColor: selected ? accentColor : isToday ? accentBg : "transparent",
-                      opacity: isPast ? 0.3 : 1,
-                      position: "relative",
                     }}
                   >
-                    <Text
+                    <TouchableOpacity
+                      disabled={isPast || full}
+                      onPress={() => {
+                        Haptics.selectionAsync().catch(() => {});
+                        setSelectedDay(day);
+                        setSelectedTime(null);
+                      }}
                       style={{
-                        fontSize: 15,
-                        fontWeight: selected || isToday ? "800" : "400",
-                        color: selected ? "#fff" : full ? ceylon.danger : isToday ? accentColor : ceylon.ink,
+                        width: "100%",
+                        aspectRatio: 1,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        borderRadius: 14,
+                        backgroundColor: selected ? accentColor : isToday ? accentBg : "transparent",
+                        opacity: isPast ? 0.3 : 1,
                       }}
                     >
-                      {day}
-                    </Text>
+                      <Text
+                        style={{
+                          fontSize: 15,
+                          fontWeight: selected || isToday ? "800" : "400",
+                          color: selected ? "#fff" : full ? ceylon.danger : isToday ? accentColor : ceylon.ink,
+                        }}
+                      >
+                        {day}
+                      </Text>
+                    </TouchableOpacity>
                     {hasBookings && !selected && (
                       <View
                         style={{
-                          position: "absolute",
-                          bottom: 3,
                           width: 5,
                           height: 5,
                           borderRadius: 3,
                           backgroundColor: full ? ceylon.danger : accentColor,
+                          marginTop: 2,
                         }}
                       />
                     )}
                     {full && !selected && (
-                      <View style={{ position: "absolute", top: 2, right: 1, backgroundColor: ceylon.dangerBg, borderRadius: 3, paddingHorizontal: 2 }}>
+                      <View style={{ backgroundColor: ceylon.dangerBg, borderRadius: 3, paddingHorizontal: 3, marginTop: 2 }}>
                         <Text style={{ fontSize: 7, color: ceylon.danger, fontWeight: "700" }}>FULL</Text>
                       </View>
                     )}
-                  </TouchableOpacity>
+                  </View>
                 );
               })}
             </View>
