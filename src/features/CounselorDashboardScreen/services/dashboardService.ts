@@ -38,9 +38,9 @@ export const fetchCounselorName = async (counselorId: string): Promise<string> =
   const snap = await getDoc(doc(db, "users", counselorId));
   if (snap.exists()) {
     const data = snap.data();
-    return data.name || "counselor";
+    return data.name || data.displayName || data.fullName || data.firstName || "Counselor";
   }
-  return "counselor";
+  return "Counselor";
 };
 
 export const fetchTodayAppointments = async (counselorId: string): Promise<TodayAppointment[]> => {
