@@ -10,6 +10,7 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
+import { Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown, FadeIn, Layout } from "react-native-reanimated";
@@ -207,6 +208,14 @@ export default function BookSessionScreen() {
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center" style={{ backgroundColor: ceylon.background }}>
+        <Stack.Screen
+          options={{
+            headerTitle: "Book a Session",
+            headerTitleStyle: { fontWeight: "700", fontSize: 18, color: ceylon.ink },
+            headerStyle: { backgroundColor: ceylon.cream },
+            headerShadowVisible: false,
+          }}
+        />
         <View
           style={{
             width: 64,
@@ -227,23 +236,14 @@ export default function BookSessionScreen() {
 
   return (
     <View className="flex-1" style={{ backgroundColor: ceylon.background }}>
-      <View
-        style={{
-          backgroundColor: ceylon.cream,
-          paddingHorizontal: SPACE.lg,
-          paddingTop: 28,
-          paddingBottom: 18,
-          borderBottomLeftRadius: 28,
-          borderBottomRightRadius: 28,
+      <Stack.Screen
+        options={{
+          headerTitle: "Book a Session",
+          headerTitleStyle: { fontWeight: "700", fontSize: 18, color: ceylon.ink },
+          headerStyle: { backgroundColor: ceylon.cream },
+          headerShadowVisible: false,
         }}
-      >
-        <Text style={{ fontSize: 22, fontWeight: "700", color: ceylon.ink }}>
-          Book a Session
-        </Text>
-        <Text style={{ fontSize: 12, color: ceylon.muted, marginTop: 4 }}>
-          Schedule time with a counselor
-        </Text>
-      </View>
+      />
 
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} className="flex-1">
         <ScrollView
