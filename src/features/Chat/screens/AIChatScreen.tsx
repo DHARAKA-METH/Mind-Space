@@ -40,15 +40,15 @@ import {getAiResponseMessage} from "../services/aiCall"
 
 // ─── THEME ────────────────────────────────────────────────────────────────
 const ceylon = {
-  ink: "#3D2E1F",
-  muted: "#8A7A63",
-  mutedLight: "#B8A78C",
-  teaGreen: "#4A7856",
-  sage: "#7C9885",
-  terracotta: "#C97B4A",
-  sand: "#F0E4D3",
-  cream: "#FBF3EA",
-  background: "#F4EFE9",
+  text: "#252330",
+  textSecondary: "#706A76",
+  textLight: "#A29CA7",
+  lavender: "#8D7BB8",
+  lavenderSoft: "#EEE9F7",
+  peach: "#E88366",
+  border: "#ECE5E0",
+  surface: "#FFFFFF",
+  background: "#FAF7F4",
   danger: "#B5555C",
 };
 
@@ -67,7 +67,7 @@ const Avatar = React.memo(({ emoji, size = 36, online, bg }: any) => (
         width: size,
         height: size,
         borderRadius: size / 2,
-        backgroundColor: bg || `${ceylon.sage}22`,
+        backgroundColor: bg || `${ceylon.lavenderSoft}22`,
         alignItems: "center",
         justifyContent: "center",
         borderWidth: 2,
@@ -87,7 +87,7 @@ const Avatar = React.memo(({ emoji, size = 36, online, bg }: any) => (
           borderRadius: 5,
           borderWidth: 2,
           borderColor: "#fff",
-          backgroundColor: online ? ceylon.teaGreen : ceylon.mutedLight,
+          backgroundColor: online ? ceylon.lavender : ceylon.textLight,
         }}
       />
     )}
@@ -127,7 +127,7 @@ const TypingDots = () => {
   return (
     <View className="flex-row items-center" style={{ gap: 4 }}>
       {[s1, s2, s3].map((s, i) => (
-        <Animated.View key={i} style={[{ width: 6, height: 6, borderRadius: 3, backgroundColor: ceylon.sage }, s]} />
+        <Animated.View key={i} style={[{ width: 6, height: 6, borderRadius: 3, backgroundColor: ceylon.lavenderSoft }, s]} />
       ))}
     </View>
   );
@@ -156,7 +156,7 @@ const MessageBubble = React.memo(({ msg, index }: any) => {
           style={{
             borderRadius: 18,
             padding: 12,
-            backgroundColor: isUser ? ceylon.teaGreen : "#fff",
+            backgroundColor: isUser ? ceylon.lavender : "#fff",
             borderBottomRightRadius: isUser ? 4 : 18,
             borderBottomLeftRadius: isUser ? 18 : 4,
             shadowColor: "#000",
@@ -165,9 +165,9 @@ const MessageBubble = React.memo(({ msg, index }: any) => {
             shadowOffset: { width: 0, height: 2 },
           }}
         >
-          <Text style={{ fontSize: 13.5, color: isUser ? "#fff" : ceylon.ink, lineHeight: 19 }}>{msg.text}</Text>
+          <Text style={{ fontSize: 13.5, color: isUser ? "#fff" : ceylon.text, lineHeight: 19 }}>{msg.text}</Text>
         </View>
-        <Text style={{ fontSize: 10, color: ceylon.mutedLight, marginTop: 4 }}>{msg.time}</Text>
+        <Text style={{ fontSize: 10, color: ceylon.textLight, marginTop: 4 }}>{msg.time}</Text>
       </View>
     </Animated.View>
   );
@@ -196,7 +196,7 @@ const MessageInput = ({ onSend, placeholder = "Type a message..." }: any) => {
         value={text}
         onChangeText={setText}
         placeholder={placeholder}
-        placeholderTextColor={ceylon.mutedLight}
+        placeholderTextColor={ceylon.textLight}
         multiline
         style={{
           flex: 1,
@@ -205,7 +205,7 @@ const MessageInput = ({ onSend, placeholder = "Type a message..." }: any) => {
           borderRadius: 24,
           backgroundColor: ceylon.background,
           fontSize: 13.5,
-          color: ceylon.ink,
+          color: ceylon.text,
           maxHeight: 100,
         }}
       />
@@ -219,7 +219,7 @@ const MessageInput = ({ onSend, placeholder = "Type a message..." }: any) => {
             borderRadius: 21,
             alignItems: "center",
             justifyContent: "center",
-            backgroundColor: text.trim() ? ceylon.teaGreen : ceylon.mutedLight,
+            backgroundColor: text.trim() ? ceylon.lavender : ceylon.textLight,
           }}
         >
           <Ionicons name="arrow-up" size={18} color="#fff" />
@@ -246,12 +246,12 @@ const QuickPrompts = ({ onSelect }: any) => (
           paddingHorizontal: 14,
           paddingVertical: 7,
           borderRadius: 18,
-          backgroundColor: `${ceylon.sage}15`,
+          backgroundColor: `${ceylon.lavenderSoft}15`,
           borderWidth: 1,
-          borderColor: `${ceylon.sage}40`,
+          borderColor: `${ceylon.lavenderSoft}40`,
         }}
       >
-        <Text style={{ color: ceylon.teaGreen, fontSize: 12, fontWeight: "600" }}>{p}</Text>
+        <Text style={{ color: ceylon.lavender, fontSize: 12, fontWeight: "600" }}>{p}</Text>
       </TouchableOpacity>
     ))}
   </ScrollView>
@@ -283,14 +283,14 @@ const RoomActionSheet = ({ visible, room, onClose, onRename, onDelete }: any) =>
                 width: 36,
                 height: 4,
                 borderRadius: 2,
-                backgroundColor: ceylon.sand,
+                backgroundColor: ceylon.border,
                 alignSelf: "center",
                 marginBottom: SPACE.lg,
               }}
             />
             <Text
               numberOfLines={1}
-              style={{ fontSize: 12, color: ceylon.mutedLight, marginBottom: SPACE.md, textAlign: "center" }}
+              style={{ fontSize: 12, color: ceylon.textLight, marginBottom: SPACE.md, textAlign: "center" }}
             >
               {room.title}
             </Text>
@@ -308,14 +308,14 @@ const RoomActionSheet = ({ visible, room, onClose, onRename, onDelete }: any) =>
                   width: 36,
                   height: 36,
                   borderRadius: 18,
-                  backgroundColor: `${ceylon.sage}18`,
+                  backgroundColor: `${ceylon.lavenderSoft}18`,
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
-                <Ionicons name="pencil-outline" size={17} color={ceylon.sage} />
+                <Ionicons name="pencil-outline" size={17} color={ceylon.lavenderSoft} />
               </View>
-              <Text style={{ fontSize: 14, fontWeight: "600", color: ceylon.ink }}>Rename chat</Text>
+              <Text style={{ fontSize: 14, fontWeight: "600", color: ceylon.text }}>Rename chat</Text>
             </TouchableOpacity>
 
             <View style={{ height: 1, backgroundColor: ceylon.background }} />
@@ -353,7 +353,7 @@ const RoomActionSheet = ({ visible, room, onClose, onRename, onDelete }: any) =>
                 borderRadius: 14,
               }}
             >
-              <Text style={{ fontSize: 14, fontWeight: "600", color: ceylon.muted }}>Cancel</Text>
+              <Text style={{ fontSize: 14, fontWeight: "600", color: ceylon.textSecondary }}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -386,8 +386,8 @@ const RenameModal = ({ visible, room, onClose, onConfirm }: any) => {
           entering={ZoomIn.duration(180)}
           style={{ width: "100%", backgroundColor: "#fff", borderRadius: 22, padding: SPACE.lg }}
         >
-          <Text style={{ fontSize: 16, fontWeight: "700", color: ceylon.ink, marginBottom: 4 }}>Rename chat</Text>
-          <Text style={{ fontSize: 12, color: ceylon.muted, marginBottom: SPACE.lg }}>
+          <Text style={{ fontSize: 16, fontWeight: "700", color: ceylon.text, marginBottom: 4 }}>Rename chat</Text>
+          <Text style={{ fontSize: 12, color: ceylon.textSecondary, marginBottom: SPACE.lg }}>
             Give this conversation a name that&aposs easy to find later
           </Text>
 
@@ -396,15 +396,15 @@ const RenameModal = ({ visible, room, onClose, onConfirm }: any) => {
             onChangeText={setValue}
             autoFocus
             placeholder="Conversation name"
-            placeholderTextColor={ceylon.mutedLight}
+            placeholderTextColor={ceylon.textLight}
             style={{
               borderWidth: 1.5,
-              borderColor: ceylon.sand,
+              borderColor: ceylon.border,
               borderRadius: 14,
               paddingHorizontal: SPACE.md,
               paddingVertical: 12,
               fontSize: 14,
-              color: ceylon.ink,
+              color: ceylon.text,
               marginBottom: SPACE.lg,
             }}
             onSubmitEditing={handleConfirm}
@@ -416,7 +416,7 @@ const RenameModal = ({ visible, room, onClose, onConfirm }: any) => {
               onPress={onClose}
               style={{ flex: 1, paddingVertical: 13, borderRadius: 14, backgroundColor: ceylon.background, alignItems: "center" }}
             >
-              <Text style={{ fontWeight: "600", color: ceylon.muted, fontSize: 13 }}>Cancel</Text>
+              <Text style={{ fontWeight: "600", color: ceylon.textSecondary, fontSize: 13 }}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={handleConfirm}
@@ -425,7 +425,7 @@ const RenameModal = ({ visible, room, onClose, onConfirm }: any) => {
                 flex: 1,
                 paddingVertical: 13,
                 borderRadius: 14,
-                backgroundColor: value.trim() ? ceylon.teaGreen : ceylon.mutedLight,
+                backgroundColor: value.trim() ? ceylon.lavender : ceylon.textLight,
                 alignItems: "center",
               }}
             >
@@ -461,10 +461,10 @@ const DeleteConfirmModal = ({ visible, room, onClose, onConfirm }: any) => {
           >
             <Ionicons name="trash-outline" size={22} color={ceylon.danger} />
           </View>
-          <Text style={{ fontSize: 16, fontWeight: "700", color: ceylon.ink, marginBottom: 4, textAlign: "center" }}>
+          <Text style={{ fontSize: 16, fontWeight: "700", color: ceylon.text, marginBottom: 4, textAlign: "center" }}>
             Delete this conversation?
           </Text>
-          <Text style={{ fontSize: 12, color: ceylon.muted, textAlign: "center", marginBottom: SPACE.lg }}>
+          <Text style={{ fontSize: 12, color: ceylon.textSecondary, textAlign: "center", marginBottom: SPACE.lg }}>
             &apos{room.title}&apos will be permanently removed. This can&apos t be undone.
           </Text>
 
@@ -473,7 +473,7 @@ const DeleteConfirmModal = ({ visible, room, onClose, onConfirm }: any) => {
               onPress={onClose}
               style={{ flex: 1, paddingVertical: 13, borderRadius: 14, backgroundColor: ceylon.background, alignItems: "center" }}
             >
-              <Text style={{ fontWeight: "600", color: ceylon.muted, fontSize: 13 }}>Cancel</Text>
+              <Text style={{ fontWeight: "600", color: ceylon.textSecondary, fontSize: 13 }}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => {
@@ -516,15 +516,15 @@ const RoomListItem = ({ room, onPress, onOpenActions }: any) => {
         <View className="flex-1" style={{ marginLeft: SPACE.md }}>
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center flex-1" style={{ gap: 5, marginRight: 8 }}>
-              {room.pinned && <Ionicons name="bookmark" size={11} color={ceylon.terracotta} />}
-              <Text numberOfLines={1} style={{ fontWeight: "700", fontSize: 14, color: ceylon.ink, flexShrink: 1 }}>
+              {room.pinned && <Ionicons name="bookmark" size={11} color={ceylon.peach} />}
+              <Text numberOfLines={1} style={{ fontWeight: "700", fontSize: 14, color: ceylon.text, flexShrink: 1 }}>
                 {room.title}
               </Text>
             </View>
-            <Text style={{ fontSize: 10, color: ceylon.mutedLight }}>{room.time}</Text>
+            <Text style={{ fontSize: 10, color: ceylon.textLight }}>{room.time}</Text>
           </View>
           <View className="flex-row items-center justify-between" style={{ marginTop: 3 }}>
-            <Text numberOfLines={1} style={{ fontSize: 12, color: ceylon.muted, flex: 1, marginRight: 8 }}>
+            <Text numberOfLines={1} style={{ fontSize: 12, color: ceylon.textSecondary, flex: 1, marginRight: 8 }}>
               {room.preview}
             </Text>
             {room.unread > 0 && (
@@ -533,7 +533,7 @@ const RoomListItem = ({ room, onPress, onOpenActions }: any) => {
                   minWidth: 18,
                   height: 18,
                   borderRadius: 9,
-                  backgroundColor: ceylon.terracotta,
+                  backgroundColor: ceylon.peach,
                   alignItems: "center",
                   justifyContent: "center",
                   paddingHorizontal: 5,
@@ -551,7 +551,7 @@ const RoomListItem = ({ room, onPress, onOpenActions }: any) => {
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           style={{ paddingLeft: SPACE.sm }}
         >
-          <Ionicons name="ellipsis-vertical" size={16} color={ceylon.mutedLight} />
+          <Ionicons name="ellipsis-vertical" size={16} color={ceylon.textLight} />
         </TouchableOpacity>
       </TouchableOpacity>
     </Animated.View>
@@ -567,7 +567,7 @@ const ChatRoomsList = ({ rooms, onOpenRoom, onNewChat, onOpenActions }: any) => 
     <View className="flex-1" style={{ backgroundColor: ceylon.background }}>
       <View
         style={{
-          backgroundColor: ceylon.cream,
+          backgroundColor: ceylon.surface,
           paddingHorizontal: SPACE.lg,
           paddingTop: SPACE.xl,
           paddingBottom: SPACE.lg,
@@ -577,8 +577,8 @@ const ChatRoomsList = ({ rooms, onOpenRoom, onNewChat, onOpenActions }: any) => 
       >
         <View className="flex-row items-center justify-between ml-3" style={{ marginBottom: SPACE.lg }}>
           <View>
-            <Text style={{ fontSize: 18, fontWeight: "700", color: ceylon.ink }}>AI Chat</Text>
-            <Text style={{ fontSize: 12, color: ceylon.muted, marginTop: 2 }}>A calm space, whenever you need it</Text>
+            <Text style={{ fontSize: 18, fontWeight: "700", color: ceylon.text }}>AI Chat</Text>
+            <Text style={{ fontSize: 12, color: ceylon.textSecondary, marginTop: 2 }}>A calm space, whenever you need it</Text>
           </View>
         </View>
 
@@ -586,13 +586,13 @@ const ChatRoomsList = ({ rooms, onOpenRoom, onNewChat, onOpenActions }: any) => 
           className="flex-row items-center"
           style={{ backgroundColor: "#fff", borderRadius: 14, paddingHorizontal: SPACE.md, height: 42 }}
         >
-          <Ionicons name="search" size={16} color={ceylon.mutedLight} />
+          <Ionicons name="search" size={16} color={ceylon.textLight} />
           <TextInput
             value={search}
             onChangeText={setSearch}
             placeholder="Search conversations"
-            placeholderTextColor={ceylon.mutedLight}
-            style={{ flex: 1, marginLeft: SPACE.sm, fontSize: 13, color: ceylon.ink }}
+            placeholderTextColor={ceylon.textLight}
+            style={{ flex: 1, marginLeft: SPACE.sm, fontSize: 13, color: ceylon.text }}
           />
         </View>
       </View>
@@ -602,12 +602,12 @@ const ChatRoomsList = ({ rooms, onOpenRoom, onNewChat, onOpenActions }: any) => 
           <View
             style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: "#fff", alignItems: "center", justifyContent: "center", marginBottom: SPACE.md }}
           >
-            <Ionicons name="chatbubble-ellipses-outline" size={26} color={ceylon.sage} />
+            <Ionicons name="chatbubble-ellipses-outline" size={26} color={ceylon.lavenderSoft} />
           </View>
-          <Text style={{ fontWeight: "700", color: ceylon.ink, marginBottom: 4 }}>
+          <Text style={{ fontWeight: "700", color: ceylon.text, marginBottom: 4 }}>
             {search ? "No matches found" : "No conversations yet"}
           </Text>
-          <Text style={{ fontSize: 12, color: ceylon.muted, textAlign: "center" }}>
+          <Text style={{ fontSize: 12, color: ceylon.textSecondary, textAlign: "center" }}>
             {search ? "Try a different search term" : "Start a new chat whenever you're ready to talk"}
           </Text>
         </View>
@@ -631,7 +631,7 @@ const ChatRoomsList = ({ rooms, onOpenRoom, onNewChat, onOpenActions }: any) => 
           flexDirection: "row",
           alignItems: "center",
           gap: 8,
-          backgroundColor: ceylon.terracotta,
+          backgroundColor: ceylon.peach,
           paddingHorizontal: 18,
           paddingVertical: 13,
           borderRadius: 26,
@@ -697,21 +697,21 @@ const ChatRoomScreen = ({ room, onBack, onOpenActions, userId }: any) => {
         style={{ backgroundColor: "#fff", padding: SPACE.md, paddingTop: Platform.OS === "ios" ? SPACE.xl : SPACE.md, gap: SPACE.md }}
       >
         <TouchableOpacity onPress={onBack} style={{ padding: 4 }}>
-          <Ionicons name="chevron-back" size={22} color={ceylon.ink} />
+          <Ionicons name="chevron-back" size={22} color={ceylon.text} />
         </TouchableOpacity>
         <Avatar emoji="🌿" size={38} online />
         <View className="flex-1">
-          <Text numberOfLines={1} style={{ fontWeight: "700", fontSize: 14, color: ceylon.ink }}>
+          <Text numberOfLines={1} style={{ fontWeight: "700", fontSize: 14, color: ceylon.text }}>
             {room.title}
           </Text>
           <View className="flex-row items-center" style={{ gap: 5, marginTop: 1 }}>
-            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: ceylon.teaGreen }} />
-            <Text style={{ fontSize: 11, color: ceylon.teaGreen, fontWeight: "600" }}>Online & ready to help</Text>
+            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: ceylon.lavender }} />
+            <Text style={{ fontSize: 11, color: ceylon.lavender, fontWeight: "600" }}>Online & ready to help</Text>
           </View>
         </View>
         {/* Tapping this opens the same Rename/Delete sheet as the list */}
         <TouchableOpacity onPress={() => onOpenActions(room)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Ionicons name="ellipsis-horizontal" size={20} color={ceylon.mutedLight} />
+          <Ionicons name="ellipsis-horizontal" size={20} color={ceylon.textLight} />
         </TouchableOpacity>
       </View>
 

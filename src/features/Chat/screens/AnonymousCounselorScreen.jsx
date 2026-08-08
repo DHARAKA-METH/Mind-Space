@@ -13,16 +13,20 @@ import { getAuth } from "firebase/auth";
 import { getCounselors, startOrGetConversation } from "../services/anonymousChatService";
 
 const ceylon = {
-  ink: "#3D2E1F",
-  muted: "#8A7A63",
-  mutedLight: "#B8A78C",
-  charcoal: "#2C2C2C",
-  accent: "#7C5CBF",
-  accentLight: "#EDE7F6",
-  terracotta: "#C97B4A",
-  sand: "#F0E4D3",
-  cream: "#FBF3EA",
-  background: "#ECE6E3",
+  background: "#FAF7F4",
+  surface: "#FFFFFF",
+  lavender: "#8D7BB8",
+  lavenderDark: "#6F5C9E",
+  lavenderSoft: "#EEE9F7",
+  lavenderVerySoft: "#F6F2FA",
+  peach: "#E88366",
+  peachSoft: "#FBE9E3",
+  green: "#68A765",
+  greenSoft: "#EAF4E8",
+  text: "#252330",
+  textSecondary: "#706A76",
+  textLight: "#A29CA7",
+  border: "#ECE5E0",
 };
 
 const Avatar = React.memo(({ emoji, color, size = 36, online }) => (
@@ -32,7 +36,7 @@ const Avatar = React.memo(({ emoji, color, size = 36, online }) => (
         width: size,
         height: size,
         borderRadius: size / 2,
-        backgroundColor: color || ceylon.accentLight,
+        backgroundColor: color || ceylon.lavenderSoft,
         alignItems: "center",
         justifyContent: "center",
         borderWidth: 2,
@@ -52,7 +56,7 @@ const Avatar = React.memo(({ emoji, color, size = 36, online }) => (
           borderRadius: 5,
           borderWidth: 2,
           borderColor: "#fff",
-          backgroundColor: online ? ceylon.charcoal : ceylon.mutedLight,
+          backgroundColor: online ? ceylon.lavenderDark : ceylon.textLight,
         }}
       />
     )}
@@ -74,7 +78,7 @@ const CounselorCard = React.memo(({ c, onStart }) => (
       padding: 16,
       marginHorizontal: 16,
       marginBottom: 10,
-      shadowColor: ceylon.ink,
+      shadowColor: ceylon.text,
       shadowOpacity: 0.05,
       shadowRadius: 10,
       shadowOffset: { width: 0, height: 4 },
@@ -86,10 +90,10 @@ const CounselorCard = React.memo(({ c, onStart }) => (
       <View className="flex-1 ml-3">
         <View className="flex-row justify-between items-start">
           <View className="flex-1 pr-2">
-            <Text style={{ fontWeight: "700", fontSize: 14, color: ceylon.ink }}>
+            <Text style={{ fontWeight: "700", fontSize: 14, color: ceylon.text }}>
               {c.name}
             </Text>
-            <Text style={{ fontSize: 12, color: ceylon.accent, fontWeight: "600", marginTop: 2 }}>
+            <Text style={{ fontSize: 12, color: ceylon.lavender, fontWeight: "600", marginTop: 2 }}>
               {c.specialty}
             </Text>
           </View>
@@ -98,16 +102,16 @@ const CounselorCard = React.memo(({ c, onStart }) => (
               paddingHorizontal: 10,
               paddingVertical: 4,
               borderRadius: 10,
-              backgroundColor: c.online ? `${ceylon.charcoal}12` : `${ceylon.muted}15`,
+              backgroundColor: c.online ? `${ceylon.lavenderDark}12` : `${ceylon.textSecondary}15`,
             }}
           >
-            <Text style={{ fontSize: 10, fontWeight: "700", color: c.online ? ceylon.charcoal : ceylon.muted }}>
+            <Text style={{ fontSize: 10, fontWeight: "700", color: c.online ? ceylon.lavenderDark : ceylon.textSecondary }}>
               {c.online ? "Online" : "Away"}
             </Text>
           </View>
         </View>
 
-        <Text style={{ fontSize: 12, color: ceylon.muted, marginTop: 8, lineHeight: 17 }}>
+        <Text style={{ fontSize: 12, color: ceylon.textSecondary, marginTop: 8, lineHeight: 17 }}>
           {c.bio}
         </Text>
 
@@ -121,7 +125,7 @@ const CounselorCard = React.memo(({ c, onStart }) => (
               key={tag.label}
               style={{ paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12, backgroundColor: ceylon.background }}
             >
-              <Text style={{ fontSize: 10, color: ceylon.muted, fontWeight: "500" }}>
+              <Text style={{ fontSize: 10, color: ceylon.textSecondary, fontWeight: "500" }}>
                 {tag.icon} {tag.label}
               </Text>
             </View>
@@ -143,10 +147,10 @@ const CounselorCard = React.memo(({ c, onStart }) => (
         paddingVertical: 13,
         borderRadius: 14,
         alignItems: "center",
-        backgroundColor: c.online ? ceylon.charcoal : ceylon.sand,
+        backgroundColor: c.online ? ceylon.lavenderDark : ceylon.border,
       }}
     >
-      <Text style={{ fontWeight: "700", fontSize: 13, color: c.online ? "#fff" : ceylon.muted }}>
+      <Text style={{ fontWeight: "700", fontSize: 13, color: c.online ? "#fff" : ceylon.textSecondary }}>
         {c.online ? "Start Anonymous Chat" : "Currently Unavailable"}
       </Text>
     </TouchableOpacity>
@@ -192,7 +196,7 @@ const AnonymousCounselorScreen = ({ setActiveCounselor }) => {
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center" style={{ backgroundColor: ceylon.background }}>
-        <ActivityIndicator size="large" color={ceylon.accent} />
+        <ActivityIndicator size="large" color={ceylon.lavender} />
       </View>
     );
   }
@@ -201,7 +205,7 @@ const AnonymousCounselorScreen = ({ setActiveCounselor }) => {
     <View className="flex-1" style={{ backgroundColor: ceylon.background }}>
       <View
         style={{
-          backgroundColor: ceylon.cream,
+          backgroundColor: ceylon.surface,
           paddingHorizontal: 20,
           paddingTop: 16,
           paddingBottom: 18,
@@ -213,29 +217,29 @@ const AnonymousCounselorScreen = ({ setActiveCounselor }) => {
           <View className="flex-row items-center">
             <View
               style={{
-                width: 44,
-                height: 44,
+                width: 30,
+                height: 30,
                 borderRadius: 14,
                 backgroundColor: "#fff",
                 alignItems: "center",
                 justifyContent: "center",
                 borderWidth: 1.5,
-                borderColor: ceylon.sand,
+                borderColor: ceylon.border,
               }}
             >
-              <Ionicons name="shield-checkmark" size={22} color={ceylon.accent} />
+              <Ionicons name="shield-checkmark" size={16} color={ceylon.lavender} />
             </View>
             <View className="ml-3">
-              <Text style={{ fontWeight: "700", fontSize: 18, color: ceylon.ink }}>
+              <Text style={{ fontWeight: "700", fontSize: 12, color: ceylon.text }}>
                 Anonymous Support
               </Text>
-              <Text style={{ fontSize: 11, color: ceylon.muted, marginTop: 2 }}>
+              <Text style={{ fontSize: 11, color: ceylon.textSecondary, marginTop: 2 }}>
                 Your identity is fully protected
               </Text>
             </View>
           </View>
-          <View style={{ paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12, backgroundColor: `${ceylon.charcoal}12` }}>
-            <Text style={{ fontSize: 11, fontWeight: "700", color: ceylon.charcoal }}>
+          <View style={{ paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12, backgroundColor: `${ceylon.lavenderDark}12` }}>
+            <Text style={{ fontSize: 11, fontWeight: "700", color: ceylon.lavenderDark }}>
               {onlineCount} online
             </Text>
           </View>
@@ -245,17 +249,17 @@ const AnonymousCounselorScreen = ({ setActiveCounselor }) => {
           className="flex-row items-center mt-4"
           style={{ backgroundColor: "#fff", borderRadius: 14, paddingHorizontal: 14, height: 42 }}
         >
-          <Ionicons name="search" size={16} color={ceylon.mutedLight} />
+          <Ionicons name="search" size={16} color={ceylon.textLight} />
           <TextInput
             value={search}
             onChangeText={setSearch}
             placeholder="Search counselors..."
-            placeholderTextColor={ceylon.mutedLight}
-            style={{ flex: 1, marginLeft: 10, fontSize: 13, color: ceylon.ink }}
+            placeholderTextColor={ceylon.textLight}
+            style={{ flex: 1, marginLeft: 10, fontSize: 13, color: ceylon.text }}
           />
           {search.length > 0 && (
             <TouchableOpacity onPress={() => setSearch("")}>
-              <Ionicons name="close-circle" size={16} color={ceylon.mutedLight} />
+              <Ionicons name="close-circle" size={16} color={ceylon.textLight} />
             </TouchableOpacity>
           )}
         </View>
@@ -274,12 +278,12 @@ const AnonymousCounselorScreen = ({ setActiveCounselor }) => {
               marginBottom: 16,
             }}
           >
-            <Ionicons name="people-outline" size={28} color={ceylon.accent} />
+            <Ionicons name="people-outline" size={28} color={ceylon.lavender} />
           </View>
-          <Text style={{ fontWeight: "700", color: ceylon.ink, fontSize: 15 }}>
+          <Text style={{ fontWeight: "700", color: ceylon.text, fontSize: 15 }}>
             {search ? "No counselors found" : "No counselors available"}
           </Text>
-          <Text style={{ fontSize: 12, color: ceylon.muted, textAlign: "center", marginTop: 6 }}>
+          <Text style={{ fontSize: 12, color: ceylon.textSecondary, textAlign: "center", marginTop: 6 }}>
             {search ? "Try a different search term" : "Check back later for available counselors"}
           </Text>
         </View>

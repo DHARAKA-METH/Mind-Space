@@ -18,16 +18,20 @@ import {
 } from "../services/anonymousChatService";
 
 const ceylon = {
-  ink: "#3D2E1F",
-  muted: "#8A7A63",
-  mutedLight: "#B8A78C",
-  charcoal: "#2C2C2C",
-  accent: "#7C5CBF",
-  accentLight: "#EDE7F6",
-  terracotta: "#C97B4A",
-  sand: "#F0E4D3",
-  cream: "#FBF3EA",
-  background: "#ECE6E3",
+  background: "#FAF7F4",
+  surface: "#FFFFFF",
+  lavender: "#8D7BB8",
+  lavenderDark: "#6F5C9E",
+  lavenderSoft: "#EEE9F7",
+  lavenderVerySoft: "#F6F2FA",
+  peach: "#E88366",
+  peachSoft: "#FBE9E3",
+  green: "#68A765",
+  greenSoft: "#EAF4E8",
+  text: "#252330",
+  textSecondary: "#706A76",
+  textLight: "#A29CA7",
+  border: "#ECE5E0",
 };
 
 const SPACE = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20 };
@@ -39,7 +43,7 @@ const Avatar = React.memo(({ emoji, color, size = 36, online }) => (
         width: size,
         height: size,
         borderRadius: size / 2,
-        backgroundColor: color || ceylon.accentLight,
+        backgroundColor: color || ceylon.lavenderSoft,
         alignItems: "center",
         justifyContent: "center",
         borderWidth: 2,
@@ -59,7 +63,7 @@ const Avatar = React.memo(({ emoji, color, size = 36, online }) => (
           borderRadius: 5,
           borderWidth: 2,
           borderColor: "#fff",
-          backgroundColor: online ? ceylon.charcoal : ceylon.mutedLight,
+          backgroundColor: online ? ceylon.lavenderDark : ceylon.textLight,
         }}
       />
     )}
@@ -75,13 +79,13 @@ const formatMsgTime = (ts) => {
 
 const MessageBubble = React.memo(({ msg, systemEmoji, isUser }) => (
   <View className={`px-4 mb-3 items-end flex-row ${isUser ? "flex-row-reverse" : "flex-row"}`}>
-    {!isUser && <Avatar emoji={systemEmoji} color={ceylon.accentLight} size={30} />}
+    {!isUser && <Avatar emoji={systemEmoji} color={ceylon.lavenderSoft} size={30} />}
     <View className={`max-w-[75%] mx-2 ${isUser ? "items-end" : "items-start"}`}>
       <View
         style={{
           borderRadius: 18,
           padding: 12,
-          backgroundColor: isUser ? ceylon.charcoal : "#fff",
+          backgroundColor: isUser ? ceylon.lavenderDark : "#fff",
           borderBottomRightRadius: isUser ? 4 : 18,
           borderBottomLeftRadius: isUser ? 18 : 4,
           shadowColor: "#000",
@@ -90,11 +94,11 @@ const MessageBubble = React.memo(({ msg, systemEmoji, isUser }) => (
           shadowOffset: { width: 0, height: 2 },
         }}
       >
-        <Text style={{ fontSize: 13.5, color: isUser ? "#fff" : ceylon.ink, lineHeight: 19 }}>
+        <Text style={{ fontSize: 13.5, color: isUser ? "#fff" : ceylon.text, lineHeight: 19 }}>
           {msg.text}
         </Text>
       </View>
-      <Text style={{ fontSize: 10, color: ceylon.mutedLight, marginTop: 4 }}>
+      <Text style={{ fontSize: 10, color: ceylon.textLight, marginTop: 4 }}>
         {formatMsgTime(msg.createdAt)}
       </Text>
     </View>
@@ -116,18 +120,18 @@ const MessageInput = ({ onSend, placeholder = "Type a message..." }) => {
     <View
       className="flex-row items-center"
       style={{
-        backgroundColor: ceylon.cream,
+        backgroundColor: ceylon.surface,
         padding: SPACE.md,
         paddingBottom: Platform.OS === "ios" ? SPACE.xl : SPACE.md,
         borderTopWidth: 1,
-        borderTopColor: ceylon.sand,
+        borderTopColor: ceylon.border,
       }}
     >
       <TextInput
         value={text}
         onChangeText={setText}
         placeholder={placeholder}
-        placeholderTextColor={ceylon.mutedLight}
+        placeholderTextColor={ceylon.textLight}
         multiline
         style={{
           flex: 1,
@@ -136,10 +140,10 @@ const MessageInput = ({ onSend, placeholder = "Type a message..." }) => {
           borderRadius: 24,
           backgroundColor: "#fff",
           fontSize: 13.5,
-          color: ceylon.ink,
+          color: ceylon.text,
           maxHeight: 100,
           borderWidth: 1,
-          borderColor: ceylon.sand,
+          borderColor: ceylon.border,
         }}
       />
       <TouchableOpacity
@@ -152,7 +156,7 @@ const MessageInput = ({ onSend, placeholder = "Type a message..." }) => {
           borderRadius: 21,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: text.trim() ? ceylon.charcoal : ceylon.mutedLight,
+          backgroundColor: text.trim() ? ceylon.lavenderDark : ceylon.textLight,
           marginLeft: SPACE.sm,
         }}
       >
@@ -184,12 +188,12 @@ const CounselorChatRoom = ({ counselor, onBack }) => {
       <View
         className="flex-row items-center"
         style={{
-          backgroundColor: ceylon.cream,
+          backgroundColor: ceylon.surface,
           padding: SPACE.md,
           paddingTop: Platform.OS === "ios" ? SPACE.xl : SPACE.md,
           gap: SPACE.md,
           borderBottomWidth: 1,
-          borderBottomColor: ceylon.sand,
+          borderBottomColor: ceylon.border,
         }}
       >
         <TouchableOpacity
@@ -200,24 +204,24 @@ const CounselorChatRoom = ({ counselor, onBack }) => {
           className="w-9 h-9 rounded-full items-center justify-center"
           style={{ backgroundColor: "#fff" }}
         >
-          <Ionicons name="chevron-back" size={20} color={ceylon.ink} />
+          <Ionicons name="chevron-back" size={20} color={ceylon.text} />
         </TouchableOpacity>
         <Avatar emoji={counselor.emoji} color={counselor.color} size={38} online={counselor.online} />
         <View className="flex-1">
-          <Text numberOfLines={1} style={{ fontWeight: "700", fontSize: 14, color: ceylon.ink }}>
+          <Text numberOfLines={1} style={{ fontWeight: "700", fontSize: 14, color: ceylon.text }}>
             {counselor.name}
           </Text>
           <View className="flex-row items-center" style={{ marginTop: 2 }}>
-            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: ceylon.charcoal }} />
-            <Text style={{ fontSize: 11, color: ceylon.charcoal, fontWeight: "600", marginLeft: 5 }}>
+            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: ceylon.lavenderDark }} />
+            <Text style={{ fontSize: 11, color: ceylon.lavenderDark, fontWeight: "600", marginLeft: 5 }}>
               {counselor.specialty}
             </Text>
           </View>
         </View>
-        <View className="px-2.5 py-1 rounded-xl" style={{ backgroundColor: ceylon.accentLight }}>
+        <View className="px-2.5 py-1 rounded-xl" style={{ backgroundColor: ceylon.lavenderSoft }}>
           <View className="flex-row items-center" style={{ gap: 4 }}>
-            <Ionicons name="lock-closed" size={11} color={ceylon.accent} />
-            <Text style={{ fontSize: 10, fontWeight: "700", color: ceylon.accent }}>
+            <Ionicons name="lock-closed" size={11} color={ceylon.lavender} />
+            <Text style={{ fontSize: 10, fontWeight: "700", color: ceylon.lavender }}>
               Anon
             </Text>
           </View>
@@ -240,21 +244,21 @@ const CounselorChatRoom = ({ counselor, onBack }) => {
           ListHeaderComponent={() => (
             <View className="px-4 pt-3 pb-3">
               <View className="flex-row items-center justify-center gap-2 mb-3">
-                <Ionicons name="lock-closed" size={12} color={ceylon.accent} />
-                <Text className="text-[11px]" style={{ color: ceylon.muted }}>
+                <Ionicons name="lock-closed" size={12} color={ceylon.lavender} />
+                <Text className="text-[11px]" style={{ color: ceylon.textSecondary }}>
                   End-to-end encrypted. Your identity is hidden.
                 </Text>
               </View>
               <View className="flex-row px-4 pb-1">
-                <View className="flex-1 p-2.5 rounded-xl bg-white items-center" style={{ borderWidth: 1, borderColor: ceylon.sand }}>
-                  <Text className="text-[10px] font-semibold" style={{ color: ceylon.mutedLight }}>COUNSELOR</Text>
-                  <Text className="text-xs font-bold my-0.5" style={{ color: ceylon.ink }}>{counselor.name}</Text>
-                  <Text className="text-[10px]" style={{ color: ceylon.charcoal }}>Visible to you</Text>
+                <View className="flex-1 p-2.5 rounded-xl bg-white items-center" style={{ borderWidth: 1, borderColor: ceylon.border }}>
+                  <Text className="text-[10px] font-semibold" style={{ color: ceylon.textLight }}>COUNSELOR</Text>
+                  <Text className="text-xs font-bold my-0.5" style={{ color: ceylon.text }}>{counselor.name}</Text>
+                  <Text className="text-[10px]" style={{ color: ceylon.lavenderDark }}>Visible to you</Text>
                 </View>
-                <View className="flex-1 p-2.5 rounded-xl items-center ml-2" style={{ backgroundColor: ceylon.accentLight }}>
-                  <Text className="text-[10px] font-semibold" style={{ color: ceylon.mutedLight }}>YOU</Text>
-                  <Text className="text-xs font-bold my-0.5" style={{ color: ceylon.accent }}>Anonymous</Text>
-                  <Text className="text-[10px]" style={{ color: ceylon.muted }}>Hidden identity</Text>
+                <View className="flex-1 p-2.5 rounded-xl items-center ml-2" style={{ backgroundColor: ceylon.lavenderSoft }}>
+                  <Text className="text-[10px] font-semibold" style={{ color: ceylon.textLight }}>YOU</Text>
+                  <Text className="text-xs font-bold my-0.5" style={{ color: ceylon.lavender }}>Anonymous</Text>
+                  <Text className="text-[10px]" style={{ color: ceylon.textSecondary }}>Hidden identity</Text>
                 </View>
               </View>
             </View>

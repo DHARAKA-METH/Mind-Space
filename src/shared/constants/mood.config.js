@@ -23,41 +23,85 @@ export const moods = [
   {
     id: "Awful",
     label: "Awful",
-    bg: "#F7DDD6",       // warm muted rose — signals discomfort without alarm
-    color: "#B5555C",    // accent: dusty red
+    bg: "#F7DDD6",
+    color: "#B5555C",
     icon: icons.mood_awful_filled,
     outline: icons.mood_awful_outline,
   },
   {
     id: "Bad",
     label: "Bad",
-    bg: "#F4E3CE",       // warm sand-terracotta — matches app's terracotta family
-    color: "#C97B4A",    // accent: terracotta (reuses existing ceylon.terracotta)
+    bg: "#F4E3CE",
+    color: "#C97B4A",
     icon: icons.mood_bad_filled,
     outline: icons.mood_bad_outline,
   },
   {
     id: "Meh",
     label: "Meh",
-    bg: "#EDE6D9",       // neutral warm sand — sits at the exact midpoint
-    color: "#B8A78C",    // accent: muted taupe (reuses ceylon.mutedLight)
+    bg: "#EDE6D9",
+    color: "#B8A78C",
     icon: icons.mood_neutral_filled,
     outline: icons.mood_neutral_outline,
   },
   {
     id: "Good",
     label: "Good",
-    bg: "#DCEBDD",       // soft sage-green — calm, positive
-    color: "#7C9885",    // accent: sage
+    bg: "#DCEBDD",
+    color: "#7C9885",
     icon: icons.mood_good_filled,
     outline: icons.mood_good_outline,
   },
   {
     id: "Great",
     label: "Great",
-    bg: "#CFE3D2",       // deeper sage-green — most saturated positive tone
-    color: "#4A7856",    // accent: tea green (reuses ceylon.teaGreen)
+    bg: "#CFE3D2",
+    color: "#4A7856",
     icon: icons.mood_great_filled,
     outline: icons.mood_great_outline,
   },
 ];
+
+/* -------------------------------------------------------------------------- */
+/*                             WELLNESS MESSAGES                              */
+/* -------------------------------------------------------------------------- */
+
+export const WELLNESS_MESSAGES: Record<
+  string,
+  {
+    title: string;
+    subtitle: string;
+    button: string;
+  }
+> = {
+  Awful: {
+    title: "Give yourself a gentle moment",
+    subtitle:
+      "Explore calming resources selected to help you slow down and feel supported.",
+    button: "Find something calming",
+  },
+  Bad: {
+    title: "Take a small break",
+    subtitle:
+      "A relaxing activity may help you create a little space from how you're feeling.",
+    button: "Help me relax",
+  },
+  Meh: {
+    title: "How about a little reset?",
+    subtitle:
+      "Explore music, activities and simple wellness resources for your current mood.",
+    button: "Refresh my mood",
+  },
+  Good: {
+    title: "Keep this balance going",
+    subtitle:
+      "Relax with something enjoyable and continue your positive momentum.",
+    button: "Explore wellness",
+  },
+  Great: {
+    title: "Keep the good energy going",
+    subtitle:
+      "Discover something relaxing or uplifting that matches how you're feeling.",
+    button: "Find something for me",
+  },
+};

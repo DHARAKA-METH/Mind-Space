@@ -1,4 +1,9 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, {
+  useState,
+  useMemo,
+  useEffect,
+} from "react";
+
 import {
   View,
   Text,
@@ -10,23 +15,43 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import { Stack } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+
+import {
+  SafeAreaView,
+} from "react-native-safe-area-context";
+
+import {
+  Stack,
+} from "expo-router";
+
+import {
+  Ionicons,
+} from "@expo/vector-icons";
+
 import * as Haptics from "expo-haptics";
+
 import Animated, {
   FadeInDown,
   FadeIn,
   Layout,
 } from "react-native-reanimated";
+
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
-import { MONTH_NAMES, DAYS, TIME_SLOTS } from "../services/mockData";
+
+import {
+  MONTH_NAMES,
+  DAYS,
+  TIME_SLOTS,
+} from "../services/mockData";
+
 import {
   getCounselors,
   getLoggedUser,
   fetchAppointments,
   createAppointment,
 } from "../services/appointmentService";
+
 import {
   getDaysInMonth,
   getFirstDayOfMonth,
@@ -37,59 +62,196 @@ import {
 
 dayjs.extend(utc);
 
-const ceylon = {
-  ink: "#3D2E1F",
-  muted: "#8A7A63",
-  mutedLight: "#B8A78C",
-  charcoal: "#2C2C2C",
-  accent: "#7C5CBF",
-  accentLight: "#EDE7F6",
-  terracotta: "#C97B4A",
-  sand: "#F0E4D3",
-  cream: "#FBF3EA",
-  background: "#ECE6E3",
-  danger: "#B5555C",
-  dangerBg: "#F7DDD6",
+/* -------------------------------------------------------------------------- */
+/*                                COLOR SYSTEM                                */
+/* -------------------------------------------------------------------------- */
+
+const colors = {
+  background: "#F9F5F1",
+
+  lavender: "#CCC5E8",
+  lavenderSoft: "#F2EEF9",
+
+  purple: "#6D5AB5",
+  purpleDark: "#574493",
+
+  peach: "#F47F63",
+  peachSoft: "#FDE8E2",
+
+  text: "#1F1F2E",
+  secondaryText: "#8C8992",
+  lightText: "#AAA4AE",
+
+  white: "#FFFFFF",
+
+  border: "#ECE6E2",
+
+  success: "#679A6D",
+  successSoft: "#EAF4E8",
+
+  danger: "#C45B65",
+  dangerSoft: "#FBE8E9",
 };
 
-const SPACE = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 28 };
+/* -------------------------------------------------------------------------- */
+/*                                  HEADER                                    */
+/* -------------------------------------------------------------------------- */
 
-// ─── TOGGLE SWITCH ───────────────────────────────────────────────────────────
-const ToggleSwitch = ({ activeTab, onTabChange }) => {
+const AppointmentHeader = () => {
+  return (
+    <View className="flex-row items-center">
+      <View
+        className="
+          w-10
+          h-10
+          rounded-2xl
+          bg-[#F2EEF9]
+          items-center
+          justify-center
+          mr-3
+        "
+      >
+        <Ionicons
+          name="calendar-outline"
+          size={20}
+          color={colors.purple}
+        />
+      </View>
+
+      <View>
+        <Text
+          className="
+            text-[18px]
+            font-extrabold
+            text-[#1F1F2E]
+          "
+        >
+          Book a Session
+        </Text>
+
+        <Text
+          className="
+            text-[10.5px]
+            mt-0.5
+            text-[#8C8992]
+          "
+        >
+          Find support at a time that works for you
+        </Text>
+      </View>
+    </View>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
+/*                              TOGGLE SWITCH                                 */
+/* -------------------------------------------------------------------------- */
+
+const ToggleSwitch = ({
+  activeTab,
+  onTabChange,
+}) => {
   const tabs = [
-    { id: "book", label: "Book Appointment", icon: "calendar-outline" },
-    { id: "booked", label: "My Booking", icon: "list-outline" },
+    {
+      id: "book",
+      label: "Book Session",
+      icon: "calendar-outline",
+      activeIcon: "calendar",
+    },
+    {
+      id: "booked",
+      label: "My Sessions",
+      icon: "list-outline",
+      activeIcon: "list",
+    },
   ];
 
   return (
     <View
-      className="flex-row p-1 rounded-2xl"
-      style={{ backgroundColor: "#fff", borderWidth: 1.5, borderColor: ceylon.sand }}
+      className="
+        flex-row
+        p-1
+        rounded-[20px]
+        bg-white
+        border
+        border-[#ECE6E2]
+        shadow-sm
+      "
     >
       {tabs.map((tab) => {
-        const isActive = activeTab === tab.id;
+        const isActive =
+          activeTab === tab.id;
+
         return (
           <TouchableOpacity
             key={tab.id}
+            activeOpacity={0.82}
             onPress={() => {
-              Haptics.selectionAsync().catch(() => {});
+              Haptics
+                .selectionAsync()
+                .catch(() => {});
+
               onTabChange(tab.id);
             }}
-            activeOpacity={0.8}
-            className="flex-1 flex-row items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl"
-            style={{
-              backgroundColor: isActive ? ceylon.charcoal : "transparent",
-            }}
+            className={`
+              flex-1
+              flex-row
+              items-center
+              justify-center
+              min-h-[40px]
+              px-1.5
+              rounded-[16px]
+
+              ${
+                isActive
+                  ? "bg-[#6D5AB5]"
+                  : "bg-transparent"
+              }
+            `}
           >
-            <Ionicons
-              name={tab.icon}
-              size={15}
-              color={isActive ? "#fff" : ceylon.muted}
-            />
+            <View
+              className={`
+                w-6
+                h-6
+                rounded-full
+                items-center
+                justify-center
+                mr-1
+
+                ${
+                  isActive
+                    ? "bg-white/15"
+                    : "bg-[#F2EEF9]"
+                }
+              `}
+            >
+              <Ionicons
+                name={
+                  isActive
+                    ? tab.activeIcon
+                    : tab.icon
+                }
+                size={13}
+                color={
+                  isActive
+                    ? "#FFFFFF"
+                    : colors.purple
+                }
+              />
+            </View>
+
             <Text
-              className="text-[11px] font-semibold"
-              style={{ color: isActive ? "#fff" : ceylon.muted }}
               numberOfLines={1}
+              className={`
+                text-[10.5px]
+                font-bold
+
+                ${
+                  isActive
+                    ? "text-white"
+                    : "text-[#706A76]"
+                }
+              `}
             >
               {tab.label}
             </Text>
@@ -100,236 +262,683 @@ const ToggleSwitch = ({ activeTab, onTabChange }) => {
   );
 };
 
-// ─── BOOKED APPOINTMENT CARD ─────────────────────────────────────────────────
-const AppointmentCard = ({ appointment, counselor, isPast }) => {
-  const displayDate = dayjs.utc(appointment.appointmentDateTime).format("MMM DD, YYYY");
-  const displayTime = dayjs.utc(appointment.appointmentDateTime).format("hh:mm A");
+/* -------------------------------------------------------------------------- */
+/*                         APPOINTMENT STATUS CARD                            */
+/* -------------------------------------------------------------------------- */
+
+const AppointmentCard = ({
+  appointment,
+  counselor,
+  isPast,
+}) => {
+  const displayDate = dayjs
+    .utc(
+      appointment.appointmentDateTime
+    )
+    .format("MMM DD, YYYY");
+
+  const displayTime = dayjs
+    .utc(
+      appointment.appointmentDateTime
+    )
+    .format("hh:mm A");
 
   const statusConfig = {
-    confirmed: { bg: ceylon.accentLight, color: ceylon.accent, label: "Confirmed" },
-    pending: { bg: `${ceylon.terracotta}18`, color: ceylon.terracotta, label: "Pending" },
-    cancelled: { bg: ceylon.dangerBg, color: ceylon.danger, label: "Cancelled" },
+    confirmed: {
+      bg: colors.successSoft,
+      color: colors.success,
+      label: "Confirmed",
+    },
+
+    pending: {
+      bg: colors.peachSoft,
+      color: colors.peach,
+      label: "Pending",
+    },
+
+    cancelled: {
+      bg: colors.dangerSoft,
+      color: colors.danger,
+      label: "Cancelled",
+    },
   };
 
-  const status = statusConfig[appointment.status] || statusConfig.pending;
+  const status =
+    statusConfig[
+      appointment.status
+    ] || statusConfig.pending;
 
   return (
     <Animated.View
-      entering={FadeInDown.duration(300).springify()}
+      entering={FadeInDown
+        .duration(280)
+        .springify()}
       layout={Layout}
-      className="rounded-2xl overflow-hidden"
+      className="
+        bg-white
+        rounded-[22px]
+        overflow-hidden
+        mb-3
+        border
+        border-[#ECE6E2]
+      "
       style={{
-        backgroundColor: "#fff",
-        marginBottom: 10,
-        borderWidth: 1.5,
-        borderColor: isPast ? ceylon.sand : `${status.color}30`,
-        opacity: isPast ? 0.7 : 1,
+        opacity: isPast ? 0.62 : 1,
       }}
     >
       <View className="p-4">
+        {/* Counselor */}
+
         <View className="flex-row items-start">
           <View
+            className="
+              w-12
+              h-12
+              rounded-2xl
+              items-center
+              justify-center
+              mr-3
+            "
             style={{
-              width: 48,
-              height: 48,
-              borderRadius: 14,
-              backgroundColor: counselor?.bgColor || ceylon.accentLight,
-              alignItems: "center",
-              justifyContent: "center",
+              backgroundColor:
+                counselor?.bgColor ||
+                colors.lavenderSoft,
             }}
           >
-            <Text style={{ fontSize: 22 }}>{counselor?.avatar || "🧑‍⚕️"}</Text>
+            <Text className="text-[22px]">
+              {counselor?.avatar ||
+                "🧑‍⚕️"}
+            </Text>
           </View>
-          <View className="flex-1 ml-3">
-            <View className="flex-row items-center justify-between">
-              <Text className="text-[14px] font-bold" style={{ color: ceylon.ink }}>
-                {counselor?.name || "Counselor"}
-              </Text>
+
+          <View className="flex-1">
+            <View className="flex-row items-start justify-between">
+              <View className="flex-1 pr-2">
+                <Text
+                  numberOfLines={1}
+                  className="
+                    text-[14px]
+                    font-extrabold
+                    text-[#1F1F2E]
+                  "
+                >
+                  {counselor?.name ||
+                    "Counselor"}
+                </Text>
+
+                <Text
+                  numberOfLines={2}
+                  className="
+                    mt-1
+                    text-[11px]
+                    leading-4
+                    text-[#8C8992]
+                  "
+                >
+                  {counselor
+                    ?.specialties
+                    ?.join(" · ") ||
+                    "General Counseling"}
+                </Text>
+              </View>
+
               <View
-                className="px-2.5 py-1 rounded-lg"
-                style={{ backgroundColor: status.bg }}
+                className="
+                  px-2.5
+                  py-1.5
+                  rounded-full
+                "
+                style={{
+                  backgroundColor:
+                    status.bg,
+                }}
               >
-                <Text className="text-[10px] font-bold" style={{ color: status.color }}>
+                <Text
+                  className="
+                    text-[9.5px]
+                    font-extrabold
+                  "
+                  style={{
+                    color:
+                      status.color,
+                  }}
+                >
                   {status.label}
                 </Text>
               </View>
             </View>
-            <Text className="text-[12px] mt-0.5" style={{ color: ceylon.muted }}>
-              {counselor?.specialties?.join(" · ") || "General Counseling"}
-            </Text>
           </View>
         </View>
+
+        {/* Appointment details */}
 
         <View
-          className="flex-row items-center mt-3 pt-3 gap-4"
-          style={{ borderTopWidth: 1, borderTopColor: ceylon.sand }}
+          className="
+            mt-4
+            pt-3
+            border-t
+            border-[#F0EAE6]
+          "
         >
-          <View className="flex-row items-center gap-1.5">
-            <Ionicons name="calendar-outline" size={14} color={ceylon.muted} />
-            <Text className="text-[11px]" style={{ color: ceylon.ink, fontWeight: "600" }}>
-              {displayDate}
-            </Text>
-          </View>
-          <View className="flex-row items-center gap-1.5">
-            <Ionicons name="time-outline" size={14} color={ceylon.muted} />
-            <Text className="text-[11px]" style={{ color: ceylon.ink, fontWeight: "600" }}>
-              {displayTime}
-            </Text>
-          </View>
-          <View className="flex-row items-center gap-1.5">
-            <Ionicons
-              name={appointment.type === "online" ? "videocam-outline" : "location-outline"}
-              size={14}
-              color={ceylon.muted}
-            />
-            <Text
-              className="text-[11px] capitalize"
-              style={{ color: ceylon.ink, fontWeight: "600" }}
-            >
-              {appointment.type}
-            </Text>
+          <View className="flex-row flex-wrap gap-x-4 gap-y-2">
+            <View className="flex-row items-center">
+              <Ionicons
+                name="calendar-outline"
+                size={14}
+                color={
+                  colors.purple
+                }
+              />
+
+              <Text
+                className="
+                  ml-1.5
+                  text-[11px]
+                  font-semibold
+                  text-[#1F1F2E]
+                "
+              >
+                {displayDate}
+              </Text>
+            </View>
+
+            <View className="flex-row items-center">
+              <Ionicons
+                name="time-outline"
+                size={14}
+                color={
+                  colors.purple
+                }
+              />
+
+              <Text
+                className="
+                  ml-1.5
+                  text-[11px]
+                  font-semibold
+                  text-[#1F1F2E]
+                "
+              >
+                {displayTime}
+              </Text>
+            </View>
+
+            <View className="flex-row items-center">
+              <Ionicons
+                name={
+                  appointment.type ===
+                  "online"
+                    ? "videocam-outline"
+                    : "location-outline"
+                }
+                size={14}
+                color={
+                  colors.purple
+                }
+              />
+
+              <Text
+                className="
+                  ml-1.5
+                  text-[11px]
+                  font-semibold
+                  capitalize
+                  text-[#1F1F2E]
+                "
+              >
+                {appointment.type}
+              </Text>
+            </View>
           </View>
         </View>
 
-        {!isPast && appointment.status !== "cancelled" && (
-          <View className="flex-row gap-2 mt-3">
-            <TouchableOpacity
-              className="flex-1 py-2 rounded-xl items-center"
-              style={{ backgroundColor: ceylon.background }}
-            >
-              <Text className="text-[11px] font-semibold" style={{ color: ceylon.muted }}>
-                Reschedule
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              className="flex-1 py-2 rounded-xl items-center"
-              style={{ backgroundColor: ceylon.dangerBg }}
-            >
-              <Text className="text-[11px] font-semibold" style={{ color: ceylon.danger }}>
-                Cancel
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        {/* Actions */}
+
+        {!isPast &&
+          appointment.status !==
+            "cancelled" && (
+            <View className="flex-row gap-2 mt-4">
+              <TouchableOpacity
+                activeOpacity={0.75}
+                className="
+                  flex-1
+                  h-10
+                  rounded-xl
+                  bg-[#F2EEF9]
+                  items-center
+                  justify-center
+                "
+              >
+                <Text
+                  className="
+                    text-[11px]
+                    font-bold
+                    text-[#6D5AB5]
+                  "
+                >
+                  Reschedule
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                activeOpacity={0.75}
+                className="
+                  flex-1
+                  h-10
+                  rounded-xl
+                  bg-[#FBE8E9]
+                  items-center
+                  justify-center
+                "
+              >
+                <Text
+                  className="
+                    text-[11px]
+                    font-bold
+                    text-[#C45B65]
+                  "
+                >
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
       </View>
     </Animated.View>
   );
 };
 
-// ─── BOOKED DETAILS VIEW ─────────────────────────────────────────────────────
-const BookedDetailsView = ({ appointments, counselors }) => {
+/* -------------------------------------------------------------------------- */
+/*                            BOOKED DETAILS                                  */
+/* -------------------------------------------------------------------------- */
+
+const BookedDetailsView = ({
+  appointments,
+  counselors,
+}) => {
   const now = dayjs.utc();
 
   const grouped = useMemo(() => {
-    const upcoming = appointments
-      .filter((a) => dayjs.utc(a.appointmentDateTime).isAfter(now) && a.status !== "cancelled")
-      .sort((a, b) => dayjs.utc(a.appointmentDateTime).diff(dayjs.utc(b.appointmentDateTime)));
+    const upcoming =
+      appointments
+        .filter(
+          (appointment) =>
+            dayjs
+              .utc(
+                appointment.appointmentDateTime
+              )
+              .isAfter(now) &&
+            appointment.status !==
+              "cancelled"
+        )
+        .sort((a, b) =>
+          dayjs
+            .utc(
+              a.appointmentDateTime
+            )
+            .diff(
+              dayjs.utc(
+                b.appointmentDateTime
+              )
+            )
+        );
 
-    const past = appointments
-      .filter((a) => dayjs.utc(a.appointmentDateTime).isBefore(now) || a.status === "cancelled")
-      .sort((a, b) => dayjs.utc(b.appointmentDateTime).diff(dayjs.utc(a.appointmentDateTime)));
+    const past =
+      appointments
+        .filter(
+          (appointment) =>
+            dayjs
+              .utc(
+                appointment.appointmentDateTime
+              )
+              .isBefore(now) ||
+            appointment.status ===
+              "cancelled"
+        )
+        .sort((a, b) =>
+          dayjs
+            .utc(
+              b.appointmentDateTime
+            )
+            .diff(
+              dayjs.utc(
+                a.appointmentDateTime
+              )
+            )
+        );
 
-    return { upcoming, past };
+    return {
+      upcoming,
+      past,
+    };
   }, [appointments]);
 
-  const getCounselor = (counselorId) => counselors.find((c) => c.id === counselorId);
+  const getCounselor = (
+    counselorId
+  ) =>
+    counselors.find(
+      (counselor) =>
+        counselor.id ===
+        counselorId
+    );
 
-  if (appointments.length === 0) {
+  if (
+    appointments.length === 0
+  ) {
     return (
-      <View className="flex-1 items-center justify-center py-16">
+      <View className="items-center justify-center py-16">
         <View
-          className="rounded-full items-center justify-center mb-4"
-          style={{
-            width: 72,
-            height: 72,
-            backgroundColor: "#fff",
-            borderWidth: 2,
-            borderColor: ceylon.sand,
-          }}
+          className="
+            w-[76px]
+            h-[76px]
+            rounded-[26px]
+            bg-[#F2EEF9]
+            items-center
+            justify-center
+            mb-4
+          "
         >
-          <Ionicons name="calendar-outline" size={32} color={ceylon.accent} />
+          <Ionicons
+            name="calendar-outline"
+            size={30}
+            color={colors.purple}
+          />
         </View>
-        <Text className="text-[15px] font-bold" style={{ color: ceylon.ink }}>
-          No Appointments Yet
+
+        <Text
+          className="
+            text-[16px]
+            font-extrabold
+            text-[#1F1F2E]
+          "
+        >
+          No sessions yet
         </Text>
-        <Text className="text-[12px] mt-1 text-center" style={{ color: ceylon.muted }}>
-          Book your first session to get started
+
+        <Text
+          className="
+            text-[12px]
+            leading-[18px]
+            mt-1.5
+            text-center
+            text-[#8C8992]
+            max-w-[250px]
+          "
+        >
+          When you're ready,
+          choose a counselor and
+          schedule your first
+          session.
         </Text>
       </View>
     );
   }
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
-      {grouped.upcoming.length > 0 && (
-        <View className="mb-6">
-          <View className="flex-row items-center gap-2 mb-3">
-            <View className="w-2 h-2 rounded-full" style={{ backgroundColor: ceylon.charcoal }} />
-            <Text className="text-[13px] font-bold" style={{ color: ceylon.ink }}>
-              Upcoming ({grouped.upcoming.length})
-            </Text>
+    <View className="mt-5">
+      {grouped.upcoming.length >
+        0 && (
+        <View className="mb-7">
+          <View className="flex-row items-center mb-3">
+            <View
+              className="
+                w-8
+                h-8
+                rounded-xl
+                bg-[#EEE9F7]
+                items-center
+                justify-center
+                mr-2.5
+              "
+            >
+              <Ionicons
+                name="calendar-outline"
+                size={15}
+                color={
+                  colors.purple
+                }
+              />
+            </View>
+
+            <View>
+              <Text
+                className="
+                  text-[14px]
+                  font-extrabold
+                  text-[#1F1F2E]
+                "
+              >
+                Upcoming sessions
+              </Text>
+
+              <Text
+                className="
+                  text-[10px]
+                  text-[#8C8992]
+                "
+              >
+                {
+                  grouped.upcoming
+                    .length
+                }{" "}
+                scheduled
+              </Text>
+            </View>
           </View>
-          {grouped.upcoming.map((apt) => (
-            <AppointmentCard
-              key={apt.appointmentId}
-              appointment={apt}
-              counselor={getCounselor(apt.counselorId)}
-              isPast={false}
-            />
-          ))}
+
+          {grouped.upcoming.map(
+            (appointment) => (
+              <AppointmentCard
+                key={
+                  appointment.appointmentId
+                }
+                appointment={
+                  appointment
+                }
+                counselor={getCounselor(
+                  appointment.counselorId
+                )}
+                isPast={false}
+              />
+            )
+          )}
         </View>
       )}
 
-      {grouped.past.length > 0 && (
+      {grouped.past.length >
+        0 && (
         <View>
-          <View className="flex-row items-center gap-2 mb-3">
-            <View className="w-2 h-2 rounded-full" style={{ backgroundColor: ceylon.mutedLight }} />
-            <Text className="text-[13px] font-bold" style={{ color: ceylon.ink }}>
-              Past ({grouped.past.length})
-            </Text>
+          <View className="flex-row items-center mb-3">
+            <View
+              className="
+                w-8
+                h-8
+                rounded-xl
+                bg-[#FDE8E2]
+                items-center
+                justify-center
+                mr-2.5
+              "
+            >
+              <Ionicons
+                name="time-outline"
+                size={15}
+                color={
+                  colors.peach
+                }
+              />
+            </View>
+
+            <View>
+              <Text
+                className="
+                  text-[14px]
+                  font-extrabold
+                  text-[#1F1F2E]
+                "
+              >
+                Previous sessions
+              </Text>
+
+              <Text
+                className="
+                  text-[10px]
+                  text-[#8C8992]
+                "
+              >
+                {
+                  grouped.past
+                    .length
+                }{" "}
+                sessions
+              </Text>
+            </View>
           </View>
-          {grouped.past.map((apt) => (
-            <AppointmentCard
-              key={apt.appointmentId}
-              appointment={apt}
-              counselor={getCounselor(apt.counselorId)}
-              isPast={true}
-            />
-          ))}
+
+          {grouped.past.map(
+            (appointment) => (
+              <AppointmentCard
+                key={
+                  appointment.appointmentId
+                }
+                appointment={
+                  appointment
+                }
+                counselor={getCounselor(
+                  appointment.counselorId
+                )}
+                isPast
+              />
+            )
+          )}
         </View>
       )}
-      <View style={{ height: SPACE.xxl }} />
-    </ScrollView>
+    </View>
   );
 };
 
-// ─── MAIN SCREEN ─────────────────────────────────────────────────────────────
-export default function BookSessionScreen() {
-  const nowGlobal = useMemo(() => dayjs.utc(), []);
-  const todayDateStr = nowGlobal.format("YYYY-MM-DD");
-  const LOGGED_USER = useMemo(() => getLoggedUser() || { id: "", name: "Student" }, []);
+/* -------------------------------------------------------------------------- */
+/*                               MAIN SCREEN                                  */
+/* -------------------------------------------------------------------------- */
 
-  const [appointments, setAppointments] = useState([]);
-  const [counselors, setCounselors] = useState([]);
-  const [selectedCounselor, setSelectedCounselor] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [calMonth, setCalMonth] = useState(nowGlobal.month());
-  const [calYear, setCalYear] = useState(nowGlobal.year());
-  const [selectedDay, setSelectedDay] = useState(nowGlobal.date());
-  const [selectedTime, setSelectedTime] = useState(null);
-  const [sessionType, setSessionType] = useState("online");
-  const [note, setNote] = useState("");
-  const [bookingSuccess, setBookingSuccess] = useState(false);
-  const [showAll, setShowAll] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [bookLoading, setBookLoading] = useState(false);
-  const [activeView, setActiveView] = useState("book");
+export default function BookSessionScreen() {
+  const nowGlobal = useMemo(
+    () => dayjs.utc(),
+    []
+  );
+
+  const todayDateStr =
+    nowGlobal.format(
+      "YYYY-MM-DD"
+    );
+
+  const LOGGED_USER =
+    useMemo(
+      () =>
+        getLoggedUser() || {
+          id: "",
+          name: "Student",
+        },
+      []
+    );
+
+  const [
+    appointments,
+    setAppointments,
+  ] = useState([]);
+
+  const [
+    counselors,
+    setCounselors,
+  ] = useState([]);
+
+  const [
+    selectedCounselor,
+    setSelectedCounselor,
+  ] = useState(null);
+
+  const [
+    searchQuery,
+    setSearchQuery,
+  ] = useState("");
+
+  const [
+    calMonth,
+    setCalMonth,
+  ] = useState(
+    nowGlobal.month()
+  );
+
+  const [
+    calYear,
+    setCalYear,
+  ] = useState(
+    nowGlobal.year()
+  );
+
+  const [
+    selectedDay,
+    setSelectedDay,
+  ] = useState(
+    nowGlobal.date()
+  );
+
+  const [
+    selectedTime,
+    setSelectedTime,
+  ] = useState(null);
+
+  const [
+    sessionType,
+    setSessionType,
+  ] = useState("online");
+
+  const [
+    note,
+    setNote,
+  ] = useState("");
+
+  const [
+    bookingSuccess,
+    setBookingSuccess,
+  ] = useState(false);
+
+  const [
+    showAll,
+    setShowAll,
+  ] = useState(false);
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
+
+  const [
+    bookLoading,
+    setBookLoading,
+  ] = useState(false);
+
+  const [
+    activeView,
+    setActiveView,
+  ] = useState("book");
+
+  /* ------------------------------------------------------------------------ */
+  /*                              LOAD DATA                                   */
+  /* ------------------------------------------------------------------------ */
 
   useEffect(() => {
-    getCounselors().then(setCounselors);
-    const user = getLoggedUser();
+    getCounselors().then(
+      setCounselors
+    );
+
+    const user =
+      getLoggedUser();
+
     if (user) {
-      fetchAppointments(user.id).then((data) => {
+      fetchAppointments(
+        user.id
+      ).then((data) => {
         setAppointments(data);
         setLoading(false);
       });
@@ -338,773 +947,2322 @@ export default function BookSessionScreen() {
     }
   }, []);
 
-  const systemScheduleMap = useMemo(() => {
-    const map = {};
-    appointments.forEach((appt) => {
-      const [datePart, timePart] = appt.appointmentDateTime.split("T");
-      const cleanTime = timePart.substring(0, 5);
-      if (!map[datePart]) {
-        map[datePart] = {
-          globalSlots: [],
-          studentHasBooking: false,
-          studentBookingDetails: null,
-        };
-      }
-      map[datePart].globalSlots.push(cleanTime);
-      if (appt.studentId === LOGGED_USER.id) {
-        map[datePart].studentHasBooking = true;
-        map[datePart].studentBookingDetails = appt;
-      }
-    });
-    return map;
-  }, [appointments]);
+  /* ------------------------------------------------------------------------ */
+  /*                         APPOINTMENT MAP                                  */
+  /* ------------------------------------------------------------------------ */
 
-  const myAppointments = useMemo(
-    () => appointments.filter((a) => a.studentId === LOGGED_USER.id),
-    [appointments]
-  );
+  const systemScheduleMap =
+    useMemo(() => {
+      const map = {};
 
-  const filteredCounselors = useMemo(() => {
-    if (!searchQuery.trim()) return counselors;
-    const q = searchQuery.toLowerCase();
-    return counselors.filter(
-      (c) =>
-        c.name.toLowerCase().includes(q) ||
-        c.specialties.some((s) => s.toLowerCase().includes(q))
+      appointments.forEach(
+        (appointment) => {
+          const [
+            datePart,
+            timePart,
+          ] =
+            appointment.appointmentDateTime.split(
+              "T"
+            );
+
+          const cleanTime =
+            timePart.substring(
+              0,
+              5
+            );
+
+          if (!map[datePart]) {
+            map[datePart] = {
+              globalSlots: [],
+              studentHasBooking:
+                false,
+              studentBookingDetails:
+                null,
+            };
+          }
+
+          map[
+            datePart
+          ].globalSlots.push(
+            cleanTime
+          );
+
+          if (
+            appointment.studentId ===
+            LOGGED_USER.id
+          ) {
+            map[
+              datePart
+            ].studentHasBooking =
+              true;
+
+            map[
+              datePart
+            ].studentBookingDetails =
+              appointment;
+          }
+        }
+      );
+
+      return map;
+    }, [
+      appointments,
+      LOGGED_USER.id,
+    ]);
+
+  /* ------------------------------------------------------------------------ */
+  /*                          MY APPOINTMENTS                                 */
+  /* ------------------------------------------------------------------------ */
+
+  const myAppointments =
+    useMemo(
+      () =>
+        appointments.filter(
+          (appointment) =>
+            appointment.studentId ===
+            LOGGED_USER.id
+        ),
+      [
+        appointments,
+        LOGGED_USER.id,
+      ]
     );
-  }, [searchQuery, counselors]);
 
-  const selectedDateStr = selectedDay ? dateKey(calYear, calMonth, selectedDay) : null;
-  const myExistingOnDate = selectedDateStr
-    ? systemScheduleMap[selectedDateStr]?.studentBookingDetails || null
-    : null;
+  /* ------------------------------------------------------------------------ */
+  /*                         FILTER COUNSELORS                                */
+  /* ------------------------------------------------------------------------ */
 
-  const counselorMyAppointments = useMemo(() => {
-    if (!selectedCounselor) return [];
-    return myAppointments.filter((a) => a.counselorId === selectedCounselor.id);
-  }, [selectedCounselor, myAppointments]);
+  const filteredCounselors =
+    useMemo(() => {
+      if (!searchQuery.trim()) {
+        return counselors;
+      }
 
-  const daysInMonth = getDaysInMonth(calYear, calMonth);
-  const firstDay = getFirstDayOfMonth(calYear, calMonth);
+      const query =
+        searchQuery.toLowerCase();
+
+      return counselors.filter(
+        (counselor) =>
+          counselor.name
+            .toLowerCase()
+            .includes(query) ||
+          counselor.specialties.some(
+            (specialty) =>
+              specialty
+                .toLowerCase()
+                .includes(query)
+          )
+      );
+    }, [
+      searchQuery,
+      counselors,
+    ]);
+
+  /* ------------------------------------------------------------------------ */
+  /*                          SELECTED DATE                                   */
+  /* ------------------------------------------------------------------------ */
+
+  const selectedDateStr =
+    selectedDay
+      ? dateKey(
+          calYear,
+          calMonth,
+          selectedDay
+        )
+      : null;
+
+  const myExistingOnDate =
+    selectedDateStr
+      ? systemScheduleMap[
+          selectedDateStr
+        ]?.studentBookingDetails ||
+        null
+      : null;
+
+  const counselorMyAppointments =
+    useMemo(() => {
+      if (!selectedCounselor) {
+        return [];
+      }
+
+      return myAppointments.filter(
+        (appointment) =>
+          appointment.counselorId ===
+          selectedCounselor.id
+      );
+    }, [
+      selectedCounselor,
+      myAppointments,
+    ]);
+
+  const daysInMonth =
+    getDaysInMonth(
+      calYear,
+      calMonth
+    );
+
+  const firstDay =
+    getFirstDayOfMonth(
+      calYear,
+      calMonth
+    );
+
+  /* ------------------------------------------------------------------------ */
+  /*                            MONTH CONTROLS                                */
+  /* ------------------------------------------------------------------------ */
 
   const canGoPrevMonth = () => {
-    if (calYear > nowGlobal.year()) return true;
-    if (calYear === nowGlobal.year() && calMonth > nowGlobal.month()) return true;
+    if (
+      calYear >
+      nowGlobal.year()
+    ) {
+      return true;
+    }
+
+    if (
+      calYear ===
+        nowGlobal.year() &&
+      calMonth >
+        nowGlobal.month()
+    ) {
+      return true;
+    }
+
     return false;
   };
 
   function prevMonth() {
-    if (!canGoPrevMonth()) return;
-    Haptics.selectionAsync().catch(() => {});
+    if (!canGoPrevMonth()) {
+      return;
+    }
+
+    Haptics
+      .selectionAsync()
+      .catch(() => {});
+
     if (calMonth === 0) {
       setCalMonth(11);
-      setCalYear((y) => y - 1);
-    } else setCalMonth((m) => m - 1);
+
+      setCalYear(
+        (year) => year - 1
+      );
+    } else {
+      setCalMonth(
+        (month) =>
+          month - 1
+      );
+    }
+
     setSelectedDay(1);
     setSelectedTime(null);
   }
 
   function nextMonth() {
-    Haptics.selectionAsync().catch(() => {});
+    Haptics
+      .selectionAsync()
+      .catch(() => {});
+
     if (calMonth === 11) {
       setCalMonth(0);
-      setCalYear((y) => y + 1);
-    } else setCalMonth((m) => m + 1);
+
+      setCalYear(
+        (year) => year + 1
+      );
+    } else {
+      setCalMonth(
+        (month) =>
+          month + 1
+      );
+    }
+
     setSelectedDay(1);
     setSelectedTime(null);
   }
 
+  /* ------------------------------------------------------------------------ */
+  /*                                BOOK                                     */
+  /* ------------------------------------------------------------------------ */
+
   async function handleBook() {
-    if (!selectedCounselor || !selectedDay || !selectedTime || !selectedDateStr || !LOGGED_USER.id) return;
+    if (
+      !selectedCounselor ||
+      !selectedDay ||
+      !selectedTime ||
+      !selectedDateStr ||
+      !LOGGED_USER.id
+    ) {
+      return;
+    }
 
-    const targetTimeISO = timeSlotToISO(selectedTime);
-    const daySchedule = systemScheduleMap[selectedDateStr];
+    const targetTimeISO =
+      timeSlotToISO(
+        selectedTime
+      );
 
-    if (daySchedule?.studentHasBooking) return;
-    if (daySchedule?.globalSlots.includes(targetTimeISO)) return;
-    if ((daySchedule?.globalSlots.length || 0) >= TIME_SLOTS.length) return;
+    const daySchedule =
+      systemScheduleMap[
+        selectedDateStr
+      ];
+
+    if (
+      daySchedule?.studentHasBooking
+    ) {
+      return;
+    }
+
+    if (
+      daySchedule?.globalSlots.includes(
+        targetTimeISO
+      )
+    ) {
+      return;
+    }
+
+    if (
+      (daySchedule?.globalSlots
+        .length || 0) >=
+      TIME_SLOTS.length
+    ) {
+      return;
+    }
 
     setBookLoading(true);
+
     try {
       const appointmentData = {
-        studentId: LOGGED_USER.id,
-        counselorId: selectedCounselor.id,
-        appointmentDateTime: `${selectedDateStr}T${targetTimeISO}:00Z`,
+        studentId:
+          LOGGED_USER.id,
+
+        counselorId:
+          selectedCounselor.id,
+
+        appointmentDateTime:
+          `${selectedDateStr}T${targetTimeISO}:00Z`,
+
         durationMinutes: 45,
+
         type: sessionType,
+
         note: note.trim(),
       };
 
-      const newId = await createAppointment(appointmentData);
+      const newId =
+        await createAppointment(
+          appointmentData
+        );
+
       const newAppointment = {
         ...appointmentData,
-        appointmentId: newId,
+
+        appointmentId:
+          newId,
+
         status: "pending",
+
         rescheduleCount: 0,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+
+        createdAt:
+          new Date().toISOString(),
+
+        updatedAt:
+          new Date().toISOString(),
       };
 
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-      setAppointments((prev) => [...prev, newAppointment]);
-      setBookingSuccess(true);
-      setTimeout(() => setBookingSuccess(false), 4000);
+      Haptics
+        .notificationAsync(
+          Haptics
+            .NotificationFeedbackType
+            .Success
+        )
+        .catch(() => {});
 
-      setSelectedDay(nowGlobal.date());
+      setAppointments(
+        (previous) => [
+          ...previous,
+          newAppointment,
+        ]
+      );
+
+      setBookingSuccess(true);
+
+      setTimeout(
+        () =>
+          setBookingSuccess(
+            false
+          ),
+        4000
+      );
+
+      setSelectedDay(
+        nowGlobal.date()
+      );
+
       setSelectedTime(null);
+
       setNote("");
     } catch (error) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {});
-      Alert.alert("Booking Failed", error.message || "Could not create appointment. Please try again.");
+      Haptics
+        .notificationAsync(
+          Haptics
+            .NotificationFeedbackType
+            .Error
+        )
+        .catch(() => {});
+
+      Alert.alert(
+        "Booking Failed",
+        error.message ||
+          "Could not create appointment. Please try again."
+      );
     } finally {
       setBookLoading(false);
     }
   }
 
-  const targetTimeISO = selectedTime ? timeSlotToISO(selectedTime) : null;
-  const selectedDaySchedule = systemScheduleMap[selectedDateStr];
-  const isSelectedTimeTaken = targetTimeISO && selectedDaySchedule?.globalSlots.includes(targetTimeISO);
-  const isSelectedDayFull = (selectedDaySchedule?.globalSlots.length || 0) >= TIME_SLOTS.length;
+  /* ------------------------------------------------------------------------ */
+  /*                              BOOKING STATE                               */
+  /* ------------------------------------------------------------------------ */
+
+  const targetTimeISO =
+    selectedTime
+      ? timeSlotToISO(
+          selectedTime
+        )
+      : null;
+
+  const selectedDaySchedule =
+    selectedDateStr
+      ? systemScheduleMap[
+          selectedDateStr
+        ]
+      : null;
+
+  const isSelectedTimeTaken =
+    !!targetTimeISO &&
+    selectedDaySchedule?.globalSlots.includes(
+      targetTimeISO
+    );
+
+  const isSelectedDayFull =
+    (selectedDaySchedule
+      ?.globalSlots.length ||
+      0) >=
+    TIME_SLOTS.length;
 
   const canBook =
-    !!selectedCounselor && !!selectedDay && !!selectedTime && !myExistingOnDate && !isSelectedTimeTaken && !isSelectedDayFull;
+    !!selectedCounselor &&
+    !!selectedDay &&
+    !!selectedTime &&
+    !myExistingOnDate &&
+    !isSelectedTimeTaken &&
+    !isSelectedDayFull;
 
-  const accentColor = selectedCounselor?.color || ceylon.charcoal;
-  const accentBg = selectedCounselor?.bgColor || ceylon.accentLight;
+  /* ------------------------------------------------------------------------ */
+  /*                                LOADING                                   */
+  /* ------------------------------------------------------------------------ */
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center" style={{ backgroundColor: ceylon.background }}>
+      <>
         <Stack.Screen
           options={{
-            headerTitle: "Book a Session",
-            headerTitleStyle: { fontWeight: "700", fontSize: 18, color: ceylon.ink },
-            headerStyle: { backgroundColor: ceylon.cream },
-            headerShadowVisible: false,
+            headerTitle: () => (
+              <AppointmentHeader />
+            ),
+
+            headerShadowVisible:
+              false,
+
+            headerStyle: {
+              backgroundColor:
+                colors.background,
+            },
+
+            headerTintColor:
+              colors.purple,
+
+            headerTitleAlign:
+              "left",
           }}
         />
-        <View
-          className="rounded-full items-center justify-center mb-4"
-          style={{
-            width: 64,
-            height: 64,
-            backgroundColor: "#fff",
-            borderWidth: 2,
-            borderColor: ceylon.sand,
-          }}
+
+        <SafeAreaView
+          edges={[
+            "left",
+            "right",
+            "bottom",
+          ]}
+          className="
+            flex-1
+            bg-[#F9F5F1]
+            items-center
+            justify-center
+          "
         >
-          <ActivityIndicator color={ceylon.accent} />
-        </View>
-        <Text style={{ color: ceylon.muted, fontSize: 13 }}>Finding available counselors…</Text>
-      </View>
+          <View
+            className="
+              w-[72px]
+              h-[72px]
+              rounded-[24px]
+              bg-[#F2EEF9]
+              items-center
+              justify-center
+              mb-4
+            "
+          >
+            <ActivityIndicator
+              size="small"
+              color={
+                colors.purple
+              }
+            />
+          </View>
+
+          <Text
+            className="
+              text-[14px]
+              font-bold
+              text-[#1F1F2E]
+            "
+          >
+            Finding available
+            counselors…
+          </Text>
+
+          <Text
+            className="
+              mt-1.5
+              text-[11px]
+              text-[#8C8992]
+            "
+          >
+            Preparing your
+            booking options
+          </Text>
+        </SafeAreaView>
+      </>
     );
   }
 
+  /* ------------------------------------------------------------------------ */
+  /*                                 SCREEN                                   */
+  /* ------------------------------------------------------------------------ */
+
   return (
-    <View className="flex-1" style={{ backgroundColor: ceylon.background }}>
+    <>
       <Stack.Screen
         options={{
-          headerTitle: "Book a Session",
-          headerTitleStyle: { fontWeight: "700", fontSize: 18, color: ceylon.ink },
-          headerStyle: { backgroundColor: ceylon.cream },
-          headerShadowVisible: false,
+          headerTitle: () => (
+            <AppointmentHeader />
+          ),
+
+          headerShadowVisible:
+            false,
+
+          headerStyle: {
+            backgroundColor:
+              colors.background,
+          },
+
+          headerTintColor:
+            colors.purple,
+
+          headerTitleAlign:
+            "left",
         }}
       />
 
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} className="flex-1">
-        <ScrollView
-          contentContainerStyle={{ paddingHorizontal: SPACE.lg, paddingBottom: SPACE.xxl, paddingTop: SPACE.lg }}
-          showsVerticalScrollIndicator={false}
+      <SafeAreaView
+        edges={[
+          "left",
+          "right",
+          "bottom",
+        ]}
+        className="
+          flex-1
+          bg-[#F9F5F1]
+        "
+      >
+        <KeyboardAvoidingView
+          behavior={
+            Platform.OS === "ios"
+              ? "padding"
+              : undefined
+          }
+          keyboardVerticalOffset={
+            Platform.OS === "ios"
+              ? 88
+              : 0
+          }
           className="flex-1"
         >
-          {/* Toggle Switch */}
-          <ToggleSwitch activeTab={activeView} onTabChange={setActiveView} />
+          <ScrollView
+            showsVerticalScrollIndicator={
+              false
+            }
+            keyboardShouldPersistTaps="handled"
+            contentContainerClassName="
+              px-[18px]
+              pt-4
+              pb-10
+            "
+          >
+            {/* Toggle */}
 
-          {/* Book Appointment View */}
-          {activeView === "book" && (
-            <Animated.View entering={FadeIn.duration(200)}>
-              {/* Success banner */}
-              {bookingSuccess && (
-                <Animated.View
-                  entering={FadeInDown.duration(280)}
-                  style={{
-                    backgroundColor: ceylon.accentLight,
-                    borderRadius: 18,
-                    padding: SPACE.md,
-                    marginTop: SPACE.lg,
-                    marginBottom: SPACE.lg,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: SPACE.sm,
-                  }}
-                >
-                  <Ionicons name="checkmark-circle" size={20} color={ceylon.accent} />
-                  <Text style={{ color: ceylon.accent, fontSize: 12, fontWeight: "600", flex: 1 }}>
-                    Appointment requested! You&apos;ll be notified once it&apos;s confirmed.
-                  </Text>
-                </Animated.View>
-              )}
+            <ToggleSwitch
+              activeTab={
+                activeView
+              }
+              onTabChange={
+                setActiveView
+              }
+            />
 
-              {/* Search */}
-              <Text className="text-[12px] font-bold mt-4 mb-2" style={{ color: ceylon.mutedLight }}>
-                Choose your counselor
-              </Text>
-              <View
-                className="flex-row items-center"
-                style={{
-                  backgroundColor: "#fff",
-                  borderRadius: 16,
-                  paddingHorizontal: SPACE.md,
-                  height: 46,
-                  marginBottom: SPACE.lg,
-                  borderWidth: 1.5,
-                  borderColor: ceylon.sand,
-                }}
+            {/* ========================================================== */}
+            {/* BOOK VIEW                                                  */}
+            {/* ========================================================== */}
+
+            {activeView ===
+              "book" && (
+              <Animated.View
+                entering={FadeIn.duration(
+                  200
+                )}
               >
-                <Ionicons name="search" size={16} color={ceylon.mutedLight} />
-                <TextInput
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  placeholder="Search by name or specialty..."
-                  placeholderTextColor={ceylon.mutedLight}
-                  className="flex-1 ml-2 text-[13px]"
-                  style={{ color: ceylon.ink }}
+                {/* Intro */}
+
+                <View className="mt-6 mb-5">
+                  <Text
+                    className="
+                      text-[11px]
+                      tracking-[1px]
+                      font-extrabold
+                      text-[#6D5AB5]
+                      uppercase
+                    "
+                  >
+                    Personal support
+                  </Text>
+
+                  <Text
+                    className="
+                      mt-1.5
+                      text-[16px]
+                      leading-7
+                      font-extrabold
+                      text-[#1F1F2E]
+                    "
+                  >
+                    Choose someone
+                    you feel
+                    comfortable
+                    talking with
+                  </Text>
+
+                  <Text
+                    className="
+                      mt-1.5
+                      text-[12px]
+                      leading-[18px]
+                      text-[#8C8992]
+                    "
+                  >
+                    Select a counselor,
+                    choose a suitable
+                    date and time, and
+                    request your
+                    session.
+                  </Text>
+                </View>
+
+                {/* Success */}
+
+                {bookingSuccess && (
+                  <Animated.View
+                    entering={FadeInDown.duration(
+                      250
+                    )}
+                    className="
+                      flex-row
+                      items-center
+                      bg-[#EAF4E8]
+                      border
+                      border-[#D5E8D3]
+                      rounded-[20px]
+                      px-4
+                      py-3.5
+                      mb-5
+                    "
+                  >
+                    <View
+                      className="
+                        w-9
+                        h-9
+                        rounded-full
+                        bg-white
+                        items-center
+                        justify-center
+                        mr-3
+                      "
+                    >
+                      <Ionicons
+                        name="checkmark"
+                        size={18}
+                        color={
+                          colors.success
+                        }
+                      />
+                    </View>
+
+                    <View className="flex-1">
+                      <Text
+                        className="
+                          text-[12px]
+                          font-bold
+                          text-[#4F8056]
+                        "
+                      >
+                        Appointment
+                        requested
+                      </Text>
+
+                      <Text
+                        className="
+                          mt-0.5
+                          text-[10.5px]
+                          leading-[15px]
+                          text-[#6D8A71]
+                        "
+                      >
+                        We'll let you
+                        know once your
+                        counselor
+                        confirms it.
+                      </Text>
+                    </View>
+                  </Animated.View>
+                )}
+
+                {/* ------------------------------------------------------ */}
+                {/* COUNSELOR SEARCH                                       */}
+                {/* ------------------------------------------------------ */}
+
+                <SectionTitle
+                  icon="people-outline"
+                  title="Choose your counselor"
+                  subtitle="Find someone who matches what you'd like support with"
                 />
-                {searchQuery !== "" && (
-                  <TouchableOpacity onPress={() => setSearchQuery("")}>
-                    <Ionicons name="close-circle" size={16} color={ceylon.mutedLight} />
-                  </TouchableOpacity>
-                )}
-              </View>
-
-              {/* Counselor list */}
-              <View style={{ marginBottom: SPACE.lg }}>
-                {filteredCounselors.length === 0 && (
-                  <View className="items-center py-8">
-                    <Ionicons name="search-outline" size={22} color={ceylon.mutedLight} className="mb-1.5" />
-                    <Text style={{ color: ceylon.mutedLight, fontSize: 12 }}>No counselors found</Text>
-                  </View>
-                )}
-
-                {(showAll ? filteredCounselors : filteredCounselors.slice(0, 3)).map((c, i) => {
-                  const chosen = selectedCounselor?.id === c.id;
-                  const myCount = myAppointments.filter((a) => a.counselorId === c.id).length;
-                  return (
-                    <Animated.View key={c.id} entering={FadeInDown.delay(i * 50).duration(260)}>
-                      <TouchableOpacity
-                        onPress={() => {
-                          Haptics.selectionAsync().catch(() => {});
-                          setSelectedCounselor(c);
-                          setSelectedDay(nowGlobal.date());
-                          setSelectedTime(null);
-                        }}
-                        activeOpacity={0.8}
-                        style={{
-                          borderColor: chosen ? c.color : ceylon.sand,
-                          borderWidth: chosen ? 2 : 1.5,
-                          backgroundColor: chosen ? c.bgColor : "#fff",
-                          marginBottom: SPACE.sm,
-                          borderRadius: 18,
-                          flexDirection: "row",
-                          alignItems: "center",
-                          padding: SPACE.md,
-                        }}
-                      >
-                        <View
-                          style={{
-                            backgroundColor: c.bgColor,
-                            width: 48,
-                            height: 48,
-                            borderRadius: 14,
-                            alignItems: "center",
-                            justifyContent: "center",
-                            marginRight: SPACE.md,
-                          }}
-                        >
-                          <Text style={{ fontSize: 24 }}>{c.avatar}</Text>
-                        </View>
-                        <View className="flex-1">
-                          <Text style={{ color: chosen ? c.color : ceylon.ink, fontSize: 14, fontWeight: "700" }}>
-                            {c.name}
-                          </Text>
-                          <Text style={{ fontSize: 12, color: ceylon.muted, marginTop: 2 }}>
-                            {c.specialties.join(" · ")}
-                          </Text>
-                          {myCount > 0 && (
-                            <View
-                              style={{
-                                backgroundColor: c.bgColor,
-                                alignSelf: "flex-start",
-                                marginTop: 4,
-                                paddingHorizontal: 8,
-                                paddingVertical: 2,
-                                borderRadius: 6,
-                              }}
-                            >
-                              <Text style={{ color: c.color, fontSize: 10, fontWeight: "700" }}>
-                                {myCount} session{myCount > 1 ? "s" : ""} booked
-                              </Text>
-                            </View>
-                          )}
-                        </View>
-                        <View
-                          style={{
-                            backgroundColor: chosen ? c.color : ceylon.background,
-                            paddingHorizontal: 12,
-                            paddingVertical: 6,
-                            borderRadius: 10,
-                          }}
-                        >
-                          <Text style={{ color: chosen ? "#fff" : ceylon.muted, fontSize: 12, fontWeight: "700" }}>
-                            {chosen ? "✓ Chosen" : "Select"}
-                          </Text>
-                        </View>
-                      </TouchableOpacity>
-                    </Animated.View>
-                  );
-                })}
-
-                {filteredCounselors.length > 3 && (
-                  <TouchableOpacity
-                    onPress={() => {
-                      Haptics.selectionAsync().catch(() => {});
-                      setShowAll((v) => !v);
-                    }}
-                    className="items-center py-2"
-                  >
-                    <Text style={{ color: ceylon.accent, fontSize: 12, fontWeight: "700" }}>
-                      {showAll ? "▲ Show less" : `▼ Show ${filteredCounselors.length - 3} more counselors`}
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-
-              {/* Existing sessions with selected counselor */}
-              {selectedCounselor && counselorMyAppointments.length > 0 && (
-                <Animated.View
-                  entering={FadeIn.duration(240)}
-                  style={{
-                    backgroundColor: selectedCounselor.bgColor,
-                    borderColor: `${selectedCounselor.color}33`,
-                    borderWidth: 1,
-                    borderRadius: 18,
-                    padding: SPACE.md,
-                    marginBottom: SPACE.lg,
-                  }}
-                >
-                  <Text style={{ color: selectedCounselor.color, fontSize: 12, fontWeight: "700", marginBottom: SPACE.sm }}>
-                    Your sessions with {selectedCounselor.name.split(" ").pop()}
-                  </Text>
-                  {counselorMyAppointments.map((a) => {
-                    const displayDate = dayjs.utc(a.appointmentDateTime).format("DD MMM YYYY · hh:mm A");
-                    const statusMeta =
-                      a.status === "confirmed"
-                        ? { bg: ceylon.accentLight, color: ceylon.accent }
-                        : a.status === "pending"
-                        ? { bg: `${ceylon.terracotta}20`, color: ceylon.terracotta }
-                        : { bg: ceylon.dangerBg, color: ceylon.danger };
-
-                    return (
-                      <View
-                        key={a.appointmentId}
-                        style={{
-                          backgroundColor: "#fff",
-                          borderRadius: 12,
-                          padding: SPACE.sm,
-                          marginBottom: SPACE.xs + 2,
-                          flexDirection: "row",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                        }}
-                      >
-                        <View className="flex-row items-center gap-1.5">
-                          <Ionicons name="calendar-outline" size={12} color={ceylon.muted} />
-                          <Text style={{ fontSize: 12, color: ceylon.ink }}>{displayDate}</Text>
-                        </View>
-                        <View className="flex-row gap-1">
-                          <View style={{ backgroundColor: ceylon.sand, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
-                            <Text style={{ color: ceylon.ink, fontSize: 10, fontWeight: "700", textTransform: "capitalize" }}>
-                              {a.type}
-                            </Text>
-                          </View>
-                          <View style={{ backgroundColor: statusMeta.bg, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
-                            <Text style={{ color: statusMeta.color, fontSize: 10, fontWeight: "700", textTransform: "capitalize" }}>
-                              {a.status}
-                            </Text>
-                          </View>
-                        </View>
-                      </View>
-                    );
-                  })}
-                </Animated.View>
-              )}
-
-              {/* Calendar */}
-              <View
-                style={{
-                  backgroundColor: "#fff",
-                  borderRadius: 24,
-                  padding: SPACE.lg,
-                  marginBottom: SPACE.lg,
-                  shadowColor: ceylon.charcoal,
-                  shadowOpacity: 0.08,
-                  shadowRadius: 12,
-                  elevation: 3,
-                }}
-              >
-                <View className="flex-row items-center justify-between mb-4">
-                  <TouchableOpacity
-                    onPress={prevMonth}
-                    disabled={!canGoPrevMonth()}
-                    className="items-center justify-center"
-                    style={{
-                      backgroundColor: ceylon.background,
-                      width: 36,
-                      height: 36,
-                      borderRadius: 12,
-                      opacity: canGoPrevMonth() ? 1 : 0.4,
-                    }}
-                  >
-                    <Ionicons name="chevron-back" size={18} color={canGoPrevMonth() ? ceylon.ink : ceylon.mutedLight} />
-                  </TouchableOpacity>
-                  <Text style={{ fontSize: 16, fontWeight: "800", color: ceylon.ink }}>
-                    {MONTH_NAMES[calMonth]} {calYear}
-                  </Text>
-                  <TouchableOpacity
-                    onPress={nextMonth}
-                    className="items-center justify-center"
-                    style={{
-                      backgroundColor: ceylon.background,
-                      width: 36,
-                      height: 36,
-                      borderRadius: 12,
-                    }}
-                  >
-                    <Ionicons name="chevron-forward" size={18} color={ceylon.ink} />
-                  </TouchableOpacity>
-                </View>
-
-                <View className="flex-row justify-around mb-1">
-                  {DAYS.map((d) => (
-                    <Text key={d} style={{ width: "14.28%", textAlign: "center", fontSize: 12, fontWeight: "700", color: ceylon.mutedLight }}>
-                      {d}
-                    </Text>
-                  ))}
-                </View>
-
-                <View className="flex-row flex-wrap">
-                  {Array.from({ length: firstDay }).map((_, i) => (
-                    <View key={`e-${i}`} style={{ width: "14.28%", aspectRatio: 1 }} />
-                  ))}
-                  {Array.from({ length: daysInMonth }).map((_, i) => {
-                    const day = i + 1;
-                    const loopDateStr = dateKey(calYear, calMonth, day);
-                    const isToday = loopDateStr === todayDateStr;
-                    const isPast = loopDateStr < todayDateStr;
-                    const dayMetadata = systemScheduleMap[loopDateStr];
-                    const totalBookedSlots = dayMetadata?.globalSlots.length || 0;
-                    const hasBookings = totalBookedSlots > 0;
-                    const full = totalBookedSlots >= TIME_SLOTS.length;
-                    const selected = selectedDay === day;
-
-                    return (
-                      <View key={day} style={{ width: "14.28%", alignItems: "center", marginVertical: 3 }}>
-                        <TouchableOpacity
-                          disabled={isPast || full}
-                          onPress={() => {
-                            if (isPast) return;
-                            Haptics.selectionAsync().catch(() => {});
-                            setSelectedDay(day);
-                            setSelectedTime(null);
-                          }}
-                          style={{
-                            width: "100%",
-                            aspectRatio: 1,
-                            alignItems: "center",
-                            justifyContent: "center",
-                            borderRadius: 14,
-                            backgroundColor: selected ? ceylon.charcoal : isToday && !selected ? ceylon.accentLight : "transparent",
-                            opacity: isPast ? 0.35 : 1,
-                            borderWidth: isToday && !selected ? 1.5 : 0,
-                            borderColor: isToday && !selected ? ceylon.charcoal : "transparent",
-                          }}
-                        >
-                          <Text
-                            style={{
-                              fontSize: 15,
-                              fontWeight: selected || isToday ? "800" : "400",
-                              color: isPast
-                                ? ceylon.mutedLight
-                                : selected
-                                ? "#fff"
-                                : full
-                                ? ceylon.danger
-                                : isToday
-                                ? ceylon.charcoal
-                                : ceylon.ink,
-                            }}
-                          >
-                            {day}
-                          </Text>
-                          {isToday && (
-                            <View
-                              style={{
-                                width: 4,
-                                height: 4,
-                                borderRadius: 2,
-                                backgroundColor: selected ? "#fff" : ceylon.charcoal,
-                                marginTop: 1,
-                              }}
-                            />
-                          )}
-                        </TouchableOpacity>
-                        {hasBookings && !selected && !isPast && (
-                          <View
-                            style={{
-                              width: 5,
-                              height: 5,
-                              borderRadius: 3,
-                              backgroundColor: full ? ceylon.danger : ceylon.charcoal,
-                              marginTop: 2,
-                            }}
-                          />
-                        )}
-                        {full && !selected && !isPast && (
-                          <View style={{ backgroundColor: ceylon.dangerBg, borderRadius: 3, paddingHorizontal: 3, marginTop: 2 }}>
-                            <Text style={{ fontSize: 7, color: ceylon.danger, fontWeight: "700" }}>FULL</Text>
-                          </View>
-                        )}
-                      </View>
-                    );
-                  })}
-                </View>
 
                 <View
-                  className="flex-row gap-4 mt-3 pt-2"
-                  style={{ borderTopWidth: 0.5, borderTopColor: ceylon.sand }}
+                  className="
+                    h-12
+                    mb-4
+                    px-4
+                    flex-row
+                    items-center
+                    bg-white
+                    rounded-2xl
+                    border
+                    border-[#ECE6E2]
+                  "
                 >
-                  {[
-                    { color: ceylon.charcoal, label: "Booked" },
-                    { color: ceylon.danger, label: "Full" },
-                    { color: ceylon.accentLight, label: "Today", border: ceylon.charcoal },
-                  ].map(({ color, label, border }) => (
-                    <View key={label} className="flex-row items-center gap-1.5">
-                      <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color, borderWidth: border ? 1 : 0, borderColor: border || "transparent" }} />
-                      <Text style={{ fontSize: 10, color: ceylon.mutedLight }}>{label}</Text>
-                    </View>
-                  ))}
-                </View>
-              </View>
+                  <Ionicons
+                    name="search-outline"
+                    size={17}
+                    color={
+                      colors.secondaryText
+                    }
+                  />
 
-              {/* Selected day banner */}
-              {selectedDay && (
-                <Animated.View
-                  entering={FadeInDown.duration(220)}
-                  style={{
-                    backgroundColor: myExistingOnDate || isSelectedDayFull ? ceylon.dangerBg : ceylon.accentLight,
-                    borderRadius: 14,
-                    padding: SPACE.md,
-                    marginBottom: SPACE.lg,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <Text style={{ color: myExistingOnDate || isSelectedDayFull ? ceylon.danger : ceylon.charcoal, fontSize: 12, fontWeight: "700" }}>
-                    {formatDisplayDate(calYear, calMonth, selectedDay)}
-                  </Text>
-                  {myExistingOnDate && (
-                    <Text style={{ color: ceylon.danger, fontSize: 11, fontWeight: "700" }}>
-                      Already booked
-                    </Text>
-                  )}
-                  {!myExistingOnDate && isSelectedDayFull && (
-                    <Text style={{ color: ceylon.danger, fontSize: 11, fontWeight: "700" }}>
-                      All slots full
-                    </Text>
-                  )}
-                </Animated.View>
-              )}
+                  <TextInput
+                    value={
+                      searchQuery
+                    }
+                    onChangeText={
+                      setSearchQuery
+                    }
+                    placeholder="Search name or specialty"
+                    placeholderTextColor="#AAA4AE"
+                    className="
+                      flex-1
+                      ml-2.5
+                      p-0
+                      text-[13px]
+                      text-[#1F1F2E]
+                    "
+                  />
 
-              {/* Time slots */}
-              <Text className="text-[12px] font-bold mb-2" style={{ color: ceylon.mutedLight }}>
-                Select time
-              </Text>
-              <View className="gap-3 mb-4">
-                {TIME_SLOTS.map((t) => {
-                  const sel = selectedTime === t;
-                  const currentSlotISO = timeSlotToISO(t);
-                  const taken = selectedDaySchedule?.globalSlots.includes(currentSlotISO);
-                  const disabled = taken || !selectedDay || !!myExistingOnDate;
-
-                  return (
+                  {searchQuery !==
+                    "" && (
                     <TouchableOpacity
-                      key={t}
-                      disabled={disabled}
-                      onPress={() => {
-                        Haptics.selectionAsync().catch(() => {});
-                        setSelectedTime(t);
-                      }}
-                      style={{
-                        borderColor: sel ? ceylon.charcoal : taken ? "#E8A6AA" : ceylon.sand,
-                        borderWidth: sel ? 2 : 1.5,
-                        backgroundColor: sel ? ceylon.charcoal : taken ? ceylon.dangerBg : "#fff",
-                        opacity: disabled && !sel ? 0.65 : 1,
-                        paddingVertical: SPACE.md,
-                        paddingHorizontal: SPACE.lg,
-                        borderRadius: 16,
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
+                      onPress={() =>
+                        setSearchQuery(
+                          ""
+                        )
+                      }
                     >
-                      <View className="flex-row items-center gap-2">
-                        <Ionicons name={t.includes("AM") ? "partly-sunny-outline" : "moon-outline"} size={18} color={sel ? "#fff" : ceylon.muted} />
-                        <Text style={{ color: sel ? "#fff" : taken ? ceylon.danger : ceylon.ink, fontSize: 15, fontWeight: "700" }}>
-                          {t}
-                        </Text>
-                      </View>
-                      <View
-                        style={{
-                          backgroundColor: sel ? "rgba(255,255,255,0.25)" : taken ? "#F2D5D5" : ceylon.background,
-                          paddingHorizontal: 12,
-                          paddingVertical: 4,
-                          borderRadius: 8,
-                        }}
-                      >
-                        <Text style={{ fontSize: 11, fontWeight: "700", color: sel ? "#fff" : taken ? ceylon.danger : ceylon.muted }}>
-                          {sel ? "Selected" : taken ? "Booked" : "Available"}
-                        </Text>
-                      </View>
+                      <Ionicons
+                        name="close-circle"
+                        size={17}
+                        color="#AAA4AE"
+                      />
                     </TouchableOpacity>
-                  );
-                })}
-              </View>
+                  )}
+                </View>
 
-              {/* Session type */}
-              <Text className="text-[12px] font-bold mb-2" style={{ color: ceylon.mutedLight }}>
-                Session type
-              </Text>
-              <View className="flex-row gap-3 mb-4">
-                {["online", "physical"].map((type) => {
-                  const sel = sessionType === type;
-                  return (
+                {/* Counselors */}
+
+                <View className="mb-5">
+                  {filteredCounselors.length ===
+                    0 && (
+                    <View className="items-center py-8">
+                      <View
+                        className="
+                          w-12
+                          h-12
+                          rounded-2xl
+                          bg-[#F2EEF9]
+                          items-center
+                          justify-center
+                          mb-3
+                        "
+                      >
+                        <Ionicons
+                          name="search-outline"
+                          size={21}
+                          color={
+                            colors.purple
+                          }
+                        />
+                      </View>
+
+                      <Text
+                        className="
+                          text-[12px]
+                          font-semibold
+                          text-[#8C8992]
+                        "
+                      >
+                        No counselors
+                        found
+                      </Text>
+                    </View>
+                  )}
+
+                  {(showAll
+                    ? filteredCounselors
+                    : filteredCounselors.slice(
+                        0,
+                        3
+                      )
+                  ).map(
+                    (
+                      counselor,
+                      index
+                    ) => {
+                      const chosen =
+                        selectedCounselor
+                          ?.id ===
+                        counselor.id;
+
+                      const myCount =
+                        myAppointments.filter(
+                          (
+                            appointment
+                          ) =>
+                            appointment.counselorId ===
+                            counselor.id
+                        ).length;
+
+                      return (
+                        <Animated.View
+                          key={
+                            counselor.id
+                          }
+                          entering={FadeInDown
+                            .delay(
+                              index *
+                                45
+                            )
+                            .duration(
+                              240
+                            )}
+                        >
+                          <TouchableOpacity
+                            activeOpacity={
+                              0.82
+                            }
+                            onPress={() => {
+                              Haptics
+                                .selectionAsync()
+                                .catch(
+                                  () =>
+                                    {}
+                                );
+
+                              setSelectedCounselor(
+                                counselor
+                              );
+
+                              setSelectedDay(
+                                nowGlobal.date()
+                              );
+
+                              setSelectedTime(
+                                null
+                              );
+                            }}
+                            className={`
+                              flex-row
+                              items-center
+                              p-3.5
+                              mb-2.5
+                              rounded-[20px]
+                              border
+
+                              ${
+                                chosen
+                                  ? "bg-[#F2EEF9] border-[#6D5AB5]"
+                                  : "bg-white border-[#ECE6E2]"
+                              }
+                            `}
+                          >
+                            {/* Avatar */}
+
+                            <View
+                              className="
+                                w-12
+                                h-12
+                                rounded-2xl
+                                items-center
+                                justify-center
+                                mr-3
+                              "
+                              style={{
+                                backgroundColor:
+                                  counselor.bgColor ||
+                                  colors.lavenderSoft,
+                              }}
+                            >
+                              <Text className="text-[23px]">
+                                {
+                                  counselor.avatar
+                                }
+                              </Text>
+                            </View>
+
+                            {/* Info */}
+
+                            <View className="flex-1">
+                              <Text
+                                numberOfLines={
+                                  1
+                                }
+                                className={`
+                                  text-[14px]
+                                  font-extrabold
+
+                                  ${
+                                    chosen
+                                      ? "text-[#6D5AB5]"
+                                      : "text-[#1F1F2E]"
+                                  }
+                                `}
+                              >
+                                {
+                                  counselor.name
+                                }
+                              </Text>
+
+                              <Text
+                                numberOfLines={
+                                  2
+                                }
+                                className="
+                                  mt-1
+                                  text-[11px]
+                                  leading-[15px]
+                                  text-[#8C8992]
+                                "
+                              >
+                                {counselor.specialties.join(
+                                  " · "
+                                )}
+                              </Text>
+
+                              {myCount >
+                                0 && (
+                                <View
+                                  className="
+                                    self-start
+                                    mt-2
+                                    px-2.5
+                                    py-1
+                                    bg-white
+                                    rounded-full
+                                  "
+                                >
+                                  <Text
+                                    className="
+                                      text-[9px]
+                                      font-bold
+                                      text-[#6D5AB5]
+                                    "
+                                  >
+                                    {
+                                      myCount
+                                    }{" "}
+                                    previous{" "}
+                                    {myCount >
+                                    1
+                                      ? "sessions"
+                                      : "session"}
+                                  </Text>
+                                </View>
+                              )}
+                            </View>
+
+                            {/* Selection */}
+
+                            <View
+                              className={`
+                                px-3
+                                py-2
+                                rounded-xl
+
+                                ${
+                                  chosen
+                                    ? "bg-[#6D5AB5]"
+                                    : "bg-[#F9F5F1]"
+                                }
+                              `}
+                            >
+                              <Text
+                                className={`
+                                  text-[10.5px]
+                                  font-bold
+
+                                  ${
+                                    chosen
+                                      ? "text-white"
+                                      : "text-[#8C8992]"
+                                  }
+                                `}
+                              >
+                                {chosen
+                                  ? "✓ Selected"
+                                  : "Select"}
+                              </Text>
+                            </View>
+                          </TouchableOpacity>
+                        </Animated.View>
+                      );
+                    }
+                  )}
+
+                  {filteredCounselors.length >
+                    3 && (
                     <TouchableOpacity
-                      key={type}
+                      activeOpacity={
+                        0.7
+                      }
                       onPress={() => {
-                        Haptics.selectionAsync().catch(() => {});
-                        setSessionType(type);
+                        Haptics
+                          .selectionAsync()
+                          .catch(
+                            () => {}
+                          );
+
+                        setShowAll(
+                          (value) =>
+                            !value
+                        );
                       }}
-                      className="flex-1 flex-row items-center justify-center gap-1.5 py-3 rounded-2xl"
+                      className="
+                        self-center
+                        mt-2
+                        px-4
+                        py-2
+                        rounded-full
+                        bg-[#F2EEF9]
+                      "
+                    >
+                      <Text
+                        className="
+                          text-[11px]
+                          font-bold
+                          text-[#6D5AB5]
+                        "
+                      >
+                        {showAll
+                          ? "Show less"
+                          : `Show ${
+                              filteredCounselors.length -
+                              3
+                            } more`}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                {/* Existing sessions */}
+
+                {selectedCounselor &&
+                  counselorMyAppointments.length >
+                    0 && (
+                    <Animated.View
+                      entering={FadeIn.duration(
+                        220
+                      )}
+                      className="
+                        bg-[#F2EEF9]
+                        rounded-[20px]
+                        p-4
+                        mb-5
+                        border
+                        border-[#E4DCEF]
+                      "
+                    >
+                      <Text
+                        className="
+                          text-[12px]
+                          font-bold
+                          text-[#6D5AB5]
+                          mb-3
+                        "
+                      >
+                        Your sessions
+                        with{" "}
+                        {selectedCounselor.name
+                          .split(
+                            " "
+                          )
+                          .pop()}
+                      </Text>
+
+                      {counselorMyAppointments.map(
+                        (
+                          appointment
+                        ) => {
+                          const displayDate =
+                            dayjs
+                              .utc(
+                                appointment.appointmentDateTime
+                              )
+                              .format(
+                                "DD MMM YYYY · hh:mm A"
+                              );
+
+                          return (
+                            <View
+                              key={
+                                appointment.appointmentId
+                              }
+                              className="
+                                bg-white
+                                rounded-xl
+                                px-3
+                                py-2.5
+                                mb-2
+                              "
+                            >
+                              <View className="flex-row items-center">
+                                <Ionicons
+                                  name="calendar-outline"
+                                  size={
+                                    13
+                                  }
+                                  color={
+                                    colors.purple
+                                  }
+                                />
+
+                                <Text
+                                  className="
+                                    ml-1.5
+                                    flex-1
+                                    text-[10.5px]
+                                    text-[#1F1F2E]
+                                  "
+                                >
+                                  {
+                                    displayDate
+                                  }
+                                </Text>
+
+                                <Text
+                                  className="
+                                    text-[9px]
+                                    font-bold
+                                    capitalize
+                                    text-[#8C8992]
+                                  "
+                                >
+                                  {
+                                    appointment.status
+                                  }
+                                </Text>
+                              </View>
+                            </View>
+                          );
+                        }
+                      )}
+                    </Animated.View>
+                  )}
+
+                {/* ------------------------------------------------------ */}
+                {/* CALENDAR                                               */}
+                {/* ------------------------------------------------------ */}
+
+                <SectionTitle
+                  icon="calendar-outline"
+                  title="Choose a date"
+                  subtitle="Select a day that feels convenient for you"
+                />
+
+                <View
+                  className="
+                    bg-white
+                    rounded-[26px]
+                    p-4
+                    mb-5
+                    border
+                    border-[#ECE6E2]
+                    shadow-sm
+                  "
+                >
+                  {/* Month */}
+
+                  <View className="flex-row items-center justify-between mb-4">
+                    <TouchableOpacity
+                      disabled={
+                        !canGoPrevMonth()
+                      }
+                      onPress={
+                        prevMonth
+                      }
+                      className="
+                        w-10
+                        h-10
+                        rounded-2xl
+                        bg-[#F2EEF9]
+                        items-center
+                        justify-center
+                      "
                       style={{
-                        backgroundColor: sel ? ceylon.charcoal : "#fff",
-                        borderWidth: 1.5,
-                        borderColor: sel ? "transparent" : ceylon.sand,
+                        opacity:
+                          canGoPrevMonth()
+                            ? 1
+                            : 0.35,
                       }}
                     >
                       <Ionicons
-                        name={type === "online" ? "videocam-outline" : "location-outline"}
-                        size={15}
-                        color={sel ? "#fff" : ceylon.muted}
+                        name="chevron-back"
+                        size={18}
+                        color={
+                          colors.purple
+                        }
                       />
-                      <Text style={{ color: sel ? "#fff" : ceylon.ink, fontSize: 13, fontWeight: "700", textTransform: "capitalize" }}>
-                        {type}
-                      </Text>
                     </TouchableOpacity>
-                  );
-                })}
-              </View>
 
-              {/* Note */}
-              <Text className="text-[12px] font-bold mb-2" style={{ color: ceylon.mutedLight }}>
-                Add a note (optional)
-              </Text>
-              <TextInput
-                value={note}
-                onChangeText={setNote}
-                placeholder="Describe what you'd like to discuss..."
-                placeholderTextColor={ceylon.mutedLight}
-                multiline
-                numberOfLines={3}
-                textAlignVertical="top"
-                style={{
-                  backgroundColor: "#fff",
-                  borderWidth: 1.5,
-                  borderColor: ceylon.sand,
-                  borderRadius: 16,
-                  padding: SPACE.md,
-                  fontSize: 13,
-                  color: ceylon.ink,
-                  minHeight: 84,
-                  marginBottom: SPACE.xs,
-                }}
-              />
-              <Text className="text-right mb-4 text-[10px]" style={{ color: ceylon.mutedLight }}>
-                {note.length} characters
-              </Text>
+                    <Text
+                      className="
+                        text-[16px]
+                        font-extrabold
+                        text-[#1F1F2E]
+                      "
+                    >
+                      {
+                        MONTH_NAMES[
+                          calMonth
+                        ]
+                      }{" "}
+                      {calYear}
+                    </Text>
 
-              {/* Summary */}
-              {selectedCounselor && selectedDay && selectedTime && !isSelectedTimeTaken && !myExistingOnDate && (
-                <Animated.View
-                  entering={FadeInDown.duration(240)}
-                  style={{
-                    backgroundColor: ceylon.accentLight,
-                    borderColor: `${ceylon.accent}33`,
-                    borderWidth: 1,
-                    borderRadius: 18,
-                    padding: SPACE.lg,
-                    marginBottom: SPACE.lg,
-                  }}
-                >
-                  <Text style={{ color: ceylon.charcoal, fontSize: 12, fontWeight: "700", marginBottom: SPACE.sm }}>
-                    Booking summary
-                  </Text>
-                  {[
-                    ["Counselor", selectedCounselor.name],
-                    ["Date", formatDisplayDate(calYear, calMonth, selectedDay)],
-                    ["Time", selectedTime],
-                    ["Type", sessionType.charAt(0).toUpperCase() + sessionType.slice(1)],
-                    ["Duration", "45 minutes"],
-                    ["Student", LOGGED_USER.name],
-                  ].map(([label, val]) => (
-                    <View key={label} className="flex-row justify-between py-1.5" style={{ borderBottomWidth: 0.5, borderBottomColor: ceylon.sand }}>
-                      <Text style={{ color: ceylon.muted, fontSize: 12 }}>{label}</Text>
-                      <Text style={{ color: ceylon.ink, fontSize: 12, fontWeight: "600" }}>{val}</Text>
+                    <TouchableOpacity
+                      onPress={
+                        nextMonth
+                      }
+                      className="
+                        w-10
+                        h-10
+                        rounded-2xl
+                        bg-[#F2EEF9]
+                        items-center
+                        justify-center
+                      "
+                    >
+                      <Ionicons
+                        name="chevron-forward"
+                        size={18}
+                        color={
+                          colors.purple
+                        }
+                      />
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Weekdays */}
+
+                  <View className="flex-row mb-2">
+                    {DAYS.map(
+                      (day) => (
+                        <Text
+                          key={
+                            day
+                          }
+                          className="
+                            text-center
+                            text-[10px]
+                            font-extrabold
+                            text-[#AAA4AE]
+                          "
+                          style={{
+                            width:
+                              "14.28%",
+                          }}
+                        >
+                          {
+                            day
+                          }
+                        </Text>
+                      )
+                    )}
+                  </View>
+
+                  {/* Dates */}
+
+                  <View className="flex-row flex-wrap">
+                    {Array.from({
+                      length:
+                        firstDay,
+                    }).map(
+                      (
+                        _,
+                        index
+                      ) => (
+                        <View
+                          key={`empty-${index}`}
+                          style={{
+                            width:
+                              "14.28%",
+                            aspectRatio: 1,
+                          }}
+                        />
+                      )
+                    )}
+
+                    {Array.from({
+                      length:
+                        daysInMonth,
+                    }).map(
+                      (
+                        _,
+                        index
+                      ) => {
+                        const day =
+                          index +
+                          1;
+
+                        const loopDateStr =
+                          dateKey(
+                            calYear,
+                            calMonth,
+                            day
+                          );
+
+                        const isToday =
+                          loopDateStr ===
+                          todayDateStr;
+
+                        const isPast =
+                          loopDateStr <
+                          todayDateStr;
+
+                        const metadata =
+                          systemScheduleMap[
+                            loopDateStr
+                          ];
+
+                        const totalBookedSlots =
+                          metadata
+                            ?.globalSlots
+                            .length ||
+                          0;
+
+                        const hasBookings =
+                          totalBookedSlots >
+                          0;
+
+                        const full =
+                          totalBookedSlots >=
+                          TIME_SLOTS.length;
+
+                        const selected =
+                          selectedDay ===
+                          day;
+
+                        return (
+                          <View
+                            key={
+                              day
+                            }
+                            className="items-center my-1"
+                            style={{
+                              width:
+                                "14.28%",
+                            }}
+                          >
+                            <TouchableOpacity
+                              disabled={
+                                isPast ||
+                                full
+                              }
+                              activeOpacity={
+                                0.75
+                              }
+                              onPress={() => {
+                                if (
+                                  isPast
+                                ) {
+                                  return;
+                                }
+
+                                Haptics
+                                  .selectionAsync()
+                                  .catch(
+                                    () =>
+                                      {}
+                                  );
+
+                                setSelectedDay(
+                                  day
+                                );
+
+                                setSelectedTime(
+                                  null
+                                );
+                              }}
+                              className={`
+                                w-full
+                                aspect-square
+                                rounded-[14px]
+                                items-center
+                                justify-center
+
+                                ${
+                                  selected
+                                    ? "bg-[#6D5AB5]"
+                                    : isToday
+                                    ? "bg-[#F2EEF9]"
+                                    : "bg-transparent"
+                                }
+                              `}
+                              style={{
+                                opacity:
+                                  isPast
+                                    ? 0.3
+                                    : 1,
+
+                                borderWidth:
+                                  isToday &&
+                                  !selected
+                                    ? 1
+                                    : 0,
+
+                                borderColor:
+                                  colors.purple,
+                              }}
+                            >
+                              <Text
+                                className={`
+                                  text-[14px]
+
+                                  ${
+                                    selected ||
+                                    isToday
+                                      ? "font-extrabold"
+                                      : "font-medium"
+                                  }
+
+                                  ${
+                                    selected
+                                      ? "text-white"
+                                      : full
+                                      ? "text-[#C45B65]"
+                                      : isToday
+                                      ? "text-[#6D5AB5]"
+                                      : "text-[#1F1F2E]"
+                                  }
+                                `}
+                              >
+                                {
+                                  day
+                                }
+                              </Text>
+
+                              {isToday && (
+                                <View
+                                  className={`
+                                    mt-0.5
+                                    w-1
+                                    h-1
+                                    rounded-full
+
+                                    ${
+                                      selected
+                                        ? "bg-white"
+                                        : "bg-[#6D5AB5]"
+                                    }
+                                  `}
+                                />
+                              )}
+                            </TouchableOpacity>
+
+                            {hasBookings &&
+                              !selected &&
+                              !isPast && (
+                                <View
+                                  className="
+                                    mt-1
+                                    w-1
+                                    h-1
+                                    rounded-full
+                                  "
+                                  style={{
+                                    backgroundColor:
+                                      full
+                                        ? colors.danger
+                                        : colors.peach,
+                                  }}
+                                />
+                              )}
+                          </View>
+                        );
+                      }
+                    )}
+                  </View>
+
+                  {/* Legend */}
+
+                  <View
+                    className="
+                      flex-row
+                      items-center
+                      gap-4
+                      mt-4
+                      pt-3
+                      border-t
+                      border-[#F0EAE6]
+                    "
+                  >
+                    <LegendDot
+                      color={
+                        colors.purple
+                      }
+                      label="Selected"
+                    />
+
+                    <LegendDot
+                      color={
+                        colors.peach
+                      }
+                      label="Bookings"
+                    />
+
+                    <LegendDot
+                      color={
+                        colors.danger
+                      }
+                      label="Full"
+                    />
+                  </View>
+                </View>
+
+                {/* Selected date */}
+
+                {selectedDay && (
+                  <Animated.View
+                    entering={FadeInDown.duration(
+                      220
+                    )}
+                    className={`
+                      flex-row
+                      items-center
+                      justify-between
+                      rounded-[18px]
+                      px-4
+                      py-3
+                      mb-5
+                      border
+
+                      ${
+                        myExistingOnDate ||
+                        isSelectedDayFull
+                          ? "bg-[#FBE8E9] border-[#F3D2D5]"
+                          : "bg-[#F2EEF9] border-[#E5DDEF]"
+                      }
+                    `}
+                  >
+                    <View className="flex-row items-center flex-1">
+                      <Ionicons
+                        name="calendar-outline"
+                        size={16}
+                        color={
+                          myExistingOnDate ||
+                          isSelectedDayFull
+                            ? colors.danger
+                            : colors.purple
+                        }
+                      />
+
+                      <Text
+                        className={`
+                          ml-2
+                          text-[12px]
+                          font-bold
+
+                          ${
+                            myExistingOnDate ||
+                            isSelectedDayFull
+                              ? "text-[#C45B65]"
+                              : "text-[#6D5AB5]"
+                          }
+                        `}
+                      >
+                        {formatDisplayDate(
+                          calYear,
+                          calMonth,
+                          selectedDay
+                        )}
+                      </Text>
                     </View>
-                  ))}
-                </Animated.View>
-              )}
 
-              {/* Confirm button */}
-              <TouchableOpacity
-                disabled={!canBook || bookLoading}
-                onPress={handleBook}
-                activeOpacity={0.85}
-                className="flex-row items-center justify-center gap-2 rounded-2xl py-4"
-                style={{
-                  backgroundColor: canBook && !bookLoading ? ceylon.charcoal : ceylon.mutedLight,
-                  shadowColor: canBook && !bookLoading ? ceylon.charcoal : "transparent",
-                  shadowOpacity: 0.15,
-                  shadowRadius: 10,
-                  elevation: canBook && !bookLoading ? 4 : 0,
-                }}
-              >
-                {bookLoading && <ActivityIndicator color="#fff" size="small" />}
-                <Text className="text-[15px] font-bold text-white">
-                  {bookLoading ? "Booking..." : "Confirm Appointment"}
+                    {myExistingOnDate && (
+                      <Text
+                        className="
+                          text-[10px]
+                          font-bold
+                          text-[#C45B65]
+                        "
+                      >
+                        Already booked
+                      </Text>
+                    )}
+
+                    {!myExistingOnDate &&
+                      isSelectedDayFull && (
+                        <Text
+                          className="
+                            text-[10px]
+                            font-bold
+                            text-[#C45B65]
+                          "
+                        >
+                          Fully booked
+                        </Text>
+                      )}
+                  </Animated.View>
+                )}
+
+                {/* ------------------------------------------------------ */}
+                {/* TIME                                                   */}
+                {/* ------------------------------------------------------ */}
+
+                <SectionTitle
+                  icon="time-outline"
+                  title="Choose a time"
+                  subtitle="Available 45-minute session slots"
+                />
+
+                <View className="gap-2.5 mb-6">
+                  {TIME_SLOTS.map(
+                    (time) => {
+                      const selected =
+                        selectedTime ===
+                        time;
+
+                      const currentSlotISO =
+                        timeSlotToISO(
+                          time
+                        );
+
+                      const taken =
+                        selectedDaySchedule?.globalSlots.includes(
+                          currentSlotISO
+                        );
+
+                      const disabled =
+                        taken ||
+                        !selectedDay ||
+                        !!myExistingOnDate;
+
+                      return (
+                        <TouchableOpacity
+                          key={
+                            time
+                          }
+                          disabled={
+                            disabled
+                          }
+                          activeOpacity={
+                            0.8
+                          }
+                          onPress={() => {
+                            Haptics
+                              .selectionAsync()
+                              .catch(
+                                () =>
+                                  {}
+                              );
+
+                            setSelectedTime(
+                              time
+                            );
+                          }}
+                          className={`
+                            min-h-[54px]
+                            px-4
+                            rounded-[18px]
+                            flex-row
+                            items-center
+                            justify-between
+                            border
+
+                            ${
+                              selected
+                                ? "bg-[#6D5AB5] border-[#6D5AB5]"
+                                : taken
+                                ? "bg-[#FBE8E9] border-[#F0D1D4]"
+                                : "bg-white border-[#ECE6E2]"
+                            }
+                          `}
+                          style={{
+                            opacity:
+                              disabled &&
+                              !selected
+                                ? 0.62
+                                : 1,
+                          }}
+                        >
+                          <View className="flex-row items-center">
+                            <View
+                              className={`
+                                w-9
+                                h-9
+                                rounded-xl
+                                items-center
+                                justify-center
+                                mr-3
+
+                                ${
+                                  selected
+                                    ? "bg-white/15"
+                                    : "bg-[#F2EEF9]"
+                                }
+                              `}
+                            >
+                              <Ionicons
+                                name={
+                                  time.includes(
+                                    "AM"
+                                  )
+                                    ? "partly-sunny-outline"
+                                    : "moon-outline"
+                                }
+                                size={
+                                  17
+                                }
+                                color={
+                                  selected
+                                    ? "#FFFFFF"
+                                    : colors.purple
+                                }
+                              />
+                            </View>
+
+                            <Text
+                              className={`
+                                text-[14px]
+                                font-bold
+
+                                ${
+                                  selected
+                                    ? "text-white"
+                                    : taken
+                                    ? "text-[#C45B65]"
+                                    : "text-[#1F1F2E]"
+                                }
+                              `}
+                            >
+                              {
+                                time
+                              }
+                            </Text>
+                          </View>
+
+                          <View
+                            className={`
+                              px-3
+                              py-1.5
+                              rounded-full
+
+                              ${
+                                selected
+                                  ? "bg-white/15"
+                                  : taken
+                                  ? "bg-[#F4D6D8]"
+                                  : "bg-[#F9F5F1]"
+                              }
+                            `}
+                          >
+                            <Text
+                              className={`
+                                text-[9.5px]
+                                font-bold
+
+                                ${
+                                  selected
+                                    ? "text-white"
+                                    : taken
+                                    ? "text-[#C45B65]"
+                                    : "text-[#8C8992]"
+                                }
+                              `}
+                            >
+                              {selected
+                                ? "Selected"
+                                : taken
+                                ? "Booked"
+                                : "Available"}
+                            </Text>
+                          </View>
+                        </TouchableOpacity>
+                      );
+                    }
+                  )}
+                </View>
+
+                {/* ------------------------------------------------------ */}
+                {/* SESSION TYPE                                           */}
+                {/* ------------------------------------------------------ */}
+
+                <SectionTitle
+                  icon="options-outline"
+                  title="Session type"
+                  subtitle="Choose how you'd like to meet"
+                />
+
+                <View className="flex-row gap-3 mb-6">
+                  {[
+                    "online",
+                    "physical",
+                  ].map(
+                    (type) => {
+                      const selected =
+                        sessionType ===
+                        type;
+
+                      return (
+                        <TouchableOpacity
+                          key={
+                            type
+                          }
+                          activeOpacity={
+                            0.8
+                          }
+                          onPress={() => {
+                            Haptics
+                              .selectionAsync()
+                              .catch(
+                                () =>
+                                  {}
+                              );
+
+                            setSessionType(
+                              type
+                            );
+                          }}
+                          className={`
+                            flex-1
+                            min-h-[54px]
+                            flex-row
+                            items-center
+                            justify-center
+                            rounded-[18px]
+                            border
+
+                            ${
+                              selected
+                                ? "bg-[#6D5AB5] border-[#6D5AB5]"
+                                : "bg-white border-[#ECE6E2]"
+                            }
+                          `}
+                        >
+                          <Ionicons
+                            name={
+                              type ===
+                              "online"
+                                ? "videocam-outline"
+                                : "location-outline"
+                            }
+                            size={
+                              16
+                            }
+                            color={
+                              selected
+                                ? "#FFFFFF"
+                                : colors.purple
+                            }
+                          />
+
+                          <Text
+                            className={`
+                              ml-2
+                              text-[12px]
+                              font-bold
+                              capitalize
+
+                              ${
+                                selected
+                                  ? "text-white"
+                                  : "text-[#1F1F2E]"
+                              }
+                            `}
+                          >
+                            {
+                              type
+                            }
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    }
+                  )}
+                </View>
+
+                {/* ------------------------------------------------------ */}
+                {/* NOTE                                                   */}
+                {/* ------------------------------------------------------ */}
+
+                <SectionTitle
+                  icon="document-text-outline"
+                  title="Anything you'd like to share?"
+                  subtitle="Optional — this can help your counselor prepare"
+                />
+
+                <TextInput
+                  value={note}
+                  onChangeText={
+                    setNote
+                  }
+                  placeholder="Briefly describe what you'd like to discuss..."
+                  placeholderTextColor="#AAA4AE"
+                  multiline
+                  numberOfLines={4}
+                  textAlignVertical="top"
+                  maxLength={500}
+                  className="
+                    min-h-[105px]
+                    bg-white
+                    border
+                    border-[#ECE6E2]
+                    rounded-[20px]
+                    px-4
+                    py-3.5
+                    text-[13px]
+                    leading-5
+                    text-[#1F1F2E]
+                  "
+                />
+
+                <Text
+                  className="
+                    text-right
+                    mt-1.5
+                    mb-6
+                    text-[9.5px]
+                    text-[#AAA4AE]
+                  "
+                >
+                  {note.length}/500
                 </Text>
-              </TouchableOpacity>
-            </Animated.View>
-          )}
 
-          {/* Booked Details View */}
-          {activeView === "booked" && (
-            <Animated.View entering={FadeIn.duration(200)} className="mt-4">
-              <BookedDetailsView appointments={myAppointments} counselors={counselors} />
-            </Animated.View>
-          )}
-        </ScrollView>
-      </KeyboardAvoidingView>
+                {/* ------------------------------------------------------ */}
+                {/* SUMMARY                                                */}
+                {/* ------------------------------------------------------ */}
+
+                {selectedCounselor &&
+                  selectedDay &&
+                  selectedTime &&
+                  !isSelectedTimeTaken &&
+                  !myExistingOnDate && (
+                    <Animated.View
+                      entering={FadeInDown.duration(
+                        220
+                      )}
+                      className="
+                        bg-[#F2EEF9]
+                        border
+                        border-[#E4DCEF]
+                        rounded-[22px]
+                        p-4
+                        mb-5
+                      "
+                    >
+                      <View className="flex-row items-center mb-3">
+                        <View
+                          className="
+                            w-8
+                            h-8
+                            rounded-xl
+                            bg-white
+                            items-center
+                            justify-center
+                            mr-2.5
+                          "
+                        >
+                          <Ionicons
+                            name="checkmark-circle-outline"
+                            size={
+                              17
+                            }
+                            color={
+                              colors.purple
+                            }
+                          />
+                        </View>
+
+                        <Text
+                          className="
+                            text-[13px]
+                            font-extrabold
+                            text-[#6D5AB5]
+                          "
+                        >
+                          Booking
+                          summary
+                        </Text>
+                      </View>
+
+                      {[
+                        [
+                          "Counselor",
+                          selectedCounselor.name,
+                        ],
+                        [
+                          "Date",
+                          formatDisplayDate(
+                            calYear,
+                            calMonth,
+                            selectedDay
+                          ),
+                        ],
+                        [
+                          "Time",
+                          selectedTime,
+                        ],
+                        [
+                          "Type",
+                          sessionType
+                            .charAt(
+                              0
+                            )
+                            .toUpperCase() +
+                            sessionType.slice(
+                              1
+                            ),
+                        ],
+                        [
+                          "Duration",
+                          "45 minutes",
+                        ],
+                        [
+                          "Student",
+                          LOGGED_USER.name,
+                        ],
+                      ].map(
+                        ([
+                          label,
+                          value,
+                        ]) => (
+                          <View
+                            key={
+                              label
+                            }
+                            className="
+                              flex-row
+                              justify-between
+                              items-start
+                              py-2
+                              border-b
+                              border-[#E5DEEE]
+                            "
+                          >
+                            <Text
+                              className="
+                                text-[11px]
+                                text-[#8C8992]
+                              "
+                            >
+                              {
+                                label
+                              }
+                            </Text>
+
+                            <Text
+                              numberOfLines={
+                                2
+                              }
+                              className="
+                                max-w-[60%]
+                                text-right
+                                text-[11px]
+                                font-bold
+                                text-[#1F1F2E]
+                              "
+                            >
+                              {
+                                value
+                              }
+                            </Text>
+                          </View>
+                        )
+                      )}
+                    </Animated.View>
+                  )}
+
+                {/* ------------------------------------------------------ */}
+                {/* CONFIRM                                                */}
+                {/* ------------------------------------------------------ */}
+
+                <TouchableOpacity
+                  disabled={
+                    !canBook ||
+                    bookLoading
+                  }
+                  activeOpacity={
+                    0.85
+                  }
+                  onPress={
+                    handleBook
+                  }
+                  className={`
+                    min-h-[56px]
+                    rounded-[19px]
+                    flex-row
+                    items-center
+                    justify-center
+
+                    ${
+                      canBook &&
+                      !bookLoading
+                        ? "bg-[#6D5AB5]"
+                        : "bg-[#C6C0C9]"
+                    }
+                  `}
+                >
+                  {bookLoading ? (
+                    <ActivityIndicator
+                      size="small"
+                      color="#FFFFFF"
+                    />
+                  ) : (
+                    <Ionicons
+                      name="calendar-outline"
+                      size={17}
+                      color="#FFFFFF"
+                    />
+                  )}
+
+                  <Text
+                    className="
+                      ml-2
+                      text-[14px]
+                      font-extrabold
+                      text-white
+                    "
+                  >
+                    {bookLoading
+                      ? "Requesting..."
+                      : "Request Appointment"}
+                  </Text>
+                </TouchableOpacity>
+
+                <Text
+                  className="
+                    mt-2
+                    text-center
+                    text-[9.5px]
+                    leading-[14px]
+                    text-[#8C8992]
+                  "
+                >
+                  Your appointment
+                  will remain pending
+                  until the counselor
+                  confirms it.
+                </Text>
+              </Animated.View>
+            )}
+
+            {/* ========================================================== */}
+            {/* MY SESSIONS                                               */}
+            {/* ========================================================== */}
+
+            {activeView ===
+              "booked" && (
+              <Animated.View
+                entering={FadeIn.duration(
+                  200
+                )}
+              >
+                <View className="mt-6">
+                  <Text
+                    className="
+                      text-[11px]
+                      tracking-[1px]
+                      font-extrabold
+                      text-[#6D5AB5]
+                      uppercase
+                    "
+                  >
+                    Your support
+                  journey
+                </Text>
+
+                  <Text
+                    className="
+                      mt-1.5
+                      text-[22px]
+                      leading-7
+                      font-extrabold
+                      text-[#1F1F2E]
+                    "
+                  >
+                    Your counseling
+                    sessions
+                  </Text>
+
+                  <Text
+                    className="
+                      mt-1.5
+                      text-[12px]
+                      leading-[18px]
+                      text-[#8C8992]
+                    "
+                  >
+                    View upcoming
+                    appointments and
+                    revisit your
+                    previous sessions.
+                  </Text>
+                </View>
+
+                <BookedDetailsView
+                  appointments={
+                    myAppointments
+                  }
+                  counselors={
+                    counselors
+                  }
+                />
+              </Animated.View>
+            )}
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              SECTION TITLE                                 */
+/* -------------------------------------------------------------------------- */
+
+function SectionTitle({
+  icon,
+  title,
+  subtitle,
+}) {
+  return (
+    <View className="flex-row items-start mb-2">
+      <View
+        className="
+          w-7
+          h-7
+          rounded-lg
+          bg-[#F2EEF9]
+          items-center
+          justify-center
+          mr-2
+        "
+      >
+        <Ionicons
+          name={icon}
+          size={14}
+          color="#6D5AB5"
+        />
+      </View>
+
+      <View className="flex-1">
+        <Text
+          className="
+            text-[11px]
+            font-extrabold
+            text-[#1F1F2E]
+          "
+        >
+          {title}
+        </Text>
+
+        {subtitle ? (
+          <Text
+            className="
+              mt-0.5
+              text-[9px]
+              leading-[13px]
+              text-[#8C8992]
+            "
+          >
+            {subtitle}
+          </Text>
+        ) : null}
+      </View>
+    </View>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                               LEGEND DOT                                   */
+/* -------------------------------------------------------------------------- */
+
+function LegendDot({
+  color,
+  label,
+}) {
+  return (
+    <View className="flex-row items-center">
+      <View
+        className="
+          w-2
+          h-2
+          rounded-full
+          mr-1.5
+        "
+        style={{
+          backgroundColor: color,
+        }}
+      />
+
+      <Text
+        className="
+          text-[9px]
+          text-[#8C8992]
+        "
+      >
+        {label}
+      </Text>
     </View>
   );
 }

@@ -1,5 +1,5 @@
 import { icons } from "@/src/shared/assets/icons/icons";
-import { moods } from "@/src/shared/constants/mood.config";
+import { moods, WELLNESS_MESSAGES } from "@/src/shared/constants/mood.config";
 import { Stack, useRouter } from "expo-router";
 import { getAuth } from "firebase/auth";
 import React, { useEffect, useState } from "react";
@@ -246,6 +246,21 @@ const DashboardScreen = () => {
   const userId = userID ? userID.uid : null;
 
   const currentMoodObj = moods.find((mood) => mood.id === selectedMood);
+
+  const wellnessMessage = selectedMood
+    ? WELLNESS_MESSAGES[selectedMood]
+    : null;
+
+  const handleGoToWellness = () => {
+    if (!selectedMood) return;
+
+    router.push({
+      pathname: "/(tabs)/(Recommendation)/Recommendations",
+      params: {
+        mood: selectedMood,
+      },
+    });
+  };
 
   /* ------------------------------------------------------------------------ */
   /*                                  LOGOUT                                  */
@@ -694,9 +709,9 @@ const DashboardScreen = () => {
                   {MOOD_MESSAGES[selectedMood]}
                 </Text>
 
-                {/* CTA */}
+                {/* CONTINUE MOOD CHECK-IN */}
 
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   activeOpacity={0.8}
                   onPress={() =>
                     router.push(
@@ -705,21 +720,16 @@ const DashboardScreen = () => {
                   }
                   style={{
                     width: "100%",
-                    height: 52,
-
+                    height: 50,
                     marginTop: 23,
-
                     borderRadius: 18,
-
                     backgroundColor: colors.lavender,
-
                     flexDirection: "row",
                     alignItems: "center",
                     justifyContent: "center",
-
                     shadowColor: colors.lavenderDark,
-                    shadowOpacity: 0.12,
-                    shadowRadius: 10,
+                    shadowOpacity: 0.1,
+                    shadowRadius: 8,
                     shadowOffset: {
                       width: 0,
                       height: 4,
@@ -740,13 +750,144 @@ const DashboardScreen = () => {
                     style={{
                       color: "#FFFFFF",
                       fontSize: 21,
-                      marginLeft: 10,
+                      marginLeft: 8,
                       marginTop: -2,
                     }}
                   >
                     ›
                   </Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
+
+                {/* WELLNESS RECOMMENDATION */}
+
+                {wellnessMessage && (
+                  <View
+                    style={{
+                      width: "100%",
+                      marginTop: 16,
+                      backgroundColor: colors.lavenderVerySoft,
+                      borderRadius: 22,
+                      paddingHorizontal: 18,
+                      paddingVertical: 18,
+                      borderWidth: 1,
+                      borderColor: "#E8E1F1",
+                    }}
+                  >
+                    {/* top badge */}
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        alignSelf: "flex-start",
+                        backgroundColor: colors.lavenderSoft,
+                        paddingHorizontal: 10,
+                        paddingVertical: 5,
+                        borderRadius: 20,
+                        marginBottom: 11,
+                      }}
+                    >
+                      <Text style={{ fontSize: 11, marginRight: 5 }}>✦</Text>
+                      <Text
+                        style={{
+                          color: colors.lavenderDark,
+                          fontSize: 10,
+                          fontWeight: "700",
+                          letterSpacing: 0.7,
+                        }}
+                      >
+                        FOR YOUR {selectedMood.toUpperCase()} MOOD
+                      </Text>
+                    </View>
+
+                    {/* title */}
+                    <Text
+                      style={{
+                        color: colors.text,
+                        fontSize: 17,
+                        lineHeight: 22,
+                        fontWeight: "700",
+                      }}
+                    >
+                      {wellnessMessage.title}
+                    </Text>
+
+                    {/* description */}
+                    <Text
+                      style={{
+                        color: colors.textSecondary,
+                        fontSize: 13,
+                        lineHeight: 19,
+                        marginTop: 6,
+                        marginBottom: 15,
+                      }}
+                    >
+                      {wellnessMessage.subtitle}
+                    </Text>
+
+                    {/* Wellness button */}
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      onPress={handleGoToWellness}
+                      style={{
+                        height: 46,
+                        borderRadius: 16,
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        paddingHorizontal: 16,
+                        backgroundColor: "#FFFFFF",
+                        borderWidth: 1,
+                        borderColor: "#DED5EC",
+                      }}
+                    >
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          flex: 1,
+                        }}
+                      >
+                        <View
+                          style={{
+                            width: 29,
+                            height: 29,
+                            borderRadius: 15,
+                            backgroundColor: colors.lavenderSoft,
+                            alignItems: "center",
+                            justifyContent: "center",
+                            marginRight: 10,
+                          }}
+                        >
+                          <Text
+                            style={{
+                              color: colors.lavenderDark,
+                              fontSize: 15,
+                            }}
+                          >
+                            ♡
+                          </Text>
+                        </View>
+                        <Text
+                          style={{
+                            color: colors.lavenderDark,
+                            fontSize: 13.5,
+                            fontWeight: "700",
+                          }}
+                        >
+                          {wellnessMessage.button}
+                        </Text>
+                      </View>
+                      <Text
+                        style={{
+                          color: colors.lavenderDark,
+                          fontSize: 22,
+                        }}
+                      >
+                        ›
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
               </View>
             </View>
           )}

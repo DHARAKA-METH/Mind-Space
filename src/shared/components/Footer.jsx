@@ -15,7 +15,19 @@ const Footer = ({ activeTab, setActiveTab }) => {
 
   return (
     <View pointerEvents="box-none" className="items-center pb-2">
-      <View className="bg-white rounded-full border  flex-row items-center justify-center px-4 py-2 gap-1 shadow-lg shadow-black/20">
+      <View
+        className="rounded-full flex-row items-center justify-center px-4 py-2 gap-1"
+        style={{
+          backgroundColor: "#FFFFFF",
+          borderWidth: 1,
+          borderColor: "#ECE5E0",
+          shadowColor: "#252330",
+          shadowOpacity: 0.08,
+          shadowRadius: 12,
+          shadowOffset: { width: 0, height: 4 },
+          elevation: 4,
+        }}
+      >
         {tabs.map((name) => {
           const isActive = activeTab === name;
           const icons = TAB_ICONS[name];
@@ -30,7 +42,7 @@ const Footer = ({ activeTab, setActiveTab }) => {
                   width: 35,
                   height: 35,
                   borderRadius: 14,
-                  backgroundColor: isActive ? "#1c1917" : "transparent",
+                  backgroundColor: isActive ? "#8D7BB8" : "transparent",
                   alignItems: "center",
                   justifyContent: "center",
                   overflow: "hidden",
@@ -39,7 +51,7 @@ const Footer = ({ activeTab, setActiveTab }) => {
                 <Ionicons
                   name={isActive ? icons.active : icons.inactive}
                   size={21}
-                  color={isActive ? "#FFF" : "#A8A29E"}
+                  color={isActive ? "#FFF" : "#A29CA7"}
                 />
               </View>
             </TouchableOpacity>

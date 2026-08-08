@@ -1,4 +1,9 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, {
+  useState,
+  useMemo,
+  useCallback,
+} from "react";
+
 import {
   View,
   ScrollView,
@@ -8,10 +13,21 @@ import {
   Platform,
   UIManager,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Stack } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+
+import {
+  SafeAreaView,
+} from "react-native-safe-area-context";
+
+import {
+  Stack,
+} from "expo-router";
+
+import {
+  Ionicons,
+} from "@expo/vector-icons";
+
 import * as Haptics from "expo-haptics";
+
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -19,448 +35,1486 @@ import Animated, {
   withSequence,
   Easing,
 } from "react-native-reanimated";
-import { useMoodEntries } from "../hooks/useMoodEntries";
-import { CalendarDay } from "../components/CalendarDay";
-import { MoodEntryModal } from "../components/MoodEntryModal";
+
+import {
+  Image,
+} from "expo-image";
+
+import {
+  useMoodEntries,
+} from "../hooks/useMoodEntries";
+
+import {
+  CalendarDay,
+} from "../components/CalendarDay";
+
+import {
+  MoodEntryModal,
+} from "../components/MoodEntryModal";
+
 import {
   DAY_LABELS,
   MONTH_NAMES,
   MOOD_CONFIG,
 } from "../../../shared/constants/mood.config";
-import { Image } from "expo-image";
 
-if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
+/* -------------------------------------------------------------------------- */
+/*                               ANDROID SETUP                                */
+/* -------------------------------------------------------------------------- */
+
+if (
+  Platform.OS === "android" &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(
+    true
+  );
 }
 
-const ceylon = {
-  ink: "#3D2E1F",
-  muted: "#8A7A63",
-  mutedLight: "#B8A78C",
-  teaGreen: "#4A7856",
-  sage: "#7C9885",
-  terracotta: "#C97B4A",
-  sand: "#F0E4D3",
-  cream: "#FBF3EA",
-  background: "#ECE6E3",
+/* -------------------------------------------------------------------------- */
+/*                                COLOR SYSTEM                                */
+/* -------------------------------------------------------------------------- */
+
+const colors = {
+  background: "#F9F5F1",
+
+  lavender: "#CCC5E8",
+  lavenderSoft: "#F2EEF9",
+
+  purple: "#6D5AB5",
+  purpleDark: "#574493",
+
+  peach: "#F47F63",
+  peachSoft: "#FDE8E2",
+
+  text: "#1F1F2E",
+  secondaryText: "#8C8992",
+  lightText: "#AAA4AE",
+
+  white: "#FFFFFF",
+
+  border: "#ECE6E2",
+  softBorder: "#F1ECE8",
 };
 
-// --- Spacing scale: use these everywhere instead of ad-hoc mb-N values ----
-const SPACE = {
-  xs: 4,
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 20,
-  xxl: 28,
-  xxxl: 36,
-};
+/* -------------------------------------------------------------------------- */
+/*                                  HELPERS                                   */
+/* -------------------------------------------------------------------------- */
 
-const SCREEN_PADDING_H = 16; // consistent left/right gutter for the whole screen
-
-const toDateKey = (year, month, day) => {
+const toDateKey = (
+  year,
+  month,
+  day
+) => {
   if (!day) return null;
-  const d = new Date(year, month, day);
-  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-  return d.toISOString().split("T")[0];
+
+  const date = new Date(
+    year,
+    month,
+    day
+  );
+
+  date.setMinutes(
+    date.getMinutes() -
+      date.getTimezoneOffset()
+  );
+
+  return date
+    .toISOString()
+    .split("T")[0];
 };
+
+/* -------------------------------------------------------------------------- */
+/*                              CUSTOM HEADER                                 */
+/* -------------------------------------------------------------------------- */
+
+function CalendarHeader() {
+  return (
+    <View className="flex-row items-center">
+      {/* Header icon */}
+
+      <View
+        className="
+          w-10
+          h-10
+          rounded-2xl
+          bg-[#EEE9F7]
+          items-center
+          justify-center
+          mr-3
+        "
+      >
+        <Ionicons
+          name="calendar-outline"
+          size={20}
+          color={colors.purple}
+        />
+      </View>
+
+      {/* Header text */}
+
+      <View>
+        <Text
+          className="
+            text-[18px]
+            font-extrabold
+            text-[#1F1F2E]
+          "
+        >
+          Mood Calendar
+        </Text>
+
+        <Text
+          className="
+            text-[10px]
+            mt-0.5
+            text-[#8C8992]
+          "
+        >
+          Your emotional journey
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                             CALENDAR SCREEN                                */
+/* -------------------------------------------------------------------------- */
 
 export default function MoodCalendarScreen() {
-  const moodHook = useMoodEntries() || {};
-  const { entries = {}, loading = true, saveEntry, deleteEntry } = moodHook;
+  const moodHook =
+    useMoodEntries() || {};
 
-  const [viewDate, setViewDate] = useState(new Date());
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [highlightMood, setHighlightMood] = useState(null);
-  const [lockedNotice, setLockedNotice] = useState(false);
+  const {
+    entries = {},
+    loading = true,
+    saveEntry,
+    deleteEntry,
+  } = moodHook;
 
-  const noticeOpacity = useSharedValue(0);
-  const arrowScale = useSharedValue(1);
+  const [viewDate, setViewDate] =
+    useState(new Date());
 
-  const year = viewDate.getFullYear();
-  const month = viewDate.getMonth();
+  const [
+    modalVisible,
+    setModalVisible,
+  ] = useState(false);
+
+  const [
+    selectedDate,
+    setSelectedDate,
+  ] = useState(null);
+
+  const [
+    highlightMood,
+    setHighlightMood,
+  ] = useState(null);
+
+  const [
+    lockedNotice,
+    setLockedNotice,
+  ] = useState(false);
+
+  const noticeOpacity =
+    useSharedValue(0);
+
+  const arrowScale =
+    useSharedValue(1);
+
+  const year =
+    viewDate.getFullYear();
+
+  const month =
+    viewDate.getMonth();
+
+  /* ------------------------------------------------------------------------ */
+  /*                                  TODAY                                   */
+  /* ------------------------------------------------------------------------ */
 
   const todayKey = useMemo(() => {
     const now = new Date();
-    return toDateKey(now.getFullYear(), now.getMonth(), now.getDate());
+
+    return toDateKey(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    );
   }, []);
 
-  const isCurrentMonth = useMemo(() => {
-    const now = new Date();
-    return year === now.getFullYear() && month === now.getMonth();
-  }, [year, month]);
+  /* ------------------------------------------------------------------------ */
+  /*                         CURRENT MONTH CHECK                              */
+  /* ------------------------------------------------------------------------ */
+
+  const isCurrentMonth =
+    useMemo(() => {
+      const now = new Date();
+
+      return (
+        year ===
+          now.getFullYear() &&
+        month ===
+          now.getMonth()
+      );
+    }, [year, month]);
+
+  /* ------------------------------------------------------------------------ */
+  /*                           CALENDAR CELLS                                 */
+  /* ------------------------------------------------------------------------ */
 
   const cells = useMemo(() => {
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstDay =
+      new Date(
+        year,
+        month,
+        1
+      ).getDay();
+
+    const daysInMonth =
+      new Date(
+        year,
+        month + 1,
+        0
+      ).getDate();
+
     return [
-      ...Array(firstDay).fill(null),
-      ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+      ...Array(firstDay).fill(
+        null
+      ),
+
+      ...Array.from(
+        {
+          length: daysInMonth,
+        },
+
+        (_, index) =>
+          index + 1
+      ),
     ];
   }, [year, month]);
 
-  const monthStats = useMemo(() => {
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    let logged = 0;
-    for (let d = 1; d <= daysInMonth; d++) {
-      const key = toDateKey(year, month, d);
-      if (entries?.[key]) logged += 1;
-    }
-    const completion = Math.min(Math.round((logged / daysInMonth) * 100), 100);
-    return { logged, daysInMonth, completion };
-  }, [entries, year, month]);
+  /* ------------------------------------------------------------------------ */
+  /*                             MONTH STATS                                  */
+  /* ------------------------------------------------------------------------ */
+
+  const monthStats =
+    useMemo(() => {
+      const daysInMonth =
+        new Date(
+          year,
+          month + 1,
+          0
+        ).getDate();
+
+      let logged = 0;
+
+      for (
+        let day = 1;
+        day <= daysInMonth;
+        day++
+      ) {
+        const key =
+          toDateKey(
+            year,
+            month,
+            day
+          );
+
+        if (entries?.[key]) {
+          logged += 1;
+        }
+      }
+
+      const completion =
+        Math.min(
+          Math.round(
+            (logged /
+              daysInMonth) *
+              100
+          ),
+          100
+        );
+
+      return {
+        logged,
+        daysInMonth,
+        completion,
+      };
+    }, [
+      entries,
+      year,
+      month,
+    ]);
+
+  /* ------------------------------------------------------------------------ */
+  /*                                  STREAK                                  */
+  /* ------------------------------------------------------------------------ */
 
   const streak = useMemo(() => {
     let count = 0;
-    let cursor = new Date();
+
+    const cursor =
+      new Date();
+
     while (true) {
-      const key = toDateKey(cursor.getFullYear(), cursor.getMonth(), cursor.getDate());
+      const key =
+        toDateKey(
+          cursor.getFullYear(),
+          cursor.getMonth(),
+          cursor.getDate()
+        );
+
       if (entries?.[key]) {
         count += 1;
-        cursor.setDate(cursor.getDate() - 1);
+
+        cursor.setDate(
+          cursor.getDate() -
+            1
+        );
       } else {
         break;
       }
     }
-    return count;
-  }, [entries, todayKey]);
 
-  const changeMonth = (offset) => {
-    Haptics.selectionAsync().catch(() => {});
-    arrowScale.value = withSequence(
-      withTiming(0.85, { duration: 90 }),
-      withTiming(1, { duration: 140, easing: Easing.out(Easing.ease) })
+    return count;
+  }, [entries]);
+
+  /* ------------------------------------------------------------------------ */
+  /*                            CHANGE MONTH                                  */
+  /* ------------------------------------------------------------------------ */
+
+  const changeMonth = (
+    offset
+  ) => {
+    Haptics.selectionAsync().catch(
+      () => {}
     );
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setViewDate(new Date(year, month + offset, 1));
+
+    arrowScale.value =
+      withSequence(
+        withTiming(0.85, {
+          duration: 90,
+        }),
+
+        withTiming(1, {
+          duration: 140,
+
+          easing:
+            Easing.out(
+              Easing.ease
+            ),
+        })
+      );
+
+    LayoutAnimation.configureNext(
+      LayoutAnimation.Presets
+        .easeInEaseOut
+    );
+
+    setViewDate(
+      new Date(
+        year,
+        month + offset,
+        1
+      )
+    );
   };
+
+  /* ------------------------------------------------------------------------ */
+  /*                              GO TO TODAY                                 */
+  /* ------------------------------------------------------------------------ */
 
   const jumpToToday = () => {
-    Haptics.selectionAsync().catch(() => {});
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setViewDate(new Date());
+    Haptics.selectionAsync().catch(
+      () => {}
+    );
+
+    LayoutAnimation.configureNext(
+      LayoutAnimation.Presets
+        .easeInEaseOut
+    );
+
+    setViewDate(
+      new Date()
+    );
   };
 
-  const arrowAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: arrowScale.value }],
-  }));
+  /* ------------------------------------------------------------------------ */
+  /*                              ANIMATIONS                                  */
+  /* ------------------------------------------------------------------------ */
+
+  const arrowAnimatedStyle =
+    useAnimatedStyle(() => ({
+      transform: [
+        {
+          scale:
+            arrowScale.value,
+        },
+      ],
+    }));
+
+  const noticeAnimatedStyle =
+    useAnimatedStyle(() => ({
+      opacity:
+        noticeOpacity.value,
+    }));
+
+  /* ------------------------------------------------------------------------ */
+  /*                           LOCKED DAY MESSAGE                             */
+  /* ------------------------------------------------------------------------ */
 
   const showLockedNotice = () => {
     setLockedNotice(true);
-    noticeOpacity.value = withSequence(
-      withTiming(1, { duration: 180 }),
-      withTiming(1, { duration: 900 }),
-      withTiming(0, { duration: 350 })
+
+    noticeOpacity.value =
+      withSequence(
+        withTiming(1, {
+          duration: 180,
+        }),
+
+        withTiming(1, {
+          duration: 900,
+        }),
+
+        withTiming(0, {
+          duration: 350,
+        })
+      );
+
+    setTimeout(
+      () =>
+        setLockedNotice(
+          false
+        ),
+      1500
     );
-    setTimeout(() => setLockedNotice(false), 1500);
   };
 
-  const noticeAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: noticeOpacity.value,
-  }));
+  /* ------------------------------------------------------------------------ */
+  /*                               DAY PRESS                                  */
+  /* ------------------------------------------------------------------------ */
 
-  const handleDayPress = useCallback(
-    (day) => {
-      if (!day) return;
-      const dateKey = toDateKey(year, month, day);
-      if (dateKey > todayKey) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
-        showLockedNotice();
-        return;
-      }
-      Haptics.selectionAsync().catch(() => {});
-      setSelectedDate({ day, dateKey });
-      setModalVisible(true);
-    },
-    [year, month, todayKey],
-  );
+  const handleDayPress =
+    useCallback(
+      (day) => {
+        if (!day) return;
 
-  const toggleMoodFilter = (key) => {
-    Haptics.selectionAsync().catch(() => {});
-    setHighlightMood((prev) => (prev === key ? null : key));
+        const dateKey =
+          toDateKey(
+            year,
+            month,
+            day
+          );
+
+        if (
+          dateKey >
+          todayKey
+        ) {
+          Haptics.notificationAsync(
+            Haptics
+              .NotificationFeedbackType
+              .Warning
+          ).catch(() => {});
+
+          showLockedNotice();
+
+          return;
+        }
+
+        Haptics.selectionAsync().catch(
+          () => {}
+        );
+
+        setSelectedDate({
+          day,
+          dateKey,
+        });
+
+        setModalVisible(true);
+      },
+      [
+        year,
+        month,
+        todayKey,
+      ]
+    );
+
+  /* ------------------------------------------------------------------------ */
+  /*                            MOOD FILTER                                   */
+  /* ------------------------------------------------------------------------ */
+
+  const toggleMoodFilter = (
+    key
+  ) => {
+    Haptics.selectionAsync().catch(
+      () => {}
+    );
+
+    setHighlightMood(
+      (previous) =>
+        previous === key
+          ? null
+          : key
+    );
   };
+
+  /* ------------------------------------------------------------------------ */
+  /*                                  LOADING                                 */
+  /* ------------------------------------------------------------------------ */
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center" style={{ backgroundColor: ceylon.cream }}>
-        <View
-          className="rounded-full items-center justify-center"
-          style={{ width: 64, height: 64, backgroundColor: "#fff", marginBottom: SPACE.lg }}
+      <>
+        <Stack.Screen
+          options={{
+            headerTitle: () => (
+              <CalendarHeader />
+            ),
+
+            headerShadowVisible:
+              false,
+
+            headerStyle: {
+              backgroundColor:
+                colors.background,
+            },
+
+            headerTintColor:
+              colors.purple,
+
+            headerTitleAlign:
+              "left",
+          }}
+        />
+
+        <SafeAreaView
+          edges={[
+            "left",
+            "right",
+            "bottom",
+          ]}
+          className="
+            flex-1
+            items-center
+            justify-center
+            bg-[#F9F5F1]
+          "
         >
-          <Ionicons name="leaf-outline" size={26} color={ceylon.sage} />
-        </View>
-        <Text style={{ color: ceylon.muted, fontSize: 13 }}>Loading your reflections…</Text>
-      </SafeAreaView>
+          <View
+            className="
+              w-[72px]
+              h-[72px]
+              rounded-[24px]
+              bg-[#EEE9F7]
+              items-center
+              justify-center
+              mb-4
+            "
+          >
+            <Ionicons
+              name="sparkles-outline"
+              size={27}
+              color={
+                colors.purple
+              }
+            />
+          </View>
+
+          <Text
+            className="
+              text-[14px]
+              font-semibold
+              text-[#1F1F2E]
+            "
+          >
+            Loading your
+            reflections…
+          </Text>
+
+          <Text
+            className="
+              text-[11px]
+              text-[#8C8992]
+              mt-1.5
+            "
+          >
+            Gathering your mood
+            journey
+          </Text>
+        </SafeAreaView>
+      </>
     );
   }
 
-  const moodOrder = MOOD_CONFIG.MOOD_ORDER || Object.keys(MOOD_CONFIG);
+  const moodOrder =
+    MOOD_CONFIG.MOOD_ORDER ||
+    Object.keys(
+      MOOD_CONFIG
+    );
+
+  /* ------------------------------------------------------------------------ */
+  /*                                  SCREEN                                  */
+  /* ------------------------------------------------------------------------ */
 
   return (
-    <SafeAreaView className="flex-1 mt-[-30px]"  style={{ backgroundColor: ceylon.background }}>
+    <>
+      {/* ================================================================ */}
+      {/* STACK HEADER                                                     */}
+      {/* ================================================================ */}
+
       <Stack.Screen
         options={{
-          headerTitle: "Mood Calendar",
-          headerShadowVisible: false,
-          headerStyle: { backgroundColor: ceylon.cream },
+          headerTitle: () => (
+            <CalendarHeader />
+          ),
+
+          headerShadowVisible:
+            false,
+
+          headerStyle: {
+            backgroundColor:
+              colors.background,
+          },
+
+          headerTintColor:
+            colors.purple,
+
+          headerTitleAlign:
+            "left",
         }}
       />
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingHorizontal: SCREEN_PADDING_H,
-          paddingTop: SPACE.lg,
-          paddingBottom: SPACE.xxxl, 
-        }}
+      {/* ================================================================ */}
+      {/* SCREEN CONTENT                                                   */}
+      {/* ================================================================ */}
+
+      <SafeAreaView
+        edges={[
+          "left",
+          "right",
+          "bottom",
+        ]}
+        className="
+          flex-1
+          bg-[#F9F5F1]
+        "
       >
-        {/* Month navigator */}
-        <View
-          className="flex-row items-center justify-between rounded-2xl"
-          style={{
-            backgroundColor: "#fff",
-            paddingVertical: SPACE.md,
-            paddingHorizontal: SPACE.md,
-            marginBottom: SPACE.lg,
-            shadowColor: "#000",
-            shadowOpacity: 0.05,
-            shadowRadius: 10,
-            shadowOffset: { width: 0, height: 3 },
-            elevation: 1,
+        <ScrollView
+          showsVerticalScrollIndicator={
+            false
+          }
+          className="
+            flex-1
+            bg-[#F9F5F1]
+          "
+          contentContainerStyle={{
+            paddingHorizontal: 18,
+            paddingTop: 16,
+            paddingBottom: 40,
           }}
         >
-          <Animated.View style={arrowAnimatedStyle}>
-            <TouchableOpacity
-              onPress={() => changeMonth(-1)}
-              className="rounded-lg"
-              style={{ backgroundColor: ceylon.sand, padding: SPACE.sm }}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="chevron-back" size={20} color={ceylon.teaGreen} />
-            </TouchableOpacity>
-          </Animated.View>
+          {/* ============================================================ */}
+          {/* INTRO                                                        */}
+          {/* ============================================================ */}
 
-          <TouchableOpacity onPress={jumpToToday} activeOpacity={0.7} disabled={isCurrentMonth}>
-            <Text className="font-bold text-lg text-center" style={{ color: ceylon.ink }}>
-              {MONTH_NAMES[month]} {year}
-            </Text>
-            {/* Reserve the line height even when hidden, so the header doesn't shift size */}
+          <View className="mb-5">
             <Text
-              className="text-center text-[10px]"
-              style={{ color: ceylon.sage, marginTop: 2, opacity: isCurrentMonth ? 0 : 1 }}
+              className="
+                text-[12px]
+                font-bold
+                tracking-[1px]
+                text-[#6D5AB5]
+                uppercase
+              "
             >
-              Tap for today
-            </Text>
-          </TouchableOpacity>
-
-          <Animated.View style={arrowAnimatedStyle}>
-            <TouchableOpacity
-              onPress={() => changeMonth(1)}
-              className="rounded-lg"
-              style={{ backgroundColor: ceylon.sand, padding: SPACE.sm }}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="chevron-forward" size={20} color={ceylon.teaGreen} />
-            </TouchableOpacity>
-          </Animated.View>
-        </View>
-
-        {/* Streak + completion summary */}
-        <View className="flex-row" style={{ gap: SPACE.md, marginBottom: SPACE.lg }}>
-          <View
-            className="flex-1 items-center rounded-2xl"
-            style={{ backgroundColor: "#fff", paddingVertical: SPACE.md }}
-          >
-            <Text style={{ color: ceylon.terracotta, fontSize: 20, fontWeight: "700" }}>
-              {streak}
-            </Text>
-            <Text
-              style={{ color: ceylon.muted, fontSize: 10, marginTop: SPACE.xs }}
-              className="uppercase tracking-wide"
-            >
-              Day streak
+              Daily reflections
             </Text>
           </View>
-          <View
-            className="flex-1 items-center rounded-2xl"
-            style={{ backgroundColor: "#fff", paddingVertical: SPACE.md }}
-          >
-            <Text style={{ color: ceylon.teaGreen, fontSize: 20, fontWeight: "700" }}>
-              {monthStats.completion}%
-            </Text>
-            <Text
-              style={{ color: ceylon.muted, fontSize: 10, marginTop: SPACE.xs }}
-              className="uppercase tracking-wide"
-            >
-              This month
-            </Text>
-          </View>
-        </View>
 
-        {/* Locked-day notice — reserve height so it doesn't cause a layout jump */}
-        <View style={{ height: lockedNotice ? undefined : 0, marginBottom: lockedNotice ? SPACE.md : 0 }}>
+          {/* ============================================================ */}
+          {/* MONTH NAVIGATOR                                              */}
+          {/* ============================================================ */}
+
+          <View
+            className="
+              flex-row
+              items-center
+              justify-between
+              bg-white
+              rounded-[24px]
+              px-3
+              py-3
+              mb-4
+              border
+              border-[#ECE6E2]
+              shadow-sm
+            "
+          >
+            {/* Previous */}
+
+            <Animated.View
+              style={
+                arrowAnimatedStyle
+              }
+            >
+              <TouchableOpacity
+                activeOpacity={0.75}
+                onPress={() =>
+                  changeMonth(-1)
+                }
+                className="
+                  w-11
+                  h-11
+                  rounded-2xl
+                  bg-[#F2EEF9]
+                  items-center
+                  justify-center
+                "
+              >
+                <Ionicons
+                  name="chevron-back"
+                  size={20}
+                  color={
+                    colors.purple
+                  }
+                />
+              </TouchableOpacity>
+            </Animated.View>
+
+            {/* Month */}
+
+            <TouchableOpacity
+              disabled={
+                isCurrentMonth
+              }
+              activeOpacity={0.7}
+              onPress={
+                jumpToToday
+              }
+              className="
+                flex-1
+                items-center
+                px-2
+              "
+            >
+              <Text
+                className="
+                  text-[18px]
+                  font-extrabold
+                  text-[#1F1F2E]
+                "
+              >
+                {
+                  MONTH_NAMES[
+                    month
+                  ]
+                }{" "}
+                {year}
+              </Text>
+
+              <View className="h-4 justify-center">
+                {!isCurrentMonth && (
+                  <Text
+                    className="
+                      text-[10px]
+                      font-semibold
+                      text-[#6D5AB5]
+                    "
+                  >
+                    Tap to return
+                    to today
+                  </Text>
+                )}
+              </View>
+            </TouchableOpacity>
+
+            {/* Next */}
+
+            <Animated.View
+              style={
+                arrowAnimatedStyle
+              }
+            >
+              <TouchableOpacity
+                activeOpacity={0.75}
+                onPress={() =>
+                  changeMonth(1)
+                }
+                className="
+                  w-11
+                  h-11
+                  rounded-2xl
+                  bg-[#F2EEF9]
+                  items-center
+                  justify-center
+                "
+              >
+                <Ionicons
+                  name="chevron-forward"
+                  size={20}
+                  color={
+                    colors.purple
+                  }
+                />
+              </TouchableOpacity>
+            </Animated.View>
+          </View>
+
+          {/* ============================================================ */}
+          {/* STATS                                                        */}
+          {/* ============================================================ */}
+
+          <View className="flex-row gap-3 mb-4">
+            {/* Streak */}
+
+            <View
+              className="
+                flex-1
+                bg-white
+                rounded-[22px]
+                border
+                border-[#ECE6E2]
+                p-4
+              "
+            >
+              <View
+                className="
+                  w-9
+                  h-9
+                  rounded-xl
+                  bg-[#FDE8E2]
+                  items-center
+                  justify-center
+                  mb-3
+                "
+              >
+                <Ionicons
+                  name="flame-outline"
+                  size={19}
+                  color={
+                    colors.peach
+                  }
+                />
+              </View>
+
+              <View className="flex-row items-end">
+                <Text
+                  className="
+                    text-[26px]
+                    font-extrabold
+                    text-[#F47F63]
+                  "
+                >
+                  {streak}
+                </Text>
+
+                <Text
+                  className="
+                    text-[11px]
+                    mb-1
+                    ml-1
+                    text-[#8C8992]
+                  "
+                >
+                  days
+                </Text>
+              </View>
+
+              <Text
+                className="
+                  text-[11px]
+                  font-semibold
+                  text-[#1F1F2E]
+                  mt-1
+                "
+              >
+                Current streak
+              </Text>
+            </View>
+
+            {/* Completion */}
+
+            <View
+              className="
+                flex-1
+                bg-white
+                rounded-[22px]
+                border
+                border-[#ECE6E2]
+                p-4
+              "
+            >
+              <View
+                className="
+                  w-9
+                  h-9
+                  rounded-xl
+                  bg-[#EEE9F7]
+                  items-center
+                  justify-center
+                  mb-3
+                "
+              >
+                <Ionicons
+                  name="analytics-outline"
+                  size={19}
+                  color={
+                    colors.purple
+                  }
+                />
+              </View>
+
+              <Text
+                className="
+                  text-[26px]
+                  font-extrabold
+                  text-[#6D5AB5]
+                "
+              >
+                {
+                  monthStats.completion
+                }
+                %
+              </Text>
+
+              <Text
+                className="
+                  text-[11px]
+                  font-semibold
+                  text-[#1F1F2E]
+                  mt-1
+                "
+              >
+                Monthly check-ins
+              </Text>
+
+              {/* progress */}
+
+              <View
+                className="
+                  h-1.5
+                  mt-3
+                  rounded-full
+                  overflow-hidden
+                  bg-[#EEE9F7]
+                "
+              >
+                <View
+                  className="
+                    h-full
+                    bg-[#6D5AB5]
+                    rounded-full
+                  "
+                  style={{
+                    width: `${monthStats.completion}%`,
+                  }}
+                />
+              </View>
+            </View>
+          </View>
+
+          {/* ============================================================ */}
+          {/* LOCKED DAY NOTICE                                            */}
+          {/* ============================================================ */}
+
           {lockedNotice && (
             <Animated.View
-              style={[
-                noticeAnimatedStyle,
-                {
-                  backgroundColor: ceylon.sand,
-                  borderRadius: 14,
-                  paddingVertical: SPACE.sm,
-                  paddingHorizontal: SPACE.md,
-                },
-              ]}
+              style={
+                noticeAnimatedStyle
+              }
+              className="
+                flex-row
+                items-center
+                bg-[#F2EEF9]
+                border
+                border-[#DED6EE]
+                rounded-2xl
+                px-4
+                py-3
+                mb-4
+              "
             >
-              <Text style={{ color: ceylon.ink, fontSize: 12, textAlign: "center" }}>
-                That day hasn&apos;t arrived yet — one moment at a time 🌿
+              <View
+                className="
+                  w-8
+                  h-8
+                  rounded-full
+                  bg-white
+                  items-center
+                  justify-center
+                  mr-3
+                "
+              >
+                <Ionicons
+                  name="lock-closed-outline"
+                  size={15}
+                  color={
+                    colors.purple
+                  }
+                />
+              </View>
+
+              <Text
+                className="
+                  flex-1
+                  text-[11.5px]
+                  leading-[17px]
+                  text-[#6B6471]
+                "
+              >
+                That day hasn't
+                arrived yet. One
+                moment at a time.
               </Text>
             </Animated.View>
           )}
-        </View>
 
-        {/* Weekday labels */}
-        <View className="flex-row" style={{ marginBottom: SPACE.sm }}>
-          {DAY_LABELS.map((label) => (
-            <Text
-              key={label}
-              className="flex-1 text-center text-[10px] font-bold"
-              style={{ color: ceylon.mutedLight }}
-            >
-              {label}
-            </Text>
-          ))}
-        </View>
+          {/* ============================================================ */}
+          {/* CALENDAR CARD                                                */}
+          {/* ============================================================ */}
 
-        {/* Calendar grid */}
-        <View className="flex-row flex-wrap" style={{ marginBottom: SPACE.lg }}>
-          {cells.map((day, idx) => {
-            const dateKey = day ? toDateKey(year, month, day) : null;
-            const entry =
-              dateKey && entries && typeof entries === "object" ? entries[dateKey] : null;
-
-            const isDimmed =
-              !!highlightMood && !!entry && entry.mood && entry.mood !== highlightMood;
-
-            return (
-              <CalendarDay
-                key={dateKey || `empty-${idx}`}
-                day={day}
-                isToday={dateKey === todayKey}
-                isLocked={dateKey ? dateKey > todayKey : false}
-                entry={entry}
-                dimmed={isDimmed}
-                onPress={handleDayPress}
-              />
-            );
-          })}
-        </View>
-
-        {/* Empty state nudge */}
-        {monthStats.logged === 0 && (
           <View
-            className="items-center rounded-3xl"
-            style={{
-              backgroundColor: "#fff",
-              paddingVertical: SPACE.xl,
-              paddingHorizontal: SPACE.lg,
-              marginBottom: SPACE.lg,
-            }}
+            className="
+              bg-white
+              rounded-[26px]
+              border
+              border-[#ECE6E2]
+              px-3
+              pt-5
+              pb-4
+              mb-5
+              shadow-sm
+            "
           >
-            <Ionicons
-              name="cafe-outline"
-              size={22}
-              color={ceylon.sage}
-              style={{ marginBottom: SPACE.sm }}
-            />
-            <Text style={{ color: ceylon.ink, fontWeight: "600", fontSize: 13 }}>
-              No check-ins yet this month
-            </Text>
-            <Text
-              style={{ color: ceylon.muted, fontSize: 11, marginTop: SPACE.xs, textAlign: "center" }}
-            >
-              Tap today&apos;s date to log how you&apos;re feeling.
-            </Text>
-          </View>
-        )}
+            {/* Weekday labels */}
 
-        {/* Mood Level Guide */}
-        <View
-          className="rounded-3xl"
-          style={{ backgroundColor: "#fff", paddingVertical: SPACE.xl, paddingHorizontal: SPACE.lg }}
-        >
-          <Text
-            className="font-bold text-[10px] tracking-widest uppercase text-center"
-            style={{ color: ceylon.mutedLight, marginBottom: SPACE.xs }}
-          >
-            Mood Level Guide
-          </Text>
-          <Text
-            className="text-[9px] text-center"
-            style={{ color: ceylon.mutedLight, marginBottom: SPACE.xl }}
-          >
-            Tap a mood to spotlight those days
-          </Text>
-
-          <View className="flex-row justify-between">
-            {moodOrder.map((key) => {
-              const item = MOOD_CONFIG[key];
-              if (!item) return null;
-              const isActive = highlightMood === key;
-              const isDimmedLegend = !!highlightMood && !isActive;
-
-              return (
-                <TouchableOpacity
-                  key={key}
-                  className="items-center flex-1"
-                  activeOpacity={0.7}
-                  onPress={() => toggleMoodFilter(key)}
-                  style={{ opacity: isDimmedLegend ? 0.4 : 1 }}
-                >
-                  <View
-                    style={{
-                      backgroundColor: item.color ? `${item.color}15` : ceylon.sand,
-                      borderWidth: isActive ? 1.5 : 0,
-                      borderColor: item.color || ceylon.sage,
-                      width: 40,
-                      height: 40,
-                      marginBottom: SPACE.sm,
-                    }}
-                    className="rounded-full items-center justify-center"
-                  >
-                    <Image
-                      source={item.icon}
-                      style={{ width: 24, height: 24 }}
-                      contentFit="contain"
-                    />
-                  </View>
-
-                  <Text className="text-[9px] font-bold" style={{ color: ceylon.ink }}>
-                    {item.label}
-                  </Text>
+            <View className="flex-row mb-3">
+              {DAY_LABELS.map(
+                (label) => (
                   <Text
-                    style={{ color: item.color || ceylon.muted, marginTop: 1 }}
-                    className="text-[8px] font-black uppercase"
+                    key={label}
+                    className="
+                      flex-1
+                      text-center
+                      text-[10px]
+                      font-extrabold
+                      text-[#A7A0AB]
+                    "
                   >
-                    Lv. {item.stress}
+                    {label}
                   </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </View>
-      </ScrollView>
+                )
+              )}
+            </View>
 
-      {selectedDate && (
-        <MoodEntryModal
-          visible={modalVisible}
-          dateKey={selectedDate.dateKey}
-          existingEntry={entries ? entries[selectedDate.dateKey] : null}
-          onClose={() => setModalVisible(false)}
-          onSave={saveEntry}
-          onDelete={deleteEntry}
-        />
-      )}
-    </SafeAreaView>
+            {/* Calendar */}
+
+            <View className="flex-row flex-wrap">
+              {cells.map(
+                (
+                  day,
+                  index
+                ) => {
+                  const dateKey =
+                    day
+                      ? toDateKey(
+                          year,
+                          month,
+                          day
+                        )
+                      : null;
+
+                  const entry =
+                    dateKey &&
+                    entries &&
+                    typeof entries ===
+                      "object"
+                      ? entries[
+                          dateKey
+                        ]
+                      : null;
+
+                  const isDimmed =
+                    !!highlightMood &&
+                    !!entry &&
+                    entry.mood &&
+                    entry.mood !==
+                      highlightMood;
+
+                  return (
+                    <CalendarDay
+                      key={
+                        dateKey ||
+                        `empty-${index}`
+                      }
+                      day={day}
+                      isToday={
+                        dateKey ===
+                        todayKey
+                      }
+                      isLocked={
+                        dateKey
+                          ? dateKey >
+                            todayKey
+                          : false
+                      }
+                      entry={
+                        entry
+                      }
+                      dimmed={
+                        isDimmed
+                      }
+                      onPress={
+                        handleDayPress
+                      }
+                    />
+                  );
+                }
+              )}
+            </View>
+
+            {/* Calendar helper */}
+
+            <View
+              className="
+                flex-row
+                items-center
+                justify-center
+                mt-3
+              "
+            >
+              <Ionicons
+                name="information-circle-outline"
+                size={13}
+                color={
+                  colors.secondaryText
+                }
+              />
+
+              <Text
+                className="
+                  text-[10px]
+                  text-[#8C8992]
+                  ml-1
+                "
+              >
+                Tap a day to view
+                or update your
+                reflection
+              </Text>
+            </View>
+          </View>
+
+          {/* ============================================================ */}
+          {/* EMPTY STATE                                                  */}
+          {/* ============================================================ */}
+
+          {monthStats.logged ===
+            0 && (
+            <View
+              className="
+                bg-[#F2EEF9]
+                rounded-[24px]
+                p-5
+                mb-5
+                border
+                border-[#E4DDEF]
+              "
+            >
+              <View className="flex-row items-center">
+                <View
+                  className="
+                    w-12
+                    h-12
+                    rounded-2xl
+                    bg-white
+                    items-center
+                    justify-center
+                    mr-3.5
+                  "
+                >
+                  <Ionicons
+                    name="heart-outline"
+                    size={22}
+                    color={
+                      colors.purple
+                    }
+                  />
+                </View>
+
+                <View className="flex-1">
+                  <Text
+                    className="
+                      text-[14px]
+                      font-bold
+                      text-[#1F1F2E]
+                    "
+                  >
+                    No check-ins
+                    yet this month
+                  </Text>
+
+                  <Text
+                    className="
+                      text-[11px]
+                      leading-4
+                      text-[#8C8992]
+                      mt-1
+                    "
+                  >
+                    Tap today's
+                    date whenever
+                    you're ready
+                    to record how
+                    you feel.
+                  </Text>
+                </View>
+              </View>
+            </View>
+          )}
+
+          {/* ============================================================ */}
+          {/* MOOD GUIDE                                                   */}
+          {/* ============================================================ */}
+
+          <View
+            className="
+              bg-white
+              rounded-[26px]
+              border
+              border-[#ECE6E2]
+              px-4
+              pt-5
+              pb-5
+              shadow-sm
+            "
+          >
+            <View className="items-center mb-5">
+              <View
+                className="
+                  flex-row
+                  items-center
+                  bg-[#EEE9F7]
+                  px-3
+                  py-1.5
+                  rounded-full
+                  mb-2
+                "
+              >
+                <Ionicons
+                  name="sparkles-outline"
+                  size={12}
+                  color={
+                    colors.purple
+                  }
+                />
+
+                <Text
+                  className="
+                    text-[9px]
+                    font-extrabold
+                    text-[#6D5AB5]
+                    tracking-[1px]
+                    ml-1.5
+                    uppercase
+                  "
+                >
+                  Mood guide
+                </Text>
+              </View>
+
+              <Text
+                className="
+                  text-[15px]
+                  font-extrabold
+                  text-[#1F1F2E]
+                "
+              >
+                Explore your mood
+                patterns
+              </Text>
+
+              <Text
+                className="
+                  text-[10px]
+                  text-[#8C8992]
+                  mt-1
+                "
+              >
+                Tap a mood to
+                highlight matching
+                days
+              </Text>
+            </View>
+
+            {/* Mood filters */}
+
+            <View className="flex-row justify-between">
+              {moodOrder.map(
+                (key) => {
+                  const item =
+                    MOOD_CONFIG[
+                      key
+                    ];
+
+                  if (!item) {
+                    return null;
+                  }
+
+                  const isActive =
+                    highlightMood ===
+                    key;
+
+                  const isDimmedLegend =
+                    !!highlightMood &&
+                    !isActive;
+
+                  return (
+                    <TouchableOpacity
+                      key={key}
+                      activeOpacity={
+                        0.75
+                      }
+                      onPress={() =>
+                        toggleMoodFilter(
+                          key
+                        )
+                      }
+                      className="
+                        flex-1
+                        items-center
+                      "
+                      style={{
+                        opacity:
+                          isDimmedLegend
+                            ? 0.35
+                            : 1,
+                      }}
+                    >
+                      {/* Mood icon */}
+
+                      <View
+                        className="
+                          w-12
+                          h-12
+                          rounded-2xl
+                          items-center
+                          justify-center
+                          mb-2
+                        "
+                        style={{
+                          backgroundColor:
+                            item.color
+                              ? `${item.color}15`
+                              : colors.lavenderSoft,
+
+                          borderWidth:
+                            isActive
+                              ? 1.5
+                              : 0,
+
+                          borderColor:
+                            item.color ||
+                            colors.purple,
+                        }}
+                      >
+                        <Image
+                          source={
+                            item.icon
+                          }
+                          className="w-[27px] h-[27px]"
+                          contentFit="contain"
+                        />
+                      </View>
+
+                      <Text
+                        className="
+                          text-[9.5px]
+                          font-bold
+                          text-[#1F1F2E]
+                        "
+                      >
+                        {item.label}
+                      </Text>
+
+                      <Text
+                        className="
+                          text-[8px]
+                          font-extrabold
+                          uppercase
+                          mt-0.5
+                        "
+                        style={{
+                          color:
+                            item.color ||
+                            colors.secondaryText,
+                        }}
+                      >
+                        Lv.{" "}
+                        {
+                          item.stress
+                        }
+                      </Text>
+
+                      {/* active indicator */}
+
+                      {isActive && (
+                        <View
+                          className="
+                            w-1.5
+                            h-1.5
+                            rounded-full
+                            mt-1.5
+                          "
+                          style={{
+                            backgroundColor:
+                              item.color ||
+                              colors.purple,
+                          }}
+                        />
+                      )}
+                    </TouchableOpacity>
+                  );
+                }
+              )}
+            </View>
+          </View>
+        </ScrollView>
+
+        {/* ================================================================ */}
+        {/* MOOD ENTRY MODAL                                                 */}
+        {/* ================================================================ */}
+
+        {selectedDate && (
+          <MoodEntryModal
+            visible={
+              modalVisible
+            }
+            dateKey={
+              selectedDate.dateKey
+            }
+            existingEntry={
+              entries
+                ? entries[
+                    selectedDate
+                      .dateKey
+                  ]
+                : null
+            }
+            onClose={() =>
+              setModalVisible(
+                false
+              )
+            }
+            onSave={
+              saveEntry
+            }
+            onDelete={
+              deleteEntry
+            }
+          />
+        )}
+      </SafeAreaView>
+    </>
   );
 }
