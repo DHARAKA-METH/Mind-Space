@@ -17,9 +17,6 @@ import Animated, {
   FadeInDown,
   FadeIn,
   Layout,
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
 } from "react-native-reanimated";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
@@ -44,16 +41,15 @@ const ceylon = {
   ink: "#3D2E1F",
   muted: "#8A7A63",
   mutedLight: "#B8A78C",
-  forest: "#5A6B4A",
-  sage: "#8FA67E",
+  charcoal: "#2C2C2C",
+  accent: "#7C5CBF",
+  accentLight: "#EDE7F6",
   terracotta: "#C97B4A",
   sand: "#F0E4D3",
   cream: "#FBF3EA",
   background: "#ECE6E3",
   danger: "#B5555C",
   dangerBg: "#F7DDD6",
-  success: "#5A6B4A",
-  successBg: "#D9E2CC",
 };
 
 const SPACE = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 28 };
@@ -82,7 +78,7 @@ const ToggleSwitch = ({ activeTab, onTabChange }) => {
             activeOpacity={0.8}
             className="flex-1 flex-row items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl"
             style={{
-              backgroundColor: isActive ? ceylon.forest : "transparent",
+              backgroundColor: isActive ? ceylon.charcoal : "transparent",
             }}
           >
             <Ionicons
@@ -110,7 +106,7 @@ const AppointmentCard = ({ appointment, counselor, isPast }) => {
   const displayTime = dayjs.utc(appointment.appointmentDateTime).format("hh:mm A");
 
   const statusConfig = {
-    confirmed: { bg: ceylon.successBg, color: ceylon.success, label: "Confirmed" },
+    confirmed: { bg: ceylon.accentLight, color: ceylon.accent, label: "Confirmed" },
     pending: { bg: `${ceylon.terracotta}18`, color: ceylon.terracotta, label: "Pending" },
     cancelled: { bg: ceylon.dangerBg, color: ceylon.danger, label: "Cancelled" },
   };
@@ -137,7 +133,7 @@ const AppointmentCard = ({ appointment, counselor, isPast }) => {
               width: 48,
               height: 48,
               borderRadius: 14,
-              backgroundColor: counselor?.bgColor || `${ceylon.sage}22`,
+              backgroundColor: counselor?.bgColor || ceylon.accentLight,
               alignItems: "center",
               justifyContent: "center",
             }}
@@ -251,7 +247,7 @@ const BookedDetailsView = ({ appointments, counselors }) => {
             borderColor: ceylon.sand,
           }}
         >
-          <Ionicons name="calendar-outline" size={32} color={ceylon.sage} />
+          <Ionicons name="calendar-outline" size={32} color={ceylon.accent} />
         </View>
         <Text className="text-[15px] font-bold" style={{ color: ceylon.ink }}>
           No Appointments Yet
@@ -268,10 +264,7 @@ const BookedDetailsView = ({ appointments, counselors }) => {
       {grouped.upcoming.length > 0 && (
         <View className="mb-6">
           <View className="flex-row items-center gap-2 mb-3">
-            <View
-              className="w-2 h-2 rounded-full"
-               style={{ backgroundColor: ceylon.forest }}
-            />
+            <View className="w-2 h-2 rounded-full" style={{ backgroundColor: ceylon.charcoal }} />
             <Text className="text-[13px] font-bold" style={{ color: ceylon.ink }}>
               Upcoming ({grouped.upcoming.length})
             </Text>
@@ -290,10 +283,7 @@ const BookedDetailsView = ({ appointments, counselors }) => {
       {grouped.past.length > 0 && (
         <View>
           <View className="flex-row items-center gap-2 mb-3">
-            <View
-              className="w-2 h-2 rounded-full"
-              style={{ backgroundColor: ceylon.mutedLight }}
-            />
+            <View className="w-2 h-2 rounded-full" style={{ backgroundColor: ceylon.mutedLight }} />
             <Text className="text-[13px] font-bold" style={{ color: ceylon.ink }}>
               Past ({grouped.past.length})
             </Text>
@@ -460,7 +450,7 @@ export default function BookSessionScreen() {
       setBookingSuccess(true);
       setTimeout(() => setBookingSuccess(false), 4000);
 
-      setSelectedDay(null);
+      setSelectedDay(nowGlobal.date());
       setSelectedTime(null);
       setNote("");
     } catch (error) {
@@ -479,8 +469,8 @@ export default function BookSessionScreen() {
   const canBook =
     !!selectedCounselor && !!selectedDay && !!selectedTime && !myExistingOnDate && !isSelectedTimeTaken && !isSelectedDayFull;
 
-  const accentColor = selectedCounselor?.color || ceylon.forest;
-  const accentBg = selectedCounselor?.bgColor || `${ceylon.sage}18`;
+  const accentColor = selectedCounselor?.color || ceylon.charcoal;
+  const accentBg = selectedCounselor?.bgColor || ceylon.accentLight;
 
   if (loading) {
     return (
@@ -503,7 +493,7 @@ export default function BookSessionScreen() {
             borderColor: ceylon.sand,
           }}
         >
-          <ActivityIndicator color={ceylon.sage} />
+          <ActivityIndicator color={ceylon.accent} />
         </View>
         <Text style={{ color: ceylon.muted, fontSize: 13 }}>Finding available counselors…</Text>
       </View>
@@ -538,7 +528,7 @@ export default function BookSessionScreen() {
                 <Animated.View
                   entering={FadeInDown.duration(280)}
                   style={{
-                    backgroundColor: ceylon.successBg,
+                    backgroundColor: ceylon.accentLight,
                     borderRadius: 18,
                     padding: SPACE.md,
                     marginTop: SPACE.lg,
@@ -548,18 +538,15 @@ export default function BookSessionScreen() {
                     gap: SPACE.sm,
                   }}
                 >
-                  <Ionicons name="checkmark-circle" size={20} color={ceylon.success} />
-                  <Text style={{ color: ceylon.success, fontSize: 12, fontWeight: "600", flex: 1 }}>
+                  <Ionicons name="checkmark-circle" size={20} color={ceylon.accent} />
+                  <Text style={{ color: ceylon.accent, fontSize: 12, fontWeight: "600", flex: 1 }}>
                     Appointment requested! You&apos;ll be notified once it&apos;s confirmed.
                   </Text>
                 </Animated.View>
               )}
 
               {/* Search */}
-              <Text
-                className="text-[12px] font-bold mt-4 mb-2"
-                style={{ color: ceylon.mutedLight }}
-              >
+              <Text className="text-[12px] font-bold mt-4 mb-2" style={{ color: ceylon.mutedLight }}>
                 Choose your counselor
               </Text>
               <View
@@ -608,7 +595,7 @@ export default function BookSessionScreen() {
                         onPress={() => {
                           Haptics.selectionAsync().catch(() => {});
                           setSelectedCounselor(c);
-                          setSelectedDay(null);
+                          setSelectedDay(nowGlobal.date());
                           setSelectedTime(null);
                         }}
                         activeOpacity={0.8}
@@ -637,13 +624,7 @@ export default function BookSessionScreen() {
                           <Text style={{ fontSize: 24 }}>{c.avatar}</Text>
                         </View>
                         <View className="flex-1">
-                          <Text
-                            style={{
-                              color: chosen ? c.color : ceylon.ink,
-                              fontSize: 14,
-                              fontWeight: "700",
-                            }}
-                          >
+                          <Text style={{ color: chosen ? c.color : ceylon.ink, fontSize: 14, fontWeight: "700" }}>
                             {c.name}
                           </Text>
                           <Text style={{ fontSize: 12, color: ceylon.muted, marginTop: 2 }}>
@@ -674,13 +655,7 @@ export default function BookSessionScreen() {
                             borderRadius: 10,
                           }}
                         >
-                          <Text
-                            style={{
-                              color: chosen ? "#fff" : ceylon.muted,
-                              fontSize: 12,
-                              fontWeight: "700",
-                            }}
-                          >
+                          <Text style={{ color: chosen ? "#fff" : ceylon.muted, fontSize: 12, fontWeight: "700" }}>
                             {chosen ? "✓ Chosen" : "Select"}
                           </Text>
                         </View>
@@ -697,7 +672,7 @@ export default function BookSessionScreen() {
                     }}
                     className="items-center py-2"
                   >
-                    <Text style={{ color: ceylon.forest, fontSize: 12, fontWeight: "700" }}>
+                    <Text style={{ color: ceylon.accent, fontSize: 12, fontWeight: "700" }}>
                       {showAll ? "▲ Show less" : `▼ Show ${filteredCounselors.length - 3} more counselors`}
                     </Text>
                   </TouchableOpacity>
@@ -717,21 +692,14 @@ export default function BookSessionScreen() {
                     marginBottom: SPACE.lg,
                   }}
                 >
-                  <Text
-                    style={{
-                      color: selectedCounselor.color,
-                      fontSize: 12,
-                      fontWeight: "700",
-                      marginBottom: SPACE.sm,
-                    }}
-                  >
+                  <Text style={{ color: selectedCounselor.color, fontSize: 12, fontWeight: "700", marginBottom: SPACE.sm }}>
                     Your sessions with {selectedCounselor.name.split(" ").pop()}
                   </Text>
                   {counselorMyAppointments.map((a) => {
                     const displayDate = dayjs.utc(a.appointmentDateTime).format("DD MMM YYYY · hh:mm A");
                     const statusMeta =
                       a.status === "confirmed"
-                        ? { bg: ceylon.successBg, color: ceylon.success }
+                        ? { bg: ceylon.accentLight, color: ceylon.accent }
                         : a.status === "pending"
                         ? { bg: `${ceylon.terracotta}20`, color: ceylon.terracotta }
                         : { bg: ceylon.dangerBg, color: ceylon.danger };
@@ -754,41 +722,13 @@ export default function BookSessionScreen() {
                           <Text style={{ fontSize: 12, color: ceylon.ink }}>{displayDate}</Text>
                         </View>
                         <View className="flex-row gap-1">
-                          <View
-                            style={{
-                              backgroundColor: ceylon.sand,
-                              paddingHorizontal: 8,
-                              paddingVertical: 2,
-                              borderRadius: 6,
-                            }}
-                          >
-                            <Text
-                              style={{
-                                color: ceylon.ink,
-                                fontSize: 10,
-                                fontWeight: "700",
-                                textTransform: "capitalize",
-                              }}
-                            >
+                          <View style={{ backgroundColor: ceylon.sand, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
+                            <Text style={{ color: ceylon.ink, fontSize: 10, fontWeight: "700", textTransform: "capitalize" }}>
                               {a.type}
                             </Text>
                           </View>
-                          <View
-                            style={{
-                              backgroundColor: statusMeta.bg,
-                              paddingHorizontal: 8,
-                              paddingVertical: 2,
-                              borderRadius: 6,
-                            }}
-                          >
-                            <Text
-                              style={{
-                                color: statusMeta.color,
-                                fontSize: 10,
-                                fontWeight: "700",
-                                textTransform: "capitalize",
-                              }}
-                            >
+                          <View style={{ backgroundColor: statusMeta.bg, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
+                            <Text style={{ color: statusMeta.color, fontSize: 10, fontWeight: "700", textTransform: "capitalize" }}>
                               {a.status}
                             </Text>
                           </View>
@@ -806,15 +746,13 @@ export default function BookSessionScreen() {
                   borderRadius: 24,
                   padding: SPACE.lg,
                   marginBottom: SPACE.lg,
-                  shadowColor: ceylon.sage,
+                  shadowColor: ceylon.charcoal,
                   shadowOpacity: 0.08,
                   shadowRadius: 12,
                   elevation: 3,
                 }}
               >
-                <View
-                  className="flex-row items-center justify-between mb-4"
-                >
+                <View className="flex-row items-center justify-between mb-4">
                   <TouchableOpacity
                     onPress={prevMonth}
                     disabled={!canGoPrevMonth()}
@@ -848,16 +786,7 @@ export default function BookSessionScreen() {
 
                 <View className="flex-row justify-around mb-1">
                   {DAYS.map((d) => (
-                    <Text
-                      key={d}
-                      style={{
-                        width: "14.28%",
-                        textAlign: "center",
-                        fontSize: 12,
-                        fontWeight: "700",
-                        color: ceylon.mutedLight,
-                      }}
-                    >
+                    <Text key={d} style={{ width: "14.28%", textAlign: "center", fontSize: 12, fontWeight: "700", color: ceylon.mutedLight }}>
                       {d}
                     </Text>
                   ))}
@@ -879,14 +808,7 @@ export default function BookSessionScreen() {
                     const selected = selectedDay === day;
 
                     return (
-                      <View
-                        key={day}
-                        style={{
-                          width: "14.28%",
-                          alignItems: "center",
-                          marginVertical: 3,
-                        }}
-                      >
+                      <View key={day} style={{ width: "14.28%", alignItems: "center", marginVertical: 3 }}>
                         <TouchableOpacity
                           disabled={isPast || full}
                           onPress={() => {
@@ -901,14 +823,10 @@ export default function BookSessionScreen() {
                             alignItems: "center",
                             justifyContent: "center",
                             borderRadius: 14,
-                            backgroundColor: selected
-                              ? accentColor
-                              : isToday && !selected
-                              ? accentBg
-                              : "transparent",
+                            backgroundColor: selected ? ceylon.charcoal : isToday && !selected ? ceylon.accentLight : "transparent",
                             opacity: isPast ? 0.35 : 1,
                             borderWidth: isToday && !selected ? 1.5 : 0,
-                            borderColor: isToday && !selected ? accentColor : "transparent",
+                            borderColor: isToday && !selected ? ceylon.charcoal : "transparent",
                           }}
                         >
                           <Text
@@ -922,7 +840,7 @@ export default function BookSessionScreen() {
                                 : full
                                 ? ceylon.danger
                                 : isToday
-                                ? accentColor
+                                ? ceylon.charcoal
                                 : ceylon.ink,
                             }}
                           >
@@ -934,7 +852,7 @@ export default function BookSessionScreen() {
                                 width: 4,
                                 height: 4,
                                 borderRadius: 2,
-                                backgroundColor: selected ? "#fff" : accentColor,
+                                backgroundColor: selected ? "#fff" : ceylon.charcoal,
                                 marginTop: 1,
                               }}
                             />
@@ -946,29 +864,14 @@ export default function BookSessionScreen() {
                               width: 5,
                               height: 5,
                               borderRadius: 3,
-                              backgroundColor: full ? ceylon.danger : accentColor,
+                              backgroundColor: full ? ceylon.danger : ceylon.charcoal,
                               marginTop: 2,
                             }}
                           />
                         )}
                         {full && !selected && !isPast && (
-                          <View
-                            style={{
-                              backgroundColor: ceylon.dangerBg,
-                              borderRadius: 3,
-                              paddingHorizontal: 3,
-                              marginTop: 2,
-                            }}
-                          >
-                            <Text
-                              style={{
-                                fontSize: 7,
-                                color: ceylon.danger,
-                                fontWeight: "700",
-                              }}
-                            >
-                              FULL
-                            </Text>
+                          <View style={{ backgroundColor: ceylon.dangerBg, borderRadius: 3, paddingHorizontal: 3, marginTop: 2 }}>
+                            <Text style={{ fontSize: 7, color: ceylon.danger, fontWeight: "700" }}>FULL</Text>
                           </View>
                         )}
                       </View>
@@ -981,21 +884,12 @@ export default function BookSessionScreen() {
                   style={{ borderTopWidth: 0.5, borderTopColor: ceylon.sand }}
                 >
                   {[
-                    { color: accentColor, label: "Booked" },
+                    { color: ceylon.charcoal, label: "Booked" },
                     { color: ceylon.danger, label: "Full" },
-                    { color: accentBg, label: "Today", border: accentColor },
+                    { color: ceylon.accentLight, label: "Today", border: ceylon.charcoal },
                   ].map(({ color, label, border }) => (
                     <View key={label} className="flex-row items-center gap-1.5">
-                      <View
-                        style={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: 4,
-                          backgroundColor: color,
-                          borderWidth: border ? 1 : 0,
-                          borderColor: border || "transparent",
-                        }}
-                      />
+                      <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color, borderWidth: border ? 1 : 0, borderColor: border || "transparent" }} />
                       <Text style={{ fontSize: 10, color: ceylon.mutedLight }}>{label}</Text>
                     </View>
                   ))}
@@ -1007,7 +901,7 @@ export default function BookSessionScreen() {
                 <Animated.View
                   entering={FadeInDown.duration(220)}
                   style={{
-                    backgroundColor: myExistingOnDate || isSelectedDayFull ? ceylon.dangerBg : accentBg,
+                    backgroundColor: myExistingOnDate || isSelectedDayFull ? ceylon.dangerBg : ceylon.accentLight,
                     borderRadius: 14,
                     padding: SPACE.md,
                     marginBottom: SPACE.lg,
@@ -1016,13 +910,7 @@ export default function BookSessionScreen() {
                     justifyContent: "space-between",
                   }}
                 >
-                  <Text
-                    style={{
-                      color: myExistingOnDate || isSelectedDayFull ? ceylon.danger : accentColor,
-                      fontSize: 12,
-                      fontWeight: "700",
-                    }}
-                  >
+                  <Text style={{ color: myExistingOnDate || isSelectedDayFull ? ceylon.danger : ceylon.charcoal, fontSize: 12, fontWeight: "700" }}>
                     {formatDisplayDate(calYear, calMonth, selectedDay)}
                   </Text>
                   {myExistingOnDate && (
@@ -1039,10 +927,7 @@ export default function BookSessionScreen() {
               )}
 
               {/* Time slots */}
-              <Text
-                className="text-[12px] font-bold mb-2"
-                style={{ color: ceylon.mutedLight }}
-              >
+              <Text className="text-[12px] font-bold mb-2" style={{ color: ceylon.mutedLight }}>
                 Select time
               </Text>
               <View className="gap-3 mb-4">
@@ -1061,9 +946,9 @@ export default function BookSessionScreen() {
                         setSelectedTime(t);
                       }}
                       style={{
-                        borderColor: sel ? accentColor : taken ? "#E8A6AA" : ceylon.sand,
+                        borderColor: sel ? ceylon.charcoal : taken ? "#E8A6AA" : ceylon.sand,
                         borderWidth: sel ? 2 : 1.5,
-                        backgroundColor: sel ? accentColor : taken ? ceylon.dangerBg : "#fff",
+                        backgroundColor: sel ? ceylon.charcoal : taken ? ceylon.dangerBg : "#fff",
                         opacity: disabled && !sel ? 0.65 : 1,
                         paddingVertical: SPACE.md,
                         paddingHorizontal: SPACE.lg,
@@ -1074,40 +959,20 @@ export default function BookSessionScreen() {
                       }}
                     >
                       <View className="flex-row items-center gap-2">
-                        <Ionicons
-                          name={t.includes("AM") ? "partly-sunny-outline" : "moon-outline"}
-                          size={18}
-                          color={sel ? "#fff" : ceylon.muted}
-                        />
-                        <Text
-                          style={{
-                            color: sel ? "#fff" : taken ? ceylon.danger : ceylon.ink,
-                            fontSize: 15,
-                            fontWeight: "700",
-                          }}
-                        >
+                        <Ionicons name={t.includes("AM") ? "partly-sunny-outline" : "moon-outline"} size={18} color={sel ? "#fff" : ceylon.muted} />
+                        <Text style={{ color: sel ? "#fff" : taken ? ceylon.danger : ceylon.ink, fontSize: 15, fontWeight: "700" }}>
                           {t}
                         </Text>
                       </View>
                       <View
                         style={{
-                          backgroundColor: sel
-                            ? "rgba(255,255,255,0.25)"
-                            : taken
-                            ? "#F2D5D5"
-                            : ceylon.background,
+                          backgroundColor: sel ? "rgba(255,255,255,0.25)" : taken ? "#F2D5D5" : ceylon.background,
                           paddingHorizontal: 12,
                           paddingVertical: 4,
                           borderRadius: 8,
                         }}
                       >
-                        <Text
-                          style={{
-                            fontSize: 11,
-                            fontWeight: "700",
-                            color: sel ? "#fff" : taken ? ceylon.danger : ceylon.muted,
-                          }}
-                        >
+                        <Text style={{ fontSize: 11, fontWeight: "700", color: sel ? "#fff" : taken ? ceylon.danger : ceylon.muted }}>
                           {sel ? "Selected" : taken ? "Booked" : "Available"}
                         </Text>
                       </View>
@@ -1117,10 +982,7 @@ export default function BookSessionScreen() {
               </View>
 
               {/* Session type */}
-              <Text
-                className="text-[12px] font-bold mb-2"
-                style={{ color: ceylon.mutedLight }}
-              >
+              <Text className="text-[12px] font-bold mb-2" style={{ color: ceylon.mutedLight }}>
                 Session type
               </Text>
               <View className="flex-row gap-3 mb-4">
@@ -1135,7 +997,7 @@ export default function BookSessionScreen() {
                       }}
                       className="flex-1 flex-row items-center justify-center gap-1.5 py-3 rounded-2xl"
                       style={{
-                        backgroundColor: sel ? accentColor : "#fff",
+                        backgroundColor: sel ? ceylon.charcoal : "#fff",
                         borderWidth: 1.5,
                         borderColor: sel ? "transparent" : ceylon.sand,
                       }}
@@ -1145,14 +1007,7 @@ export default function BookSessionScreen() {
                         size={15}
                         color={sel ? "#fff" : ceylon.muted}
                       />
-                      <Text
-                        style={{
-                          color: sel ? "#fff" : ceylon.ink,
-                          fontSize: 13,
-                          fontWeight: "700",
-                          textTransform: "capitalize",
-                        }}
-                      >
+                      <Text style={{ color: sel ? "#fff" : ceylon.ink, fontSize: 13, fontWeight: "700", textTransform: "capitalize" }}>
                         {type}
                       </Text>
                     </TouchableOpacity>
@@ -1161,10 +1016,7 @@ export default function BookSessionScreen() {
               </View>
 
               {/* Note */}
-              <Text
-                className="text-[12px] font-bold mb-2"
-                style={{ color: ceylon.mutedLight }}
-              >
+              <Text className="text-[12px] font-bold mb-2" style={{ color: ceylon.mutedLight }}>
                 Add a note (optional)
               </Text>
               <TextInput
@@ -1187,10 +1039,7 @@ export default function BookSessionScreen() {
                   marginBottom: SPACE.xs,
                 }}
               />
-              <Text
-                className="text-right mb-4 text-[10px]"
-                style={{ color: ceylon.mutedLight }}
-              >
+              <Text className="text-right mb-4 text-[10px]" style={{ color: ceylon.mutedLight }}>
                 {note.length} characters
               </Text>
 
@@ -1199,22 +1048,15 @@ export default function BookSessionScreen() {
                 <Animated.View
                   entering={FadeInDown.duration(240)}
                   style={{
-                    backgroundColor: accentBg,
-                    borderColor: `${accentColor}33`,
+                    backgroundColor: ceylon.accentLight,
+                    borderColor: `${ceylon.accent}33`,
                     borderWidth: 1,
                     borderRadius: 18,
                     padding: SPACE.lg,
                     marginBottom: SPACE.lg,
                   }}
                 >
-                  <Text
-                    style={{
-                      color: accentColor,
-                      fontSize: 12,
-                      fontWeight: "700",
-                      marginBottom: SPACE.sm,
-                    }}
-                  >
+                  <Text style={{ color: ceylon.charcoal, fontSize: 12, fontWeight: "700", marginBottom: SPACE.sm }}>
                     Booking summary
                   </Text>
                   {[
@@ -1225,11 +1067,7 @@ export default function BookSessionScreen() {
                     ["Duration", "45 minutes"],
                     ["Student", LOGGED_USER.name],
                   ].map(([label, val]) => (
-                    <View
-                      key={label}
-                      className="flex-row justify-between py-1.5"
-                      style={{ borderBottomWidth: 0.5, borderBottomColor: ceylon.sand }}
-                    >
+                    <View key={label} className="flex-row justify-between py-1.5" style={{ borderBottomWidth: 0.5, borderBottomColor: ceylon.sand }}>
                       <Text style={{ color: ceylon.muted, fontSize: 12 }}>{label}</Text>
                       <Text style={{ color: ceylon.ink, fontSize: 12, fontWeight: "600" }}>{val}</Text>
                     </View>
@@ -1244,8 +1082,8 @@ export default function BookSessionScreen() {
                 activeOpacity={0.85}
                 className="flex-row items-center justify-center gap-2 rounded-2xl py-4"
                 style={{
-                  backgroundColor: canBook && !bookLoading ? accentColor : ceylon.mutedLight,
-                  shadowColor: canBook && !bookLoading ? accentColor : "transparent",
+                  backgroundColor: canBook && !bookLoading ? ceylon.charcoal : ceylon.mutedLight,
+                  shadowColor: canBook && !bookLoading ? ceylon.charcoal : "transparent",
                   shadowOpacity: 0.15,
                   shadowRadius: 10,
                   elevation: canBook && !bookLoading ? 4 : 0,
