@@ -226,6 +226,12 @@ Please contact the project maintainers before using the project or its content f
 
 ---
 
+##  Download App
+
+Download the latest Android build of MindSpace from Expo EAS:
+
+[⬇️ Download MindSpace Android App](https://expo.dev/accounts/slprime82/projects/MindSpace/builds/34647cb1-f6fa-4da4-a03b-dbd4c9e8cf4b)
+
 
 ##  Screenshots
 
