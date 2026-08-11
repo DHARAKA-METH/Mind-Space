@@ -107,7 +107,7 @@ const TypingDots = () => {
     pulse(d1, 0);
     pulse(d2, 140);
     pulse(d3, 280);
-  }, []);
+  }, [d1, d2, d3]);
 
   const s1 = useAnimatedStyle(() => ({ opacity: d1.value, transform: [{ scale: 0.7 + d1.value * 0.3 }] }));
   const s2 = useAnimatedStyle(() => ({ opacity: d2.value, transform: [{ scale: 0.7 + d2.value * 0.3 }] }));
@@ -136,7 +136,6 @@ const MessageBubble = React.memo(({ msg, index }: any) => {
   return (
     <Animated.View
       entering={FadeInDown.delay(index * 30).duration(280).springify().damping(16)}
-      layout={Layout}
       className={`px-4 mb-3 items-end flex-row ${isUser ? "flex-row-reverse" : "flex-row"}`}
     >
       {!isUser && <Avatar emoji="🌿" size={30} />}
@@ -487,8 +486,13 @@ const RoomListItem = ({ room, onPress, onOpenActions }: any) => {
   const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 
   return (
-    <Animated.View entering={FadeInDown.duration(240)} exiting={FadeOut.duration(200)} layout={Layout} style={style}>
-      <TouchableOpacity
+    <Animated.View layout={Layout}>
+      <Animated.View
+        entering={FadeInDown.duration(240)}
+        exiting={FadeOut.duration(200)}
+      >
+        <Animated.View style={style}>
+          <TouchableOpacity
         onPress={() => onPress(room)}
         onLongPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
@@ -544,7 +548,9 @@ const RoomListItem = ({ room, onPress, onOpenActions }: any) => {
         >
           <Ionicons name="ellipsis-vertical" size={16} color={calmColors.textMuted} />
         </TouchableOpacity>
-      </TouchableOpacity>
+          </TouchableOpacity>
+        </Animated.View>
+      </Animated.View>
     </Animated.View>
   );
 };
@@ -657,27 +663,42 @@ const ChatRoomScreen = ({ room, onBack, onOpenActions, userId }: any) => {
       const userMsg = { sender: "user", text, time: nowTime() };
       const saved = await addMessage(userId, room.id, userMsg);
       setMessages((prev) => [...prev, saved]);
-      const AiResponseMessage = await getAiResponseMessage(userId, room.id);
-      console.log("AI Response Message *********", AiResponseMessage);
-
-    
-      
-
       setTyping(true);
-      setTimeout(async () => {
+
+      const fallbackText =
+        "I'm having trouble responding right now. Please try again in a moment.";
+
+      try {
+        const response = await getAiResponseMessage(userId, room.id);
+        const responseText =
+          typeof response === "string" && response.trim()
+            ? response.trim()
+            : fallbackText;
+
         const aiMsg = {
           sender: "ai",
-          text: AiResponseMessage,
+          text: responseText,
           time: nowTime(),
         };
         const savedAi = await addMessage(userId, room.id, aiMsg);
-        setTyping(false);
         setMessages((prev) => [...prev, savedAi]);
-      }, 1800);
+      } catch (error) {
+        console.error("Could not complete AI chat response:", error);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `local-error-${Date.now()}`,
+            sender: "ai",
+            text: fallbackText,
+            time: nowTime(),
+          },
+        ]);
+      } finally {
+        setTyping(false);
+      }
     },
     [userId, room.id]
   );
-
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: calmColors.background }}

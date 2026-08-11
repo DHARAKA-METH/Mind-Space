@@ -75,19 +75,60 @@ export const deleteRoom = async (userId, roomId) => {
 };
 
 export const addMessage = async (userId, roomId, msg) => {
-  const msgDoc = await addDoc(messagesRef(userId, roomId), {
+  const text =
+    typeof msg?.text === "string"
+      ? msg.text.trim()
+      : "";
+
+  if (!text) {
+    throw new Error("Cannot save a chat message without text");
+  }
+
+  const validMessage = {
     ...msg,
+    text,
+  };
+
+  const msgDoc = await addDoc(messagesRef(userId, roomId), {
+    ...validMessage,
     createdAt: new Date(),
   });
   await updateDoc(doc(conversationsRef(userId), roomId), {
-    lastMessage: msg.text,
+    lastMessage: text,
     updatedAt: new Date(),
   });
-  return { id: msgDoc.id, ...msg };
+  return { id: msgDoc.id, ...validMessage };
 };
 
 export const getMessages = async (userId, roomId) => {
   const q = query(messagesRef(userId, roomId), orderBy("createdAt", "asc"));
   const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  const validMessages = [];
+  const invalidMessageRefs = [];
+
+  snap.docs.forEach((messageDoc) => {
+    const message = {
+      id: messageDoc.id,
+      ...messageDoc.data(),
+    };
+
+    if (
+      typeof message.text === "string" &&
+      message.text.trim()
+    ) {
+      validMessages.push(message);
+    } else {
+      invalidMessageRefs.push(messageDoc.ref);
+    }
+  });
+
+  if (invalidMessageRefs.length > 0) {
+    await Promise.allSettled(
+      invalidMessageRefs.map((messageRef) =>
+        deleteDoc(messageRef)
+      )
+    );
+  }
+
+  return validMessages;
 };
