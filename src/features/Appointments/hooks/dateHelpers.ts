@@ -1,9 +1,8 @@
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 
-
-
-
-// ─── Pure Utility Helpers (Safe Global Context) ───────────────────────────────
+dayjs.extend(utc);
+// Pure utility helpers safe to use outside screen components.
 export function getDaysInMonth(year: number, month: number) {
   return dayjs.utc().year(year).month(month).daysInMonth();
 }

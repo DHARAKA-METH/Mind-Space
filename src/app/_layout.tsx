@@ -9,6 +9,7 @@ import {
 } from "@expo-google-fonts/poppins";
 
 import { CaveatBrush_400Regular } from "@expo-google-fonts/caveat-brush";
+import { commonColors, fontFamily } from "@/src/theme";
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -24,12 +25,12 @@ export default function RootLayout() {
       screenOptions={{
         headerShadowVisible: false,
         headerStyle: {
-          backgroundColor: "#fff",
+          backgroundColor: commonColors.white,
         },
 
         // Default header font
         headerTitleStyle: {
-          fontFamily: "Poppins_600SemiBold",
+          fontFamily: fontFamily.semiBold,
         },
       }}
     />

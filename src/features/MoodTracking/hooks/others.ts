@@ -1,4 +1,5 @@
 import { icons } from "../../../shared/assets/icons/icons";
+import { moodColors, studentColors } from "@/src/theme";
 
 export const getMoodSummaryConfig = (avg: number) => {
   const rating = Math.min(Math.max(Math.round(avg), 1), 5);
@@ -21,54 +22,54 @@ export const getMoodSummaryConfig = (avg: number) => {
       description:
         "Take a deep breath. Let's try a quick grounding exercise together.",
       icon: icons.mood_awful_outline,
-      cardBg: "bg-rose-50/70",
-      cardBorder: "border-rose-100",
-      innerBg: "bg-white/90",
-      iconWrapperBg: "bg-rose-100/60",
-      tint: "tint-rose-600",
+      cardBg: "bg-mood-awfulSoft/70",
+      cardBorder: "border-mood-awful/20",
+      innerBg: "bg-app-surface/90",
+      iconWrapperBg: "bg-mood-awfulSoft/60",
+      tint: "tint-mood-awful",
     },
     2: {
       title: "A bit low or tense",
       description:
         "Be gentle with yourself. Small actions can help clear your mind.",
       icon: icons.mood_bad_outline,
-      cardBg: "bg-amber-50/70",
-      cardBorder: "border-amber-100",
-      innerBg: "bg-white/90",
-      iconWrapperBg: "bg-amber-100/60",
-      tint: "tint-amber-600",
+      cardBg: "bg-mood-badSoft/70",
+      cardBorder: "border-mood-bad/20",
+      innerBg: "bg-app-surface/90",
+      iconWrapperBg: "bg-mood-badSoft/60",
+      tint: "tint-mood-bad",
     },
     3: {
       title: "Feeling balanced",
       description:
         "You're holding a steady baseline today. Keep moving mindfully.",
       icon: icons.mood_neutral_outline,
-      cardBg: "bg-slate-50",
-      cardBorder: "border-slate-200",
-      innerBg: "bg-white/80",
-      iconWrapperBg: "bg-slate-100",
-      tint: "tint-slate-500",
+      cardBg: "bg-mood-neutralSoft",
+      cardBorder: "border-mood-neutral/20",
+      innerBg: "bg-app-surface/80",
+      iconWrapperBg: "bg-mood-neutralSoft",
+      tint: "tint-mood-neutral",
     },
     4: {
       title: "Feeling good",
       description: "Keep your positive energy going strong throughout the day.",
       icon: icons.mood_good_outline,
-      cardBg: "bg-emerald-50/60",
-      cardBorder: "border-emerald-100",
-      innerBg: "bg-white/80",
-      iconWrapperBg: "bg-emerald-100/50",
-      tint: "tint-emerald-600",
+      cardBg: "bg-mood-goodSoft/60",
+      cardBorder: "border-mood-good/20",
+      innerBg: "bg-app-surface/80",
+      iconWrapperBg: "bg-mood-goodSoft/50",
+      tint: "tint-mood-good",
     },
     5: {
       title: "Feeling excellent!",
       description:
         "Thriving and full of peace! Wonderful moment to journal your joy.",
       icon: icons.mood_great_outline,
-      cardBg: "bg-indigo-50/60",
-      cardBorder: "border-indigo-100",
-      innerBg: "bg-white/80",
-      iconWrapperBg: "bg-indigo-100/50",
-      tint: "tint-indigo-600",
+      cardBg: "bg-mood-greatSoft/60",
+      cardBorder: "border-mood-great/20",
+      innerBg: "bg-app-surface/80",
+      iconWrapperBg: "bg-mood-greatSoft/50",
+      tint: "tint-mood-great",
     },
   };
 
@@ -82,11 +83,11 @@ export const getBackgroundConfig = (
   scrollBg: string;
 } => {
   const configs: Record<number, { screenBg: string; scrollBg: string }> = {
-    1: { screenBg: "#FFF3E0", scrollBg: "#FFF3E0" }, // warm amber (overwhelmed)
-    2: { screenBg: "#FFF8E1", scrollBg: "#FFF8E1" }, // soft amber-yellow (tense)
-    3: { screenBg: "#F5F5F0", scrollBg: "#F5F5F0" }, // neutral slate (balanced)
-    4: { screenBg: "#F1F8F4", scrollBg: "#F1F8F4" }, // fresh green-white (good)
-    5: { screenBg: "#EEF2FF", scrollBg: "#EEF2FF" }, // calm indigo-white (excellent)
+    1: { screenBg: moodColors.awfulSoft, scrollBg: moodColors.awfulSoft },
+    2: { screenBg: moodColors.badSoft, scrollBg: moodColors.badSoft },
+    3: { screenBg: moodColors.neutralSoft, scrollBg: moodColors.neutralSoft },
+    4: { screenBg: moodColors.goodSoft, scrollBg: moodColors.goodSoft },
+    5: { screenBg: studentColors.primarySoft, scrollBg: studentColors.primarySoft },
   };
   return configs[rating] ?? configs[3];
 };

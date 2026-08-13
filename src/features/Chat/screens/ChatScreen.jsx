@@ -29,33 +29,11 @@ import {
   Stack,
 } from "expo-router";
 
+import { commonColors, studentColors } from "@/src/theme";
+
 import AIChatScreen from "./AIChatScreen";
 import AnonymousCounselorScreen from "./AnonymousCounselorScreen";
 import CounselorChatRoom from "./CounselorChatRoom";
-
-/* -------------------------------------------------------------------------- */
-/*                               COLOR PALETTE                                */
-/* -------------------------------------------------------------------------- */
-
-const colors = {
-  background: "#F9F5F1",
-
-  lavender: "#CCC5E8",
-  lavenderSoft: "#F2EEF9",
-
-  purple: "#6D5AB5",
-  purpleDark: "#574493",
-
-  peach: "#F47F63",
-  peachSoft: "#FDE8E2",
-
-  text: "#1F1F2E",
-  secondaryText: "#8C8992",
-
-  white: "#FFFFFF",
-
-  border: "#ECE6E2",
-};
 
 /* -------------------------------------------------------------------------- */
 /*                                   TABS                                     */
@@ -115,7 +93,7 @@ const SupportHeader = () => {
           w-10
           h-10
           rounded-2xl
-          bg-[#F2EEF9]
+          bg-app-primarySoft
           items-center
           justify-center
           mr-3
@@ -124,7 +102,7 @@ const SupportHeader = () => {
         <Ionicons
           name="heart-outline"
           size={20}
-          color={colors.purple}
+          color={studentColors.primary}
         />
       </View>
 
@@ -133,9 +111,9 @@ const SupportHeader = () => {
       <View>
         <Text
           className="
-            text-[18px]
+            text-subtitle
             font-extrabold
-            text-[#1F1F2E]
+            text-app-textPrimary
           "
         >
           Support
@@ -143,9 +121,9 @@ const SupportHeader = () => {
 
         <Text
           className="
-            text-[10.5px]
+            text-caption
             mt-0.5
-            text-[#8C8992]
+            text-app-textSecondary
           "
         >
           A safe space when you need it
@@ -171,9 +149,9 @@ const ToggleTabBar = ({
         mb-2
         p-1
         rounded-[20px]
-        bg-white
+        bg-app-surface
         border
-        border-[#ECE6E2]
+        border-app-border
         shadow-sm
       "
     >
@@ -204,7 +182,7 @@ const ToggleTabBar = ({
 
                 ${
                   isActive
-                    ? "bg-[#6D5AB5]"
+                    ? "bg-app-primary"
                     : "bg-transparent"
                 }
               `}
@@ -222,8 +200,8 @@ const ToggleTabBar = ({
 
                   ${
                     isActive
-                      ? "bg-white/15"
-                      : "bg-[#F2EEF9]"
+                      ? "bg-app-surface/15"
+                      : "bg-app-primarySoft"
                   }
                 `}
               >
@@ -236,8 +214,8 @@ const ToggleTabBar = ({
                   size={14}
                   color={
                     isActive
-                      ? "#FFFFFF"
-                      : colors.purple
+                      ? commonColors.white
+                      : studentColors.primary
                   }
                 />
               </View>
@@ -247,13 +225,13 @@ const ToggleTabBar = ({
               <Text
                 numberOfLines={1}
                 className={`
-                  text-[11.5px]
+                  text-caption
                   font-bold
 
                   ${
                     isActive
-                      ? "text-white"
-                      : "text-[#706A76]"
+                      ? "text-app-surface"
+                      : "text-app-textSecondary"
                   }
                 `}
               >
@@ -291,9 +269,9 @@ const SupportIntro = ({
         px-3
         py-2.5
         rounded-[18px]
-        bg-[#F2EEF9]
+        bg-app-primarySoft
         border
-        border-[#E6DEEF]
+        border-app-primaryLight
         flex-row
         items-center
       "
@@ -305,7 +283,7 @@ const SupportIntro = ({
           w-8
           h-8
           rounded-xl
-          bg-white
+          bg-app-surface
           items-center
           justify-center
           mr-2.5
@@ -314,7 +292,7 @@ const SupportIntro = ({
         <Ionicons
           name={current.icon}
           size={16}
-          color={colors.purple}
+          color={studentColors.primary}
         />
       </View>
 
@@ -323,9 +301,9 @@ const SupportIntro = ({
       <View className="flex-1">
         <Text
           className="
-            text-[12px]
+            text-caption
             font-bold
-            text-[#1F1F2E]
+            text-app-textPrimary
           "
         >
           {current.title}
@@ -334,9 +312,8 @@ const SupportIntro = ({
         <Text
           className="
             mt-0.5
-            text-[10px]
-            leading-[14px]
-            text-[#8C8992]
+            text-caption
+            text-app-textSecondary
           "
         >
           {current.description}
@@ -409,14 +386,14 @@ const ChatLayout = () => {
 
           headerStyle: {
             backgroundColor:
-              colors.background,
+              studentColors.background,
           },
 
           headerShadowVisible:
             false,
 
           headerTintColor:
-            colors.purple,
+            studentColors.primary,
 
           headerTitleAlign:
             "left",
@@ -435,7 +412,7 @@ const ChatLayout = () => {
         ]}
         className="
           flex-1
-          bg-[#F9F5F1]
+          bg-app-background
         "
       >
         <KeyboardAvoidingView
@@ -451,7 +428,7 @@ const ChatLayout = () => {
           }
           className="
             flex-1
-            bg-[#F9F5F1]
+            bg-app-background
           "
         >
           {/* ============================================================ */}
@@ -490,7 +467,7 @@ const ChatLayout = () => {
                 )}
                 className="
                   flex-1
-                  bg-[#F9F5F1]
+                  bg-app-background
                 "
               >
                 <CounselorChatRoom
@@ -516,7 +493,7 @@ const ChatLayout = () => {
                 )}
                 className="
                   flex-1
-                  bg-[#F9F5F1]
+                  bg-app-background
                 "
               >
                 <AIChatScreen />
@@ -533,7 +510,7 @@ const ChatLayout = () => {
                 )}
                 className="
                   flex-1
-                  bg-[#F9F5F1]
+                  bg-app-background
                 "
               >
                 <AnonymousCounselorScreen

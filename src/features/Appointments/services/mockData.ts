@@ -1,5 +1,6 @@
 // Appointments/services/mockData.ts
 import { LoggedUser, Counselor, Appointment } from "../types";
+import { avatarColors } from "@/src/theme";
 
 export const LOGGED_USER: LoggedUser = { id: "U001", name: "Kasun Perera" };
 
@@ -8,10 +9,10 @@ export const DAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 export const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 export const COUNSELORS: Counselor[] = [
-  { id: "C001", name: "Ms. R. Silva", specialties: ["Mindfulness", "Grief"], avatar: "👩‍⚕️", color: "#7C3AED", bgColor: "#EDE9FE" },
-  { id: "C002", name: "Dr. S. Perera", specialties: ["Anxiety", "Stress", "CBT"], avatar: "👨‍⚕️", color: "#0369A1", bgColor: "#E0F2FE" },
-  { id: "C003", name: "Dr. A. Fernando", specialties: ["Depression", "Trauma"], avatar: "🧑‍⚕️", color: "#065F46", bgColor: "#D1FAE5" },
-  { id: "C004", name: "Dr. A. Fernando", specialties: ["Depression", "Trauma"], avatar: "🧑‍⚕️", color: "#065F46", bgColor: "#D1FAE5" },
+  { id: "C001", name: "Ms. R. Silva", specialties: ["Mindfulness", "Grief"], avatar: "👩‍⚕️", color: avatarColors.purple, bgColor: avatarColors.purpleSoft },
+  { id: "C002", name: "Dr. S. Perera", specialties: ["Anxiety", "Stress", "CBT"], avatar: "👨‍⚕️", color: avatarColors.blue, bgColor: avatarColors.blueSoft },
+  { id: "C003", name: "Dr. A. Fernando", specialties: ["Depression", "Trauma"], avatar: "🧑‍⚕️", color: avatarColors.green, bgColor: avatarColors.greenSoft },
+  { id: "C004", name: "Dr. A. Fernando", specialties: ["Depression", "Trauma"], avatar: "🧑‍⚕️", color: avatarColors.green, bgColor: avatarColors.greenSoft },
 ];
 
 export const INITIAL_APPOINTMENTS: Appointment[] = [

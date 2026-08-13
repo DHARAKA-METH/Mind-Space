@@ -23,11 +23,13 @@ export const ActionCard = ({
   return (
     <TouchableOpacity
       className={`${color} w-[30%] aspect-square rounded-2xl items-center justify-center p-3`}
+      accessibilityRole="button"
+      accessibilityLabel={title}
     >
-      <View className="bg-white/40 p-2 rounded-xl mb-2">
+      <View className="bg-app-surface/40 p-2 rounded-xl mb-2">
         <Image source={icon} className="w-6 h-6" />
       </View>
-      <Text className={`${textColor} text-sm font-semibold`}>{title}</Text>
+      <Text className={`${textColor} text-body font-semibold`}>{title}</Text>
     </TouchableOpacity>
   );
 };

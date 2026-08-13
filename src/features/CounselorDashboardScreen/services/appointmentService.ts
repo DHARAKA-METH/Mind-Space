@@ -2,8 +2,6 @@ import { db } from "@/src/config/firebase";
 import {
   collection, doc, getDocs, updateDoc, query, where, orderBy, getDoc,
 } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
-
 export interface CounselorAppointment {
   appointmentId: string;
   studentId: string;

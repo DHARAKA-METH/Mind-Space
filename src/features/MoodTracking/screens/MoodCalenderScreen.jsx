@@ -57,6 +57,7 @@ import {
   MONTH_NAMES,
   MOOD_CONFIG,
 } from "../../../shared/constants/mood.config";
+import { spacing, studentColors } from "@/src/theme";
 
 /* -------------------------------------------------------------------------- */
 /*                               ANDROID SETUP                                */
@@ -70,32 +71,6 @@ if (
     true
   );
 }
-
-/* -------------------------------------------------------------------------- */
-/*                                COLOR SYSTEM                                */
-/* -------------------------------------------------------------------------- */
-
-const colors = {
-  background: "#F9F5F1",
-
-  lavender: "#CCC5E8",
-  lavenderSoft: "#F2EEF9",
-
-  purple: "#6D5AB5",
-  purpleDark: "#574493",
-
-  peach: "#F47F63",
-  peachSoft: "#FDE8E2",
-
-  text: "#1F1F2E",
-  secondaryText: "#8C8992",
-  lightText: "#AAA4AE",
-
-  white: "#FFFFFF",
-
-  border: "#ECE6E2",
-  softBorder: "#F1ECE8",
-};
 
 /* -------------------------------------------------------------------------- */
 /*                                  HELPERS                                   */
@@ -138,7 +113,7 @@ function CalendarHeader() {
           w-10
           h-10
           rounded-2xl
-          bg-[#EEE9F7]
+          bg-app-primarySoft
           items-center
           justify-center
           mr-3
@@ -147,7 +122,7 @@ function CalendarHeader() {
         <Ionicons
           name="calendar-outline"
           size={20}
-          color={colors.purple}
+          color={studentColors.primary}
         />
       </View>
 
@@ -156,9 +131,9 @@ function CalendarHeader() {
       <View>
         <Text
           className="
-            text-[18px]
+            text-subtitle
             font-extrabold
-            text-[#1F1F2E]
+            text-app-textPrimary
           "
         >
           Mood Calendar
@@ -166,9 +141,9 @@ function CalendarHeader() {
 
         <Text
           className="
-            text-[10px]
+            text-caption
             mt-0.5
-            text-[#8C8992]
+            text-app-textSecondary
           "
         >
           Your emotional journey
@@ -576,11 +551,11 @@ export default function MoodCalendarScreen() {
 
             headerStyle: {
               backgroundColor:
-                colors.background,
+                studentColors.background,
             },
 
             headerTintColor:
-              colors.purple,
+              studentColors.primary,
 
             headerTitleAlign:
               "left",
@@ -597,7 +572,7 @@ export default function MoodCalendarScreen() {
             flex-1
             items-center
             justify-center
-            bg-[#F9F5F1]
+            bg-app-background
           "
         >
           <View
@@ -605,7 +580,7 @@ export default function MoodCalendarScreen() {
               w-[72px]
               h-[72px]
               rounded-[24px]
-              bg-[#EEE9F7]
+              bg-app-primarySoft
               items-center
               justify-center
               mb-4
@@ -615,16 +590,16 @@ export default function MoodCalendarScreen() {
               name="sparkles-outline"
               size={27}
               color={
-                colors.purple
+                studentColors.primary
               }
             />
           </View>
 
           <Text
             className="
-              text-[14px]
+              text-body
               font-semibold
-              text-[#1F1F2E]
+              text-app-textPrimary
             "
           >
             Loading your
@@ -633,8 +608,8 @@ export default function MoodCalendarScreen() {
 
           <Text
             className="
-              text-[11px]
-              text-[#8C8992]
+              text-caption
+              text-app-textSecondary
               mt-1.5
             "
           >
@@ -673,11 +648,11 @@ export default function MoodCalendarScreen() {
 
           headerStyle: {
             backgroundColor:
-              colors.background,
+              studentColors.background,
           },
 
           headerTintColor:
-            colors.purple,
+            studentColors.primary,
 
           headerTitleAlign:
             "left",
@@ -696,7 +671,7 @@ export default function MoodCalendarScreen() {
         ]}
         className="
           flex-1
-          bg-[#F9F5F1]
+          bg-app-background
         "
       >
         <ScrollView
@@ -705,12 +680,12 @@ export default function MoodCalendarScreen() {
           }
           className="
             flex-1
-            bg-[#F9F5F1]
+            bg-app-background
           "
           contentContainerStyle={{
-            paddingHorizontal: 18,
-            paddingTop: 16,
-            paddingBottom: 40,
+            paddingHorizontal: spacing.screen,
+            paddingTop: spacing.md,
+            paddingBottom: spacing.xxxl + spacing.xs,
           }}
         >
           {/* ============================================================ */}
@@ -720,10 +695,10 @@ export default function MoodCalendarScreen() {
           <View className="mb-5">
             <Text
               className="
-                text-[12px]
+                text-caption
                 font-bold
                 tracking-[1px]
-                text-[#6D5AB5]
+                text-app-primary
                 uppercase
               "
             >
@@ -740,13 +715,13 @@ export default function MoodCalendarScreen() {
               flex-row
               items-center
               justify-between
-              bg-white
+              bg-app-surface
               rounded-[24px]
               px-3
               py-3
               mb-4
               border
-              border-[#ECE6E2]
+              border-app-border
               shadow-sm
             "
           >
@@ -759,6 +734,8 @@ export default function MoodCalendarScreen() {
             >
               <TouchableOpacity
                 activeOpacity={0.75}
+                accessibilityRole="button"
+                accessibilityLabel="Previous month"
                 onPress={() =>
                   changeMonth(-1)
                 }
@@ -766,7 +743,7 @@ export default function MoodCalendarScreen() {
                   w-11
                   h-11
                   rounded-2xl
-                  bg-[#F2EEF9]
+                  bg-app-primarySoft
                   items-center
                   justify-center
                 "
@@ -775,7 +752,7 @@ export default function MoodCalendarScreen() {
                   name="chevron-back"
                   size={20}
                   color={
-                    colors.purple
+                    studentColors.primary
                   }
                 />
               </TouchableOpacity>
@@ -791,6 +768,8 @@ export default function MoodCalendarScreen() {
               onPress={
                 jumpToToday
               }
+              accessibilityRole="button"
+              accessibilityLabel={isCurrentMonth ? `${MONTH_NAMES[month]} ${year}` : "Return to current month"}
               className="
                 flex-1
                 items-center
@@ -799,9 +778,9 @@ export default function MoodCalendarScreen() {
             >
               <Text
                 className="
-                  text-[18px]
+                  text-subtitle
                   font-extrabold
-                  text-[#1F1F2E]
+                  text-app-textPrimary
                 "
               >
                 {
@@ -816,9 +795,9 @@ export default function MoodCalendarScreen() {
                 {!isCurrentMonth && (
                   <Text
                     className="
-                      text-[10px]
+                      text-caption
                       font-semibold
-                      text-[#6D5AB5]
+                      text-app-primary
                     "
                   >
                     Tap to return
@@ -837,6 +816,8 @@ export default function MoodCalendarScreen() {
             >
               <TouchableOpacity
                 activeOpacity={0.75}
+                accessibilityRole="button"
+                accessibilityLabel="Next month"
                 onPress={() =>
                   changeMonth(1)
                 }
@@ -844,7 +825,7 @@ export default function MoodCalendarScreen() {
                   w-11
                   h-11
                   rounded-2xl
-                  bg-[#F2EEF9]
+                  bg-app-primarySoft
                   items-center
                   justify-center
                 "
@@ -853,7 +834,7 @@ export default function MoodCalendarScreen() {
                   name="chevron-forward"
                   size={20}
                   color={
-                    colors.purple
+                    studentColors.primary
                   }
                 />
               </TouchableOpacity>
@@ -870,10 +851,10 @@ export default function MoodCalendarScreen() {
             <View
               className="
                 flex-1
-                bg-white
+                bg-app-surface
                 rounded-[22px]
                 border
-                border-[#ECE6E2]
+                border-app-border
                 p-4
               "
             >
@@ -882,7 +863,7 @@ export default function MoodCalendarScreen() {
                   w-9
                   h-9
                   rounded-xl
-                  bg-[#FDE8E2]
+                  bg-app-accentSoft
                   items-center
                   justify-center
                   mb-3
@@ -892,7 +873,7 @@ export default function MoodCalendarScreen() {
                   name="flame-outline"
                   size={19}
                   color={
-                    colors.peach
+                    studentColors.accent
                   }
                 />
               </View>
@@ -902,7 +883,7 @@ export default function MoodCalendarScreen() {
                   className="
                     text-[26px]
                     font-extrabold
-                    text-[#F47F63]
+                    text-app-accent
                   "
                 >
                   {streak}
@@ -910,10 +891,10 @@ export default function MoodCalendarScreen() {
 
                 <Text
                   className="
-                    text-[11px]
+                    text-caption
                     mb-1
                     ml-1
-                    text-[#8C8992]
+                    text-app-textSecondary
                   "
                 >
                   days
@@ -922,9 +903,9 @@ export default function MoodCalendarScreen() {
 
               <Text
                 className="
-                  text-[11px]
+                  text-caption
                   font-semibold
-                  text-[#1F1F2E]
+                  text-app-textPrimary
                   mt-1
                 "
               >
@@ -937,10 +918,10 @@ export default function MoodCalendarScreen() {
             <View
               className="
                 flex-1
-                bg-white
+                bg-app-surface
                 rounded-[22px]
                 border
-                border-[#ECE6E2]
+                border-app-border
                 p-4
               "
             >
@@ -949,7 +930,7 @@ export default function MoodCalendarScreen() {
                   w-9
                   h-9
                   rounded-xl
-                  bg-[#EEE9F7]
+                  bg-app-primarySoft
                   items-center
                   justify-center
                   mb-3
@@ -959,7 +940,7 @@ export default function MoodCalendarScreen() {
                   name="analytics-outline"
                   size={19}
                   color={
-                    colors.purple
+                    studentColors.primary
                   }
                 />
               </View>
@@ -968,7 +949,7 @@ export default function MoodCalendarScreen() {
                 className="
                   text-[26px]
                   font-extrabold
-                  text-[#6D5AB5]
+                  text-app-primary
                 "
               >
                 {
@@ -979,9 +960,9 @@ export default function MoodCalendarScreen() {
 
               <Text
                 className="
-                  text-[11px]
+                  text-caption
                   font-semibold
-                  text-[#1F1F2E]
+                  text-app-textPrimary
                   mt-1
                 "
               >
@@ -996,13 +977,13 @@ export default function MoodCalendarScreen() {
                   mt-3
                   rounded-full
                   overflow-hidden
-                  bg-[#EEE9F7]
+                  bg-app-primarySoft
                 "
               >
                 <View
                   className="
                     h-full
-                    bg-[#6D5AB5]
+                    bg-app-primary
                     rounded-full
                   "
                   style={{
@@ -1025,9 +1006,9 @@ export default function MoodCalendarScreen() {
               className="
                 flex-row
                 items-center
-                bg-[#F2EEF9]
+                bg-app-primarySoft
                 border
-                border-[#DED6EE]
+                border-app-primaryLight
                 rounded-2xl
                 px-4
                 py-3
@@ -1039,7 +1020,7 @@ export default function MoodCalendarScreen() {
                   w-8
                   h-8
                   rounded-full
-                  bg-white
+                  bg-app-surface
                   items-center
                   justify-center
                   mr-3
@@ -1049,7 +1030,7 @@ export default function MoodCalendarScreen() {
                   name="lock-closed-outline"
                   size={15}
                   color={
-                    colors.purple
+                    studentColors.primary
                   }
                 />
               </View>
@@ -1057,14 +1038,12 @@ export default function MoodCalendarScreen() {
               <Text
                 className="
                   flex-1
-                  text-[11.5px]
+                  text-caption
                   leading-[17px]
-                  text-[#6B6471]
+                  text-app-textSecondary
                 "
               >
-                That day hasn't
-                arrived yet. One
-                moment at a time.
+                {"That day hasn't arrived yet. One moment at a time."}
               </Text>
             </Animated.View>
           )}
@@ -1075,10 +1054,10 @@ export default function MoodCalendarScreen() {
 
           <View
             className="
-              bg-white
+              bg-app-surface
               rounded-[26px]
               border
-              border-[#ECE6E2]
+              border-app-border
               px-3
               pt-5
               pb-4
@@ -1096,9 +1075,9 @@ export default function MoodCalendarScreen() {
                     className="
                       flex-1
                       text-center
-                      text-[10px]
+                      text-caption
                       font-extrabold
-                      text-[#A7A0AB]
+                      text-app-textMuted
                     "
                   >
                     {label}
@@ -1187,14 +1166,14 @@ export default function MoodCalendarScreen() {
                 name="information-circle-outline"
                 size={13}
                 color={
-                  colors.secondaryText
+                  studentColors.textSecondary
                 }
               />
 
               <Text
                 className="
-                  text-[10px]
-                  text-[#8C8992]
+                  text-caption
+                  text-app-textSecondary
                   ml-1
                 "
               >
@@ -1213,12 +1192,12 @@ export default function MoodCalendarScreen() {
             0 && (
             <View
               className="
-                bg-[#F2EEF9]
+                bg-app-primarySoft
                 rounded-[24px]
                 p-5
                 mb-5
                 border
-                border-[#E4DDEF]
+                border-app-primaryLight
               "
             >
               <View className="flex-row items-center">
@@ -1227,7 +1206,7 @@ export default function MoodCalendarScreen() {
                     w-12
                     h-12
                     rounded-2xl
-                    bg-white
+                    bg-app-surface
                     items-center
                     justify-center
                     mr-3.5
@@ -1237,7 +1216,7 @@ export default function MoodCalendarScreen() {
                     name="heart-outline"
                     size={22}
                     color={
-                      colors.purple
+                      studentColors.primary
                     }
                   />
                 </View>
@@ -1245,9 +1224,9 @@ export default function MoodCalendarScreen() {
                 <View className="flex-1">
                   <Text
                     className="
-                      text-[14px]
+                      text-body
                       font-bold
-                      text-[#1F1F2E]
+                      text-app-textPrimary
                     "
                   >
                     No check-ins
@@ -1256,17 +1235,13 @@ export default function MoodCalendarScreen() {
 
                   <Text
                     className="
-                      text-[11px]
+                      text-caption
                       leading-4
-                      text-[#8C8992]
+                      text-app-textSecondary
                       mt-1
                     "
                   >
-                    Tap today's
-                    date whenever
-                    you're ready
-                    to record how
-                    you feel.
+                    {"Tap today's date whenever you're ready to record how you feel."}
                   </Text>
                 </View>
               </View>
@@ -1279,10 +1254,10 @@ export default function MoodCalendarScreen() {
 
           <View
             className="
-              bg-white
+              bg-app-surface
               rounded-[26px]
               border
-              border-[#ECE6E2]
+              border-app-border
               px-4
               pt-5
               pb-5
@@ -1294,7 +1269,7 @@ export default function MoodCalendarScreen() {
                 className="
                   flex-row
                   items-center
-                  bg-[#EEE9F7]
+                  bg-app-primarySoft
                   px-3
                   py-1.5
                   rounded-full
@@ -1305,15 +1280,15 @@ export default function MoodCalendarScreen() {
                   name="sparkles-outline"
                   size={12}
                   color={
-                    colors.purple
+                    studentColors.primary
                   }
                 />
 
                 <Text
                   className="
-                    text-[9px]
+                    text-caption
                     font-extrabold
-                    text-[#6D5AB5]
+                    text-app-primary
                     tracking-[1px]
                     ml-1.5
                     uppercase
@@ -1325,9 +1300,9 @@ export default function MoodCalendarScreen() {
 
               <Text
                 className="
-                  text-[15px]
+                  text-body-lg
                   font-extrabold
-                  text-[#1F1F2E]
+                  text-app-textPrimary
                 "
               >
                 Explore your mood
@@ -1336,8 +1311,8 @@ export default function MoodCalendarScreen() {
 
               <Text
                 className="
-                  text-[10px]
-                  text-[#8C8992]
+                  text-caption
+                  text-app-textSecondary
                   mt-1
                 "
               >
@@ -1380,6 +1355,9 @@ export default function MoodCalendarScreen() {
                           key
                         )
                       }
+                      accessibilityRole="button"
+                      accessibilityLabel={`Filter by ${item.label}`}
+                      accessibilityState={{ selected: isActive }}
                       className="
                         flex-1
                         items-center
@@ -1406,7 +1384,7 @@ export default function MoodCalendarScreen() {
                           backgroundColor:
                             item.color
                               ? `${item.color}15`
-                              : colors.lavenderSoft,
+                              : studentColors.primarySoft,
 
                           borderWidth:
                             isActive
@@ -1415,7 +1393,7 @@ export default function MoodCalendarScreen() {
 
                           borderColor:
                             item.color ||
-                            colors.purple,
+                            studentColors.primary,
                         }}
                       >
                         <Image
@@ -1429,9 +1407,9 @@ export default function MoodCalendarScreen() {
 
                       <Text
                         className="
-                          text-[9.5px]
+                          text-caption
                           font-bold
-                          text-[#1F1F2E]
+                          text-app-textPrimary
                         "
                       >
                         {item.label}
@@ -1439,7 +1417,7 @@ export default function MoodCalendarScreen() {
 
                       <Text
                         className="
-                          text-[8px]
+                          text-caption
                           font-extrabold
                           uppercase
                           mt-0.5
@@ -1447,7 +1425,7 @@ export default function MoodCalendarScreen() {
                         style={{
                           color:
                             item.color ||
-                            colors.secondaryText,
+                            studentColors.textSecondary,
                         }}
                       >
                         Lv.{" "}
@@ -1469,7 +1447,7 @@ export default function MoodCalendarScreen() {
                           style={{
                             backgroundColor:
                               item.color ||
-                              colors.purple,
+                              studentColors.primary,
                           }}
                         />
                       )}

@@ -14,13 +14,16 @@ const CalendarDayComponent = ({ day, isToday, isLocked, entry, onPress }) => {
       onPress={() => onPress(day)}
       disabled={isLocked}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={`${day}${moodData ? `, ${moodData.label}` : ", no mood recorded"}${isToday ? ", today" : ""}`}
+      accessibilityState={{ disabled: isLocked }}
       className={`w-[14.28%] aspect-square p-1 ${isLocked && !isToday ? "opacity-20" : "opacity-100"}`}
     >
-      <View className={`w-full h-full rounded-2xl items-center justify-between py-1.5 bg-white border shadow-sm
-        ${isToday ? "border-blue-500 bg-blue-50" : "border-gray-100"}`}
+      <View className={`w-full h-full rounded-2xl items-center justify-between py-1.5 bg-app-surface border shadow-sm
+        ${isToday ? "border-app-primary bg-app-primarySoft" : "border-app-borderSoft"}`}
       >
         {/*  Day Number - Always visible at the top */}
-        <Text className={`text-[10px] font-bold ${isToday ? "text-blue-500" : "text-gray-400"}`}>
+        <Text className={`text-caption font-bold ${isToday ? "text-app-primary" : "text-app-textMuted"}`}>
           {day}
         </Text>
 
@@ -34,7 +37,7 @@ const CalendarDayComponent = ({ day, isToday, isLocked, entry, onPress }) => {
             />
           ) : (
             // Small subtle indicator if no mood is set yet
-            <View className="w-1 h-1 rounded-full bg-gray-200" />
+            <View className="w-1 h-1 rounded-full bg-app-border" />
           )}
         </View>
 

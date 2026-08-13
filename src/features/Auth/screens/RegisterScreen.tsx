@@ -12,18 +12,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { registerUser } from "../services/auth.service";
+import { commonColors, spacing, studentColors } from "@/src/theme";
 
-const colors = {
-  background: "#F9F5F1",
-  lavender: "#CCC5E8",
-  purple: "#8D7BB8",
-  peach: "#F47F63",
-  text: "#1F1F2E",
-  secondaryText: "#8C8992",
-  white: "#FFFFFF",
-  charmBlack: "#2C2C2C",
-};
+import { registerUser } from "../services/auth.service";
 
 const RegisterScreen = () => {
   const [role, setRole] = useState<"student" | "counselor">("student");
@@ -95,22 +86,22 @@ const RegisterScreen = () => {
       <Stack.Screen
         options={{
           title: "",
-          headerStyle: { backgroundColor: colors.background },
+          headerStyle: { backgroundColor: studentColors.background },
           headerShadowVisible: false,
         }}
       />
 
-      <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
+      <SafeAreaView className="flex-1 bg-app-background">
         <View className="flex-1 px-8 items-center justify-center mb-20">
           {/* Logo */}
           <View className="items-center mb-10">
             <Image source={require("../../../../assets/images/icon.png")} style={{ width: 96, height: 96, borderRadius: 30 }} />
 
-            <Text className="text-3xl font-bold" style={{ color: colors.text }}>
+            <Text className="text-heading font-bold text-app-textPrimary">
               MindSpace
             </Text>
 
-            <Text className="mt-1" style={{ color: colors.secondaryText }}>
+            <Text className="mt-1 text-body text-app-textSecondary">
               Your student wellness companion
             </Text>
           </View>
@@ -119,35 +110,31 @@ const RegisterScreen = () => {
           <View className="w-full mb-5">
             {/* Name */}
             <View
-              className="flex-row items-center rounded-2xl px-4 h-14 mb-4 border"
-              style={{ backgroundColor: colors.white, borderColor: "#ECE6E2" }}
+              className="mb-4 h-14 flex-row items-center rounded-2xl border border-app-border bg-app-surface px-4"
             >
-              <User color={colors.peach} size={20} />
+              <User color={studentColors.accent} size={20} />
 
               <TextInput
                 value={name}
                 onChangeText={setName}
-                className="flex-1 text-base ml-3"
-                style={{ color: colors.text }}
+                className="ml-3 flex-1 text-body-lg text-app-textPrimary"
                 placeholder="Full Name"
-                placeholderTextColor={colors.secondaryText}
+                placeholderTextColor={studentColors.textSecondary}
               />
             </View>
 
             {/* Email */}
             <View
-              className="flex-row items-center rounded-2xl px-4 h-14 mb-4 border"
-              style={{ backgroundColor: colors.white, borderColor: "#ECE6E2" }}
+              className="mb-4 h-14 flex-row items-center rounded-2xl border border-app-border bg-app-surface px-4"
             >
-              <Mail color={colors.lavender} size={20} />
+              <Mail color={studentColors.primaryLight} size={20} />
 
               <TextInput
                 value={email}
                 onChangeText={setEmail}
-                className="flex-1 text-base ml-3"
-                style={{ color: colors.text }}
+                className="ml-3 flex-1 text-body-lg text-app-textPrimary"
                 placeholder="student@university.edu"
-                placeholderTextColor={colors.secondaryText}
+                placeholderTextColor={studentColors.textSecondary}
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
@@ -155,25 +142,23 @@ const RegisterScreen = () => {
 
             {/* Password */}
             <View
-              className="flex-row items-center rounded-2xl px-4 h-14 border"
-              style={{ backgroundColor: colors.white, borderColor: "#ECE6E2" }}
+              className="h-14 flex-row items-center rounded-2xl border border-app-border bg-app-surface px-4"
             >
-              <Lock color={colors.lavender} size={20} />
+              <Lock color={studentColors.primaryLight} size={20} />
 
               <TextInput
                 value={password}
                 onChangeText={setPassword}
-                className="flex-1 text-base ml-3"
-                style={{ color: colors.text }}
+                className="ml-3 flex-1 text-body-lg text-app-textPrimary"
                 placeholder="Password"
-                placeholderTextColor={colors.secondaryText}
+                placeholderTextColor={studentColors.textSecondary}
                 secureTextEntry
               />
             </View>
           </View>
 
           {/* Role Selector */}
-          <Text className="self-start mb-4 text-base" style={{ color: colors.secondaryText }}>
+          <Text className="mb-4 self-start text-body-lg text-app-textSecondary">
             Sign up as
           </Text>
 
@@ -181,18 +166,23 @@ const RegisterScreen = () => {
             {/* Student */}
             <TouchableOpacity
               onPress={() => setRole("student")}
-              className="flex-row items-center justify-center py-4 rounded-2xl w-[48%]"
-              style={{
-                backgroundColor: role === "student" ? colors.charmBlack : colors.white,
-                borderWidth: 1,
-                borderColor: role === "student" ? colors.charmBlack : "#ECE6E2",
-              }}
+              accessibilityRole="button"
+              accessibilityState={{ selected: role === "student" }}
+              className={`w-[48%] flex-row items-center justify-center rounded-2xl border py-4 ${
+                role === "student"
+                  ? "border-selected bg-selected"
+                  : "border-app-border bg-app-surface"
+              }`}
             >
-              <User size={18} color={role === "student" ? "#fff" : colors.charmBlack} />
+              <User
+                size={18}
+                color={role === "student" ? commonColors.white : commonColors.controlSelected}
+              />
 
               <Text
-                className="ml-2 font-semibold"
-                style={{ color: role === "student" ? "#fff" : colors.secondaryText }}
+                className={`ml-2 text-body font-semibold ${
+                  role === "student" ? "text-app-surface" : "text-app-textSecondary"
+                }`}
               >
                 Student
               </Text>
@@ -201,18 +191,23 @@ const RegisterScreen = () => {
             {/* Counselor */}
             <TouchableOpacity
               onPress={() => setRole("counselor")}
-              className="flex-row items-center justify-center py-4 rounded-2xl w-[48%]"
-              style={{
-                backgroundColor: role === "counselor" ? colors.charmBlack : colors.white,
-                borderWidth: 1,
-                borderColor: role === "counselor" ? colors.charmBlack : "#ECE6E2",
-              }}
+              accessibilityRole="button"
+              accessibilityState={{ selected: role === "counselor" }}
+              className={`w-[48%] flex-row items-center justify-center rounded-2xl border py-4 ${
+                role === "counselor"
+                  ? "border-selected bg-selected"
+                  : "border-app-border bg-app-surface"
+              }`}
             >
-              <User size={18} color={role === "counselor" ? "#fff" : colors.charmBlack} />
+              <User
+                size={18}
+                color={role === "counselor" ? commonColors.white : commonColors.controlSelected}
+              />
 
               <Text
-                className="ml-2 font-semibold"
-                style={{ color: role === "counselor" ? "#fff" : colors.secondaryText }}
+                className={`ml-2 text-body font-semibold ${
+                  role === "counselor" ? "text-app-surface" : "text-app-textSecondary"
+                }`}
               >
                 Counselor
               </Text>
@@ -223,28 +218,33 @@ const RegisterScreen = () => {
           <TouchableOpacity
             onPress={handleRegister}
             disabled={loading}
-            className="flex-row w-full h-16 rounded-3xl justify-center items-center mb-5"
+            accessibilityRole="button"
+            accessibilityState={{ disabled: loading }}
+            className="mb-5 h-16 w-full flex-row items-center justify-center rounded-3xl bg-app-primaryMuted"
             style={{
-              backgroundColor: colors.purple,
-              shadowColor: colors.purple,
+              shadowColor: studentColors.primaryMuted,
               shadowOpacity: 0.15,
               shadowRadius: 10,
-              shadowOffset: { width: 0, height: 4 },
+              shadowOffset: { width: 0, height: spacing.xxs },
               elevation: 3,
             }}
           >
-            <Text className="text-lg font-bold mr-2" style={{ color: "#FFFFFF" }}>
+            <Text className="mr-2 text-subtitle font-bold text-app-surface">
               {loading ? "Creating..." : "Create Account"}
             </Text>
 
-            <ChevronRight color="#FFFFFF" size={20} />
+            <ChevronRight color={commonColors.white} size={20} />
           </TouchableOpacity>
 
           {/* Login Link */}
-          <Text style={{ color: colors.secondaryText, fontSize: 14 }}>
+          <Text className="text-body text-app-textSecondary">
             Already have an account?{" "}
-            <Pressable onPress={() => router.push("/Route/login")}>
-              <Text className="font-bold" style={{ color: colors.purple }}>
+            <Pressable
+              onPress={() => router.push("/Route/login")}
+              accessibilityRole="link"
+              hitSlop={spacing.xs}
+            >
+              <Text className="text-body font-bold text-app-primaryMuted">
                 Sign In
               </Text>
             </Pressable>

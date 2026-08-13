@@ -1,9 +1,10 @@
 import { db } from "@/src/config/firebase";
 import {
-  collection, doc, getDocs, setDoc, updateDoc, query, where, orderBy, onSnapshot, serverTimestamp, getDoc,
+  collection, doc, getDoc, getDocs, setDoc, query, where, orderBy,
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { Counselor, Appointment } from "../types";
+import { avatarColors } from "@/src/theme";
 
 export const getCounselors = async (): Promise<Counselor[]> => {
   const snap = await getDocs(query(
@@ -17,8 +18,8 @@ export const getCounselors = async (): Promise<Counselor[]> => {
       name: data.name || "counselor",
       specialties: data.specialties || [data.specialty || data.specialization || "General"].filter(Boolean),
       avatar: data.emoji || "👩‍⚕️",
-      color: data.color || "#7C3AED",
-      bgColor: data.bgColor || "#EDE9FE",
+      color: data.color || avatarColors.purple,
+      bgColor: data.bgColor || avatarColors.purpleSoft,
     };
   });
 };
@@ -51,6 +52,19 @@ export const fetchAppointments = async (studentId: string): Promise<Appointment[
       note: data.note || "",
     } as Appointment;
   });
+};
+
+export const fetchCurrentStressPercentage = async (
+  studentId: string,
+): Promise<number | null> => {
+  const snap = await getDoc(doc(db, "users", studentId));
+  if (!snap.exists()) return null;
+
+  const stress = Number(snap.data().currentStressLevel);
+  if (!Number.isFinite(stress)) return null;
+
+  // currentStressLevel is stored on a 0-10 scale.
+  return Math.round(Math.min(10, Math.max(0, stress)) * 10);
 };
 
 export const createAppointment = async (data: {

@@ -20,36 +20,10 @@ import { calculateAverageDayStressLevel } from "../hooks/calculateAverageDayStre
 import { fetchMoodFromDb } from "../services/fetchFromDb";
 import { db } from "@/src/config/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { Ionicons } from "@expo/vector-icons";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { PulsingMoodButton } from "./PulsingCheckInBorder";
-
-/* -------------------------------------------------------------------------- */
-/*                                COLOR SYSTEM                                */
-/* -------------------------------------------------------------------------- */
-
-const colors = {
-  background: "#FAF7F4",
-  surface: "#FFFFFF",
-
-  // Main calming brand colors
-  lavender: "#8D7BB8",
-  lavenderDark: "#6F5C9E",
-  lavenderSoft: "#EEE9F7",
-  lavenderVerySoft: "#F6F2FA",
-
-  // Secondary accent
-  peach: "#E88366",
-  peachSoft: "#FBE9E3",
-
-  // Positive accent
-  green: "#68A765",
-  greenSoft: "#EAF4E8",
-
-  text: "#252330",
-  textSecondary: "#706A76",
-  textLight: "#A29CA7",
-
-  border: "#ECE5E0",
-};
+import { calmColors, commonColors, spacing, typography } from "@/src/theme";
 
 /* -------------------------------------------------------------------------- */
 /*                                  MOOD MAP                                  */
@@ -86,9 +60,9 @@ const DashboardHeader = React.memo(function DashboardHeader({
       <View
         className="w-10 h-10 rounded-full items-center justify-center"
         style={{
-          backgroundColor: colors.surface,
+          backgroundColor: calmColors.surface,
           borderWidth: 1,
-          borderColor: colors.border,
+          borderColor: calmColors.border,
         }}
       >
         <View
@@ -96,7 +70,7 @@ const DashboardHeader = React.memo(function DashboardHeader({
             width: 11,
             height: 11,
             borderRadius: 2,
-            backgroundColor: colors.lavenderDark,
+            backgroundColor: calmColors.primaryDark,
             transform: [{ rotate: "45deg" }],
           }}
         />
@@ -106,17 +80,19 @@ const DashboardHeader = React.memo(function DashboardHeader({
         {/* Notification */}
         <TouchableOpacity
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Notifications"
           className="w-10 h-10 rounded-full items-center justify-center"
           style={{
-            backgroundColor: colors.surface,
+            backgroundColor: calmColors.surface,
             borderWidth: 1,
-            borderColor: colors.border,
+            borderColor: calmColors.border,
           }}
         >
           <Image
             source={icons.notification}
             className="w-5 h-5"
-            style={{ tintColor: colors.text }}
+            style={{ tintColor: calmColors.textPrimary }}
             resizeMode="contain"
           />
         </TouchableOpacity>
@@ -126,24 +102,26 @@ const DashboardHeader = React.memo(function DashboardHeader({
           <TouchableOpacity
             onPress={onProfilePress}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Open profile menu"
             className="w-10 h-10 rounded-full items-center justify-center"
             style={{
-              backgroundColor: colors.surface,
+              backgroundColor: calmColors.surface,
               borderWidth: 1,
-              borderColor: colors.border,
+              borderColor: calmColors.border,
             }}
           >
             <Image
               source={icons.profile}
               className="w-7 h-7"
-              style={{ tintColor: colors.text }}
+              style={{ tintColor: calmColors.textPrimary }}
               resizeMode="contain"
             />
           </TouchableOpacity>
 
           <View
-            className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white"
-            style={{ backgroundColor: colors.green }}
+            className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-calm-surface"
+            style={{ backgroundColor: calmColors.success }}
           />
         </View>
       </View>
@@ -174,7 +152,7 @@ const HeroDecoration = () => {
           width: 170,
           height: 170,
           borderRadius: 85,
-          backgroundColor: "#E8DEED",
+          backgroundColor: calmColors.primarySoft,
           opacity: 0.75,
         }}
       />
@@ -186,7 +164,7 @@ const HeroDecoration = () => {
           width: 16,
           height: 55,
           borderRadius: 20,
-          backgroundColor: "#B6C99B",
+          backgroundColor: calmColors.successSoft,
           right: 42,
           bottom: 20,
           transform: [{ rotate: "28deg" }],
@@ -200,7 +178,7 @@ const HeroDecoration = () => {
           width: 14,
           height: 47,
           borderRadius: 20,
-          backgroundColor: "#CAD9B5",
+          backgroundColor: calmColors.successSoft,
           right: 72,
           bottom: 14,
           transform: [{ rotate: "-20deg" }],
@@ -214,7 +192,7 @@ const HeroDecoration = () => {
           width: 10,
           height: 60,
           borderRadius: 20,
-          backgroundColor: "#A997CA",
+          backgroundColor: calmColors.primary,
           right: 98,
           bottom: 30,
           transform: [{ rotate: "10deg" }],
@@ -225,6 +203,30 @@ const HeroDecoration = () => {
   );
 };
 
+const getStressAccent = (percentage: number) => {
+  if (percentage <= 30) {
+    return {
+      color: calmColors.success,
+      backgroundColor: calmColors.successSoft,
+      heroBackgroundColor: calmColors.successSoft,
+    };
+  }
+
+  if (percentage <= 60) {
+    return {
+      color: calmColors.primaryDark,
+      backgroundColor: calmColors.primarySoft,
+      heroBackgroundColor: calmColors.primaryVerySoft,
+    };
+  }
+
+  return {
+    color: calmColors.error,
+    backgroundColor: calmColors.errorSoft,
+    heroBackgroundColor: calmColors.errorSoft,
+  };
+};
+
 /* -------------------------------------------------------------------------- */
 /*                              DASHBOARD SCREEN                              */
 /* -------------------------------------------------------------------------- */
@@ -232,10 +234,11 @@ const HeroDecoration = () => {
 const DashboardScreen = () => {
   const router = useRouter();
 
-  const [moodAverage, setMoodAverage] = useState<number>(5);
-  const [weeklyProgress, setWeeklyProgress] = useState<number>(0);
+  const [, setMoodAverage] = useState<number>(5);
+  const [, setWeeklyProgress] = useState<number>(0);
 
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
+  const [stressPercentage, setStressPercentage] = useState<number | null>(null);
 
   const [userName, setUserName] = useState<string>("");
   const [showProfilePopup, setShowProfilePopup] = useState(false);
@@ -249,6 +252,10 @@ const DashboardScreen = () => {
 
   const wellnessMessage = selectedMood
     ? WELLNESS_MESSAGES[selectedMood]
+    : null;
+
+  const stressAccent = stressPercentage !== null
+    ? getStressAccent(stressPercentage)
     : null;
 
   const handleGoToWellness = () => {
@@ -271,7 +278,7 @@ const DashboardScreen = () => {
       await auth.signOut();
       setShowProfilePopup(false);
       router.replace("/Route/login");
-    } catch (error) {
+    } catch {
       Alert.alert("Error", "Failed to log out. Please try again.");
     }
   };
@@ -303,8 +310,21 @@ const DashboardScreen = () => {
         if (data.name) {
           setUserName(data.name);
         }
+
+        const currentStress = Number(data.currentStressLevel);
+
+        setStressPercentage(
+          Number.isFinite(currentStress)
+            ? Math.round(
+                Math.min(10, Math.max(0, currentStress)) * 10
+              )
+            : null
+        );
+      } else {
+        setStressPercentage(null);
       }
     } catch (error) {
+      setStressPercentage(null);
       console.error("Failed to load current mood status:", error);
     }
   }
@@ -356,7 +376,7 @@ const DashboardScreen = () => {
           headerBackVisible: false,
           headerShadowVisible: false,
           headerStyle: {
-            backgroundColor: colors.background,
+            backgroundColor: calmColors.background,
           },
         }}
       />
@@ -365,17 +385,17 @@ const DashboardScreen = () => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{
           flex: 1,
-          backgroundColor: colors.background,
+          backgroundColor: calmColors.background,
         }}
       >
         <ScrollView
         className="mt-[-20px]"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
-            paddingBottom: 28,
+            paddingBottom: spacing.xxl,
           }}
           style={{
-            backgroundColor: colors.background,
+            backgroundColor: calmColors.background,
           }}
         >
           {/* ================================================================ */}
@@ -385,7 +405,9 @@ const DashboardScreen = () => {
           <View className="px-5 pt-5">
             <View
               style={{
-                backgroundColor: colors.lavenderVerySoft,
+                backgroundColor:
+                  stressAccent?.heroBackgroundColor ||
+                  calmColors.primaryVerySoft,
                 borderRadius: 32,
                 paddingHorizontal: 24,
                 paddingVertical: 28,
@@ -395,14 +417,14 @@ const DashboardScreen = () => {
             >
               <HeroDecoration />
 
-              <View style={{ maxWidth: "72%" }}>
-                <View className="flex-row items-center mb-5">
+              <View className="mb-5 flex-row items-center justify-between">
+                <View className="flex-row items-center">
                   <Text
                     style={{
-                      color: colors.lavender,
-                      fontSize: 12,
-                      fontWeight: "700",
-                      letterSpacing: 1.4,
+                      color: calmColors.primary,
+                      fontSize: typography.fontSize.caption,
+                      fontWeight: typography.fontWeight.bold,
+                      letterSpacing: typography.letterSpacing.wide,
                     }}
                   >
                     DAILY REFLECTION
@@ -410,7 +432,7 @@ const DashboardScreen = () => {
 
                   <Text
                     style={{
-                      color: colors.lavender,
+                      color: calmColors.primary,
                       marginLeft: 7,
                       fontSize: 16,
                     }}
@@ -419,11 +441,54 @@ const DashboardScreen = () => {
                   </Text>
                 </View>
 
+                {stressPercentage !== null && stressAccent && (
+                    <Animated.View
+                      entering={FadeInDown.duration(260)}
+                      accessibilityRole="progressbar"
+                      accessibilityLabel="Current stress level"
+                      accessibilityValue={{
+                        min: 0,
+                        max: 100,
+                        now: stressPercentage,
+                        text: `${stressPercentage} percent`,
+                      }}
+                      className="flex-row items-center rounded-full border border-calm-surface px-3 py-2"
+                      style={{
+                        backgroundColor: stressAccent.backgroundColor,
+                      }}
+                    >
+                      <View
+                        className="mr-2 h-7 w-7 items-center justify-center rounded-full bg-calm-surface"
+                      >
+                        <Ionicons
+                          name="pulse"
+                          size={15}
+                          color={stressAccent.color}
+                        />
+                      </View>
+
+                      <View>
+                        <Text
+                          className="text-caption font-extrabold"
+                          style={{ color: stressAccent.color }}
+                        >
+                          {stressPercentage}%
+                        </Text>
+                        <Text className="text-caption font-semibold text-calm-textSecondary">
+                          current stress
+                        </Text>
+                      </View>
+                    </Animated.View>
+                )}
+              </View>
+
+              <View style={{ maxWidth: "72%" }}>
+
                 <Text
                   style={{
-                    color: colors.text,
-                    fontSize: 27,
-                    fontWeight: "500",
+                    color: calmColors.textPrimary,
+                    fontSize: typography.fontSize.heading,
+                    fontWeight: typography.fontWeight.medium,
                     marginBottom: 17,
                   }}
                 >
@@ -432,11 +497,11 @@ const DashboardScreen = () => {
 
                 <Text
                   style={{
-                    color: colors.text,
-                    fontSize: 38,
-                    lineHeight: 46,
-                    fontWeight: "700",
-                    letterSpacing: -1,
+                    color: calmColors.textPrimary,
+                    fontSize: typography.fontSize.display,
+                    lineHeight: typography.lineHeight.display,
+                    fontWeight: typography.fontWeight.bold,
+                    letterSpacing: typography.letterSpacing.tight,
                   }}
                 >
                   How are you{"\n"}feeling today?
@@ -444,9 +509,9 @@ const DashboardScreen = () => {
 
                 <Text
                   style={{
-                    color: colors.textSecondary,
-                    fontSize: 16,
-                    lineHeight: 24,
+                    color: calmColors.textSecondary,
+                    fontSize: typography.fontSize.bodyLarge,
+                    lineHeight: typography.lineHeight.bodyLarge,
                     marginTop: 17,
                     maxWidth: 210,
                   }}
@@ -465,9 +530,9 @@ const DashboardScreen = () => {
             <Text
               style={{
                 textAlign: "center",
-                color: colors.lavender,
-                fontSize: 15,
-                fontWeight: "700",
+                color: calmColors.primary,
+                fontSize: typography.fontSize.bodyLarge,
+                fontWeight: typography.fontWeight.bold,
                 marginBottom: 18,
               }}
             >
@@ -487,6 +552,9 @@ const DashboardScreen = () => {
                     key={mood.id}
                     activeOpacity={0.8}
                     onPress={() => setSelectedMood(mood.id)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Select ${mood.label} mood`}
+                    accessibilityState={{ selected: isSelected }}
                     style={{
                       alignItems: "center",
                       width: "19%",
@@ -502,16 +570,16 @@ const DashboardScreen = () => {
                         alignItems: "center",
 
                         backgroundColor: isSelected
-                          ? colors.lavenderSoft
-                          : colors.surface,
+                          ? calmColors.primarySoft
+                          : calmColors.surface,
 
                         borderWidth: isSelected ? 1.5 : 1,
 
                         borderColor: isSelected
-                          ? colors.lavender
-                          : colors.border,
+                          ? calmColors.primary
+                          : calmColors.border,
 
-                        shadowColor: "#302838",
+                        shadowColor: commonColors.shadow,
                         shadowOpacity: isSelected ? 0.1 : 0.035,
                         shadowRadius: isSelected ? 9 : 5,
                         shadowOffset: {
@@ -539,14 +607,14 @@ const DashboardScreen = () => {
                     <Text
                       style={{
                         marginTop: 7,
-                        fontSize: 11.5,
+                        fontSize: typography.fontSize.caption,
                         color: isSelected
-                          ? colors.lavenderDark
-                          : colors.textSecondary,
+                          ? calmColors.primaryDark
+                          : calmColors.textSecondary,
 
                         fontWeight: isSelected
-                          ? "700"
-                          : "500",
+                          ? typography.fontWeight.bold
+                          : typography.fontWeight.medium,
                       }}
                     >
                       {mood.label}
@@ -565,7 +633,7 @@ const DashboardScreen = () => {
             <View className="px-5 mt-8">
               <View
                 style={{
-                  backgroundColor: colors.surface,
+                  backgroundColor: calmColors.surface,
                   borderRadius: 30,
 
                   paddingHorizontal: 24,
@@ -575,9 +643,9 @@ const DashboardScreen = () => {
                   alignItems: "center",
 
                   borderWidth: 1,
-                  borderColor: colors.border,
+                  borderColor: calmColors.border,
 
-                  shadowColor: "#302838",
+                  shadowColor: commonColors.shadow,
                   shadowOpacity: 0.055,
                   shadowRadius: 18,
                   shadowOffset: {
@@ -592,10 +660,10 @@ const DashboardScreen = () => {
 
                 <Text
                   style={{
-                    color: colors.lavender,
-                    fontSize: 11,
-                    fontWeight: "700",
-                    letterSpacing: 1.5,
+                    color: calmColors.primary,
+                    fontSize: typography.fontSize.caption,
+                    fontWeight: typography.fontWeight.bold,
+                    letterSpacing: typography.letterSpacing.wide,
                     marginBottom: 22,
                   }}
                 >
@@ -613,7 +681,7 @@ const DashboardScreen = () => {
                     justifyContent: "center",
                     alignItems: "center",
 
-                    backgroundColor: colors.lavenderVerySoft,
+                    backgroundColor: calmColors.primaryVerySoft,
                     marginBottom: 18,
                   }}
                 >
@@ -624,7 +692,7 @@ const DashboardScreen = () => {
                       height: 92,
                       borderRadius: 46,
                       borderWidth: 1,
-                      borderColor: "#DED5E9",
+                      borderColor: calmColors.primarySoft,
                     }}
                   />
 
@@ -634,6 +702,8 @@ const DashboardScreen = () => {
                   >
                     <TouchableOpacity
                       activeOpacity={0.75}
+                      accessibilityRole="button"
+                      accessibilityLabel="Continue mood check-in"
                       onPress={() =>
                         router.push(
                           `/(tabs)/(mood)/moodCheckIn?selectedMood=${selectedMood}`
@@ -644,12 +714,12 @@ const DashboardScreen = () => {
                         height: 72,
                         borderRadius: 36,
 
-                        backgroundColor: colors.surface,
+                        backgroundColor: calmColors.surface,
 
                         justifyContent: "center",
                         alignItems: "center",
 
-                        shadowColor: "#302838",
+                        shadowColor: commonColors.shadow,
                         shadowOpacity: 0.09,
                         shadowRadius: 10,
                         shadowOffset: {
@@ -676,20 +746,20 @@ const DashboardScreen = () => {
 
                 <Text
                   style={{
-                    color: colors.text,
-                    fontSize: 21,
-                    fontWeight: "700",
+                    color: calmColors.textPrimary,
+                    fontSize: typography.fontSize.title,
+                    fontWeight: typography.fontWeight.bold,
                     textAlign: "center",
                   }}
                 >
-                  You're feeling{" "}
+                  {"You're feeling "}
                   <Text
                     style={{
                       color:
                         selectedMood === "Great" ||
                         selectedMood === "Good"
-                          ? colors.green
-                          : colors.lavender,
+                          ? calmColors.success
+                          : calmColors.primary,
                     }}
                   >
                     {selectedMood}
@@ -699,9 +769,9 @@ const DashboardScreen = () => {
 
                 <Text
                   style={{
-                    color: colors.textSecondary,
-                    fontSize: 14,
-                    lineHeight: 21,
+                    color: calmColors.textSecondary,
+                    fontSize: typography.fontSize.body,
+                    lineHeight: typography.lineHeight.body,
                     textAlign: "center",
                     maxWidth: 295,
                     marginTop: 9,
@@ -724,11 +794,11 @@ const DashboardScreen = () => {
                     height: 50,
                     marginTop: 23,
                     borderRadius: 18,
-                    backgroundColor: colors.lavender,
+                    backgroundColor: calmColors.primary,
                     flexDirection: "row",
                     alignItems: "center",
                     justifyContent: "center",
-                    shadowColor: colors.lavenderDark,
+                    shadowColor: calmColors.primaryDark,
                     shadowOpacity: 0.1,
                     shadowRadius: 8,
                     shadowOffset: {
@@ -739,9 +809,9 @@ const DashboardScreen = () => {
                 >
                   <Text
                     style={{
-                      color: "#FFFFFF",
-                      fontSize: 15,
-                      fontWeight: "700",
+                      color: commonColors.white,
+                      fontSize: typography.fontSize.bodyLarge,
+                      fontWeight: typography.fontWeight.bold,
                     }}
                   >
                     Continue check-in
@@ -749,7 +819,7 @@ const DashboardScreen = () => {
 
                   <Text
                     style={{
-                      color: "#FFFFFF",
+                      color: commonColors.white,
                       fontSize: 21,
                       marginLeft: 8,
                       marginTop: -2,
@@ -766,12 +836,12 @@ const DashboardScreen = () => {
                     style={{
                       width: "100%",
                       marginTop: 16,
-                      backgroundColor: colors.lavenderVerySoft,
+                      backgroundColor: calmColors.primaryVerySoft,
                       borderRadius: 22,
                       paddingHorizontal: 18,
                       paddingVertical: 18,
                       borderWidth: 1,
-                      borderColor: "#E8E1F1",
+                      borderColor: calmColors.primarySoft,
                     }}
                   >
                     {/* top badge */}
@@ -780,20 +850,20 @@ const DashboardScreen = () => {
                         flexDirection: "row",
                         alignItems: "center",
                         alignSelf: "flex-start",
-                        backgroundColor: colors.lavenderSoft,
+                        backgroundColor: calmColors.primarySoft,
                         paddingHorizontal: 10,
                         paddingVertical: 5,
                         borderRadius: 20,
                         marginBottom: 11,
                       }}
                     >
-                      <Text style={{ fontSize: 11, marginRight: 5 }}>✦</Text>
+                      <Text style={{ fontSize: typography.fontSize.caption, marginRight: 5 }}>✦</Text>
                       <Text
                         style={{
-                          color: colors.lavenderDark,
-                          fontSize: 10,
-                          fontWeight: "700",
-                          letterSpacing: 0.7,
+                          color: calmColors.primaryDark,
+                          fontSize: typography.fontSize.caption,
+                          fontWeight: typography.fontWeight.bold,
+                          letterSpacing: typography.letterSpacing.label,
                         }}
                       >
                         FOR YOUR {selectedMood.toUpperCase()} MOOD
@@ -803,10 +873,10 @@ const DashboardScreen = () => {
                     {/* title */}
                     <Text
                       style={{
-                        color: colors.text,
-                        fontSize: 17,
-                        lineHeight: 22,
-                        fontWeight: "700",
+                        color: calmColors.textPrimary,
+                        fontSize: typography.fontSize.subtitle,
+                        lineHeight: typography.lineHeight.subtitle,
+                        fontWeight: typography.fontWeight.bold,
                       }}
                     >
                       {wellnessMessage.title}
@@ -815,9 +885,9 @@ const DashboardScreen = () => {
                     {/* description */}
                     <Text
                       style={{
-                        color: colors.textSecondary,
-                        fontSize: 13,
-                        lineHeight: 19,
+                        color: calmColors.textSecondary,
+                        fontSize: typography.fontSize.bodySmall,
+                        lineHeight: typography.lineHeight.bodySmall,
                         marginTop: 6,
                         marginBottom: 15,
                       }}
@@ -829,6 +899,7 @@ const DashboardScreen = () => {
                     <TouchableOpacity
                       activeOpacity={0.8}
                       onPress={handleGoToWellness}
+                      accessibilityRole="button"
                       style={{
                         height: 46,
                         borderRadius: 16,
@@ -836,9 +907,9 @@ const DashboardScreen = () => {
                         alignItems: "center",
                         justifyContent: "space-between",
                         paddingHorizontal: 16,
-                        backgroundColor: "#FFFFFF",
+                        backgroundColor: calmColors.surface,
                         borderWidth: 1,
-                        borderColor: "#DED5EC",
+                        borderColor: calmColors.primarySoft,
                       }}
                     >
                       <View
@@ -853,7 +924,7 @@ const DashboardScreen = () => {
                             width: 29,
                             height: 29,
                             borderRadius: 15,
-                            backgroundColor: colors.lavenderSoft,
+                            backgroundColor: calmColors.primarySoft,
                             alignItems: "center",
                             justifyContent: "center",
                             marginRight: 10,
@@ -861,7 +932,7 @@ const DashboardScreen = () => {
                         >
                           <Text
                             style={{
-                              color: colors.lavenderDark,
+                              color: calmColors.primaryDark,
                               fontSize: 15,
                             }}
                           >
@@ -870,9 +941,9 @@ const DashboardScreen = () => {
                         </View>
                         <Text
                           style={{
-                            color: colors.lavenderDark,
-                            fontSize: 13.5,
-                            fontWeight: "700",
+                            color: calmColors.primaryDark,
+                            fontSize: typography.fontSize.bodySmall,
+                            fontWeight: typography.fontWeight.bold,
                           }}
                         >
                           {wellnessMessage.button}
@@ -880,7 +951,7 @@ const DashboardScreen = () => {
                       </View>
                       <Text
                         style={{
-                          color: colors.lavenderDark,
+                          color: calmColors.primaryDark,
                           fontSize: 22,
                         }}
                       >
@@ -906,18 +977,19 @@ const DashboardScreen = () => {
         onRequestClose={() => setShowProfilePopup(false)}
       >
         <Pressable
-          className="flex-1 bg-black/30 justify-start items-end pt-[60px] pr-4"
+          className="flex-1 justify-start items-end pt-[60px] pr-4"
+          style={{ backgroundColor: commonColors.scrim }}
           onPress={() => setShowProfilePopup(false)}
         >
           <Pressable
             onPress={(e) => e.stopPropagation()}
             style={{
               width: 210,
-              backgroundColor: colors.surface,
+              backgroundColor: calmColors.surface,
               borderRadius: 20,
               overflow: "hidden",
 
-              shadowColor: "#000",
+              shadowColor: commonColors.black,
               shadowOpacity: 0.12,
               shadowRadius: 18,
               shadowOffset: {
@@ -934,21 +1006,21 @@ const DashboardScreen = () => {
               className="px-4 py-4"
               style={{
                 borderBottomWidth: 1,
-                borderBottomColor: colors.border,
+                borderBottomColor: calmColors.border,
               }}
             >
               <View className="flex-row items-center gap-3">
                 <View
                   className="w-11 h-11 rounded-full items-center justify-center"
                   style={{
-                    backgroundColor: colors.lavenderVerySoft,
+                    backgroundColor: calmColors.primaryVerySoft,
                   }}
                 >
                   <Image
                     source={icons.profile}
                     className="w-7 h-7"
                     style={{
-                      tintColor: colors.text,
+                      tintColor: calmColors.textPrimary,
                     }}
                     resizeMode="contain"
                   />
@@ -958,9 +1030,9 @@ const DashboardScreen = () => {
                   <Text
                     numberOfLines={1}
                     style={{
-                      color: colors.text,
-                      fontWeight: "700",
-                      fontSize: 14,
+                      color: calmColors.textPrimary,
+                      fontWeight: typography.fontWeight.bold,
+                      fontSize: typography.fontSize.body,
                     }}
                   >
                     {userName || "User"}
@@ -969,8 +1041,8 @@ const DashboardScreen = () => {
                   <Text
                     numberOfLines={1}
                     style={{
-                      color: colors.textSecondary,
-                      fontSize: 11,
+                      color: calmColors.textSecondary,
+                      fontSize: typography.fontSize.caption,
                       marginTop: 2,
                     }}
                   >
@@ -985,18 +1057,19 @@ const DashboardScreen = () => {
             <TouchableOpacity
               onPress={handleLogout}
               activeOpacity={0.7}
+              accessibilityRole="button"
               className="px-4 py-3.5 flex-row items-center gap-3"
             >
               <View
                 className="w-8 h-8 rounded-full items-center justify-center"
                 style={{
-                  backgroundColor: colors.peachSoft,
+                  backgroundColor: calmColors.accentSoft,
                 }}
               >
                 <Text
                   style={{
-                    color: colors.peach,
-                    fontWeight: "700",
+                    color: calmColors.accent,
+                    fontWeight: typography.fontWeight.bold,
                   }}
                 >
                   →
@@ -1005,9 +1078,9 @@ const DashboardScreen = () => {
 
               <Text
                 style={{
-                  color: colors.peach,
-                  fontSize: 14,
-                  fontWeight: "600",
+                  color: calmColors.accent,
+                  fontSize: typography.fontSize.body,
+                  fontWeight: typography.fontWeight.semiBold,
                 }}
               >
                 Log Out

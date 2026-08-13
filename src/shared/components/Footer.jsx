@@ -10,6 +10,8 @@ import {
 
 import * as Haptics from "expo-haptics";
 
+import { studentColors } from "@/src/theme";
+
 /* -------------------------------------------------------------------------- */
 /*                                  ICONS                                     */
 /* -------------------------------------------------------------------------- */
@@ -133,7 +135,7 @@ const Footer = ({
 
                   ${
                     isActive
-                      ? "bg-[#EEE9F7]"
+                      ? "bg-app-primarySoft"
                       : "bg-transparent"
                   }
                 `}
@@ -151,8 +153,8 @@ const Footer = ({
                   }
                   color={
                     isActive
-                      ? "#6D5AB5"
-                      : "#A29CA7"
+                      ? studentColors.primary
+                      : studentColors.textMuted
                   }
                 />
 
@@ -166,7 +168,7 @@ const Footer = ({
                       w-[5px]
                       h-[5px]
                       rounded-full
-                      bg-[#6D5AB5]
+                      bg-app-primary
                     "
                   />
                 )}
