@@ -168,8 +168,10 @@ npm install
 Create the required environment configuration according to the Firebase and AI-service setup used by the project.
 
 ```env
+
 EXPO_PUBLIC_HF_TOKEN=   # dima806/facial_emotions_image_detection – Hugging Face
 EXPO_PUBLIC_DEEPSEEK_API_KEY= # Deepseel AI Model - deepseek-v4-flash
+
 ```
 
 ---
@@ -230,7 +232,10 @@ Please contact the project maintainers before using the project or its content f
 
 Download the latest Android build of MindSpace from Expo EAS:
 
+
 [⬇️ Download MindSpace Android App](https://expo.dev/accounts/slprime82/projects/MindSpace/builds/6e503355-a3de-419f-9adf-c1580497c772)
+
+
 
 
 ##  Screenshots
