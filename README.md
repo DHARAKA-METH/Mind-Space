@@ -68,8 +68,8 @@ Firebase Authentication, Firestore Security Rules, role-based permissions, owner
 
 ## AI Services
 
-- AI model for wellness-support conversations and recommendations
-- Hugging Face model for optional facial-emotion analysis
+- AI model for wellness-support conversations and recommendations - deepseek-v4-flash 
+- Hugging Face model for optional facial-emotion analysis  -  dima806
 
 ## External Wellness Resources
 
@@ -122,6 +122,10 @@ MindSpace follows a cloud-connected mobile architecture where the React Native a
                                                 Wellness Resources
               
 ```
+
+
+<img width="1229" height="692" alt="image" src="https://github.com/user-attachments/assets/64414a5c-8424-4a25-9f5d-cd9b7138d378" />
+
 
 
 ---
@@ -241,9 +245,11 @@ Download the latest Android build of MindSpace from Expo EAS:
 ##  Screenshots
 
 
-<img width="688" height="1538" alt="ss 1" src="https://github.com/user-attachments/assets/9dd0660c-9e85-40b1-9e1f-9208d71ec3de" />
+<img width="621" height="689" alt="1" src="https://github.com/user-attachments/assets/199feca3-6c85-43e8-be51-164a8be39ff4" />
 
-<img width="688" height="1538" alt="ss 2" src="https://github.com/user-attachments/assets/3926c5c5-9607-45af-a2c0-76ba89f07d91" />
+<img width="614" height="657" alt="2" src="https://github.com/user-attachments/assets/43e3df58-5c19-4820-9ec3-c88d6069fda0" />
+
+
 
 
 
